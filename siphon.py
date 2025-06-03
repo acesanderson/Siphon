@@ -10,6 +10,11 @@ Identify file type, and then use the siphoning method appropriate (markitdown fo
 from markitdown import MarkItDown
 from pathlib import Path
 import hashlib
+import argparse
+
+dir_path = Path(__file__).parent
+asset_dir = dir_path / "assets"
+asset_files = list(asset_dir.glob("*.*"))
 
 extensions = {
     "raw": [".csv", ".json", ".xml", ".txt", ".md", ".yaml", ".yml", ".toml", ".ini"],
@@ -214,14 +219,21 @@ def convert_file(file_path: Path):
             raise ValueError(f"Unsupported file type: {file_path.suffix}")
 
 
-dir_path = Path(__file__).parent
-asset_dir = dir_path / "assets"
-asset_files = list(asset_dir.glob("*.*"))
-asset_file = asset_files[5]  # Example file for testing
+def main():
+    parser = argparse.ArgumentParser(description="Siphon file to LLM context")
+    parser.add_argument("file", type=str, help="Path to the file to convert")
+    args = parser.parse_args()
+    file_path = Path(args.file)
+    if not file_path.exists():
+        print(f"File not found: {file_path}")
+        return
+    try:
+        context = convert_file(file_path)
+        print(f"Converted context for {file_path}:")
+        print(context)
+    except Exception as e:
+        print(f"Error converting file {file_path}: {e}")
 
-# md = MarkItDown()
-# asset_file = asset_files[5]
-# print(asset_file.suffix)
-# result = md.convert(asset_file)
-# print(result.text_content)
-# print(asset_file.suffix)
+
+if __name__ == "__main__":
+    main()
