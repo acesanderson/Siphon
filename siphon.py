@@ -9,8 +9,7 @@ Identify file type, and then use the siphoning method appropriate (markitdown fo
 
 from markitdown import MarkItDown
 from pathlib import Path
-import hashlib
-import argparse
+import hashlib, argparse
 
 dir_path = Path(__file__).parent
 asset_dir = dir_path / "assets"
@@ -162,9 +161,15 @@ def convert_image(file_path: Path):
         raise ValueError(
             f"File type not supported for OCR conversion: {file_path.suffix}"
         )
-    # Implement OCR conversion logic here
-    # Placeholder for actual OCR implementation
-    raise NotImplementedError("OCR conversion not implemented yet.")
+    from Chain import create_image_message, Model, Chain
+
+    prompt_str = "Please describe this image in detail."
+    imagemessage = create_image_message(file_path, prompt_str)
+
+    model = Model("gpt")
+    chain = Chain(model=model)
+    response = chain.run(messages=[imagemessage])
+    return response.content
 
 
 def convert_archive(file_path: Path):
