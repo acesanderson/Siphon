@@ -8,6 +8,7 @@ Identify file type, and then use the siphoning method appropriate (markitdown fo
 """
 
 from markitdown import MarkItDown
+from Siphon.audio.audio import convert_audio
 from pathlib import Path
 import hashlib, argparse
 
