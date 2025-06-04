@@ -41,7 +41,7 @@ extensions = {
         ".html",
         ".rtf",
     ],
-    "whisper": [
+    "audio": [
         ".wav",
         ".mp3",
         ".m4a",
@@ -128,7 +128,7 @@ def convert_code(file_path: Path):
         return f.read()
 
 
-def convert_whisper(file_path: Path):
+def convert_audio(file_path: Path):
     """Convert audio/video files using Whisper."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -136,9 +136,8 @@ def convert_whisper(file_path: Path):
         raise ValueError(
             f"File type not supported for Whisper conversion: {file_path.suffix}"
         )
-    # Implement Whisper conversion logic here
-    # Placeholder for actual Whisper implementation
-    raise NotImplementedError("Whisper conversion not implemented yet.")
+    output = convert_audio(file_path)
+    return output
 
 
 def convert_video(file_path: Path):
@@ -209,8 +208,8 @@ def convert_file(file_path: Path):
             return convert_raw(file_path)
         case "code":
             return convert_code(file_path)
-        case "whisper":
-            return convert_whisper(file_path)
+        case "audio":
+            return convert_audio(file_path)
         case "video":
             return convert_video(file_path)
         case "image":
