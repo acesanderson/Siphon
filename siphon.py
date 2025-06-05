@@ -227,9 +227,9 @@ def convert_file(file_path: Path):
 def main():
     parser = argparse.ArgumentParser(description="Siphon file to LLM context")
     parser.add_argument("file", type=str, help="Path to the file to convert")
-    parser.add_argument(
-        "-l", "llm", action="store_true", help="Use LLM for conversion if applicable"
-    )
+    # parser.add_argument(
+    #     "-l", "llm", action="store_true", help="Use LLM for conversion if applicable"
+    # )
     args = parser.parse_args()
     file_path = Path(args.file)
     if not file_path.exists():
