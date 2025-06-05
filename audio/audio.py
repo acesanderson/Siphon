@@ -19,7 +19,7 @@ assets_dir = dir_path.parent / "assets"
 allhands_file = assets_dir / "allhands.mp3"
 
 
-def convert_audio(file_path: Path | str) -> str:
+def get_transcript(file_path: Path | str) -> str | None:
     """
     Converts audio file to a format suitable for processing.
     Currently, this is a placeholder function.
@@ -42,5 +42,5 @@ def convert_audio(file_path: Path | str) -> str:
 
 # Example usage:
 if __name__ == "__main__":
-    transcript = convert_audio(example_file)
+    transcript = get_transcript(example_file)
     print(transcript)

@@ -8,7 +8,7 @@ Identify file type, and then use the siphoning method appropriate (markitdown fo
 """
 
 from markitdown import MarkItDown
-from Siphon.audio.audio import convert_audio
+from Siphon.audio.audio import get_transcript
 from pathlib import Path
 import hashlib, argparse
 
@@ -132,11 +132,11 @@ def convert_audio(file_path: Path):
     """Convert audio/video files using Whisper."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["whisper"]:
+    if not file_path.suffix.lower() in extensions["audio"]:
         raise ValueError(
             f"File type not supported for Whisper conversion: {file_path.suffix}"
         )
-    output = convert_audio(file_path)
+    output = get_transcript(file_path)
     return output
 
 
@@ -227,6 +227,9 @@ def convert_file(file_path: Path):
 def main():
     parser = argparse.ArgumentParser(description="Siphon file to LLM context")
     parser.add_argument("file", type=str, help="Path to the file to convert")
+    parser.add_argument(
+        "-l", "llm", action="store_true", help="Use LLM for conversion if applicable"
+    )
     args = parser.parse_args()
     file_path = Path(args.file)
     if not file_path.exists():
