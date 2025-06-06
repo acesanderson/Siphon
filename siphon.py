@@ -7,14 +7,15 @@ Identify file type, and then use the siphoning method appropriate (markitdown fo
 - add context markers - [IMAGE DESCRIPTION], [AUDIO TRANSCRIPT], [TABLE START/END]
 """
 
-from markitdown import MarkItDown
-from Siphon.audio.audio import get_transcript
+from Siphon.database.PGRES_siphon import insert_siphon, get_siphon_by_hash
+from Siphon.ProcessedFile import ProcessedFile
 from pathlib import Path
 import hashlib, argparse
 
 dir_path = Path(__file__).parent
 asset_dir = dir_path / "assets"
 asset_files = list(asset_dir.glob("*.*"))
+
 
 extensions = {
     "raw": [".csv", ".json", ".xml", ".txt", ".md", ".yaml", ".yml", ".toml", ".ini"],
@@ -93,6 +94,8 @@ def categorize(file_path: Path):
 
 def convert_markitdown(file_path: Path):
     """Convert a file using MarkItDown."""
+    from markitdown import MarkItDown
+
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
     if not file_path.suffix.lower() in extensions["markitdown"]:
@@ -130,6 +133,8 @@ def convert_code(file_path: Path):
 
 def convert_audio(file_path: Path):
     """Convert audio/video files using Whisper."""
+    from Siphon.audio.audio import get_transcript
+
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
     if not file_path.suffix.lower() in extensions["audio"]:
@@ -201,27 +206,42 @@ def convert_specialized(file_path: Path):
 def convert_file(file_path: Path):
     """Convert a file based on its type."""
     category = categorize(file_path)
+    # Create hash and check cache here
+    sha256 = hash_file(file_path)
+    llm_context = get_siphon_by_hash(sha256)
+    if llm_context:
+        return llm_context
+    # If not in cache, convert the file
+    output = ""
     match category:
         case "markitdown":
-            return convert_markitdown(file_path)
+            output = convert_markitdown(file_path)
         case "raw":
-            return convert_raw(file_path)
+            output = convert_raw(file_path)
         case "code":
-            return convert_code(file_path)
+            output = convert_code(file_path)
         case "audio":
-            return convert_audio(file_path)
+            output = convert_audio(file_path)
         case "video":
-            return convert_video(file_path)
+            output = convert_video(file_path)
         case "image":
-            return convert_image(file_path)
+            output = convert_image(file_path)
         case "archive":
-            return convert_archive(file_path)
+            output = convert_archive(file_path)
         case "specialized":
-            return convert_specialized(file_path)
+            output = convert_specialized(file_path)
         case "unknown":
             raise ValueError(f"Unknown file type for: {file_path}")
         case _:
             raise ValueError(f"Unsupported file type: {file_path.suffix}")
+
+    if output:
+        abs_path = str(file_path.resolve())
+        processed_file = ProcessedFile(
+            sha256=sha256, abs_path=abs_path, llm_context=str(output)
+        )
+        insert_siphon(processed_file)
+        return output
 
 
 def main():
