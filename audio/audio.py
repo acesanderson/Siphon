@@ -14,6 +14,7 @@ from Siphon.audio.combine import combine
 from Siphon.audio.format import format_transcript
 from pathlib import Path
 
+# Example file
 dir_path = Path(__file__).parent
 assets_dir = dir_path.parent / "assets"
 allhands_file = assets_dir / "allhands.mp3"
@@ -32,7 +33,7 @@ def get_transcript(file_path: Path | str) -> str | None:
         # Diarize
         diarization_result = diarize(str(file_path))
         # Transcribe
-        transcript_result = transcribe(str(allhands_file))
+        transcript_result = transcribe(str(file_path))
         # Combine diarization and transcription results by timestamps
         annotated = combine(diarization_result, transcript_result)
         # Format for display with a dedicate LLM call
@@ -41,6 +42,6 @@ def get_transcript(file_path: Path | str) -> str | None:
 
 
 # Example usage:
-if __name__ == "__main__":
-    transcript = get_transcript(example_file)
-    print(transcript)
+# if __name__ == "__main__":
+#     transcript = get_transcript(example_file)
+#     print(transcript)
