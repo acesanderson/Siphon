@@ -1,5 +1,6 @@
 from pathlib import Path
 from transformers import pipeline
+import torch
 
 
 # Transcript workflow
@@ -11,6 +12,8 @@ def transcribe(file_name: str | Path) -> str:
         "automatic-speech-recognition",
         model="openai/whisper-base",
         return_timestamps="word",
+        device =0, 
+        torch_dtype=torch.float16,
     )
     # One line transcription
     result = transcriber(file_name)
