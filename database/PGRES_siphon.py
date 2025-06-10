@@ -121,4 +121,4 @@ def delete_table():
         cursor = conn.cursor()
         cursor.execute("DROP TABLE IF EXISTS siphon")
         conn.commit()
-        console.print("[yellow]siphon table deleted successfully.[/yellow]")
+        console.print("[yellow]siphon table deleted uccessfully.[/yellow]")
