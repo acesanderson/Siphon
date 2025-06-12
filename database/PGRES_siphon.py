@@ -4,73 +4,70 @@ CRUD functions for Siphon project. Adapted from Kramer.database.
 We will use this database as a cache for siphon data, keyed to file hashes.
 """
 
-from PGRES_connection import get_db_connection
-from pathlib import Path
+from Siphon.ProcessedFile import ProcessedFile
+from Siphon.database.PGRES_connection import get_db_connection
 from rich.console import Console
-from collections import Counter
-import json
 
 console = Console()
-dir_path = Path(__file__).parent
 
 
 # Create table
 def create_table():
     """
     Create a table in the database.
-    Table name = tools
-    Two columns:
-    - course_admin_id (int)
-    - tools_counter (jsonb) - stores a Python Counter object
+    Table name = siphon
+    Three columns:
+    - sha256 (text) - primary key
+    - abs_path (text) - absolute path to the file
+    - llm_context (text) - LLM context for the file
     """
-    query = "CREATE TABLE IF NOT EXISTS tools (course_admin_id INT PRIMARY KEY, tools_counter JSONB);"
+    query = "CREATE TABLE IF NOT EXISTS siphon (sha256 TEXT PRIMARY KEY, abs_path TEXT, llm_context TEXT);"
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(query)
         conn.commit()
-        console.print("[cyan]Tools table created successfully.[/cyan]")
+        console.print("[cyan]siphon table created successfully.[/cyan]")
 
 
 # Add/Update record
-def insert_tools(course_admin_id: int, tools_counter: Counter):
+def insert_siphon(siphon: ProcessedFile):
     """
-    Insert or update a tools Counter object for a specific course.
+    Insert or update a record in the siphon table.
 
     Args:
-        course_admin_id (int): The course identifier
-        tools_counter (Counter): Counter object with tool frequencies
+        siphon (ProcessedFile): ProcessedFile object to insert or update
     """
-    # Convert Counter to dict, then to JSON string
-    tools_json = json.dumps(dict(tools_counter))
-
+    # Get vars
+    sha256 = siphon.sha256
+    abs_path = siphon.abs_path
+    llm_context = siphon.llm_context
+    # Insert or update record
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO tools (course_admin_id, tools_counter) VALUES (%s, %s) "
-            "ON CONFLICT (course_admin_id) DO UPDATE SET tools_counter = EXCLUDED.tools_counter;",
-            (course_admin_id, tools_json),
+            "INSERT INTO siphon (sha256, abs_path, llm_context) VALUES (%s, %s, %s)",
+            (sha256, abs_path, llm_context),
         )
         conn.commit()
-        console.print(
-            f"[green]Tools for course {course_admin_id} saved successfully.[/green]"
-        )
+        console.print(f"[green]siphon {abs_path} saved successfully.[/green]")
 
 
-def get_tools_by_course_id(course_admin_id: int) -> Counter | None:
+def get_siphon_by_hash(sha256: str) -> str | None:
     """
     Get the tools Counter for a specific course.
 
     Args:
-        course_admin_id (int): The course identifier
+        sha256 (str): SHA-256 hash of the file
 
     Returns:
-        Counter or None: Counter object with tool frequencies, None if not found
+        str | None: LLM context if found, else None
     """
+    # Query for the record
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT tools_counter FROM tools WHERE course_admin_id = %s",
-            (course_admin_id,),
+            "SELECT llm_context FROM siphon WHERE sha256 = %s",
+            (sha256,),
         )
         result = cursor.fetchone()
 
@@ -78,10 +75,10 @@ def get_tools_by_course_id(course_admin_id: int) -> Counter | None:
             return None
 
         # Convert JSON to Counter
-        return Counter(result[0])
+        return result[0]
 
 
-def get_all_tools() -> dict[int, Counter]:
+def get_all_siphon() -> list[ProcessedFile] | None:
     """
     Get all tools for all courses.
 
@@ -90,74 +87,17 @@ def get_all_tools() -> dict[int, Counter]:
     """
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT course_admin_id, tools_counter FROM tools")
+        cursor.execute("SELECT sha256, abs_path, llm_context FROM siphon")
         results = cursor.fetchall()
 
         if not results:
-            return {}
-
-        # Convert results to dict of Counters
-        return {row[0]: Counter(row[1]) for row in results}
-
-
-def get_all_course_ids() -> list[int]:
-    """
-    Get all course admin IDs.
-
-    Returns:
-        list: List of all course admin IDs
-    """
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT course_admin_id FROM tools")
-        results = cursor.fetchall()
-        return [row[0] for row in results]
-
-
-def get_courses_using_tool(tool_name: str) -> list[int]:
-    """
-    Find all courses that use a specific tool.
-
-    Args:
-        tool_name (str): The name of the tool to search for
-
-    Returns:
-        list: List of course admin IDs that use the tool
-    """
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT course_admin_id FROM tools WHERE tools_counter ? %s", (tool_name,)
-        )
-        results = cursor.fetchall()
-        return [row[0] for row in results]
-
-
-def get_popular_tools(limit: int = 10) -> Counter:
-    """
-    Get the most popular tools across all courses.
-
-    Args:
-        limit (int): Limit the number of results
-
-    Returns:
-        Counter: Counter object with aggregated tool frequencies
-    """
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT tools_counter FROM tools")
-        results = cursor.fetchall()
-
-        if not results:
-            return Counter()
-
-        # Aggregate all counters
-        combined_counter = Counter()
-        for row in results:
-            combined_counter.update(Counter(row[0]))
-
-        # Return most common
-        return Counter(dict(combined_counter.most_common(limit)))
+            return None
+        # Convert results to list of ProcessedFile objects
+        siphon = [
+            ProcessedFile(sha256=row[0], abs_path=row[1], llm_context=row[2])
+            for row in results
+        ]
+        return siphon
 
 
 def clear_table():
@@ -167,9 +107,9 @@ def clear_table():
     """
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM tools")
+        cursor.execute("DELETE FROM siphon")
         conn.commit()
-        console.print("[yellow]Tools table cleared successfully.[/yellow]")
+        console.print("[yellow]siphon table cleared successfully.[/yellow]")
 
 
 def delete_table():
@@ -179,6 +119,6 @@ def delete_table():
     """
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tools")
+        cursor.execute("DROP TABLE IF EXISTS siphon")
         conn.commit()
-        console.print("[yellow]Tools table deleted successfully.[/yellow]")
+        console.print("[yellow]siphon table deleted uccessfully.[/yellow]")
