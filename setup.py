@@ -7,6 +7,7 @@ setup(
     entry_points={
         "console_scripts": [
             "siphon = Siphon.siphon:main",
+            "record = Siphon.audio.record.record:main",
         ],
     },
 )
