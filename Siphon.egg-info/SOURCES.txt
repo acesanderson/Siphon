@@ -1,7 +1,0 @@
-README.md
-setup.py
-Siphon.egg-info/PKG-INFO
-Siphon.egg-info/SOURCES.txt
-Siphon.egg-info/dependency_links.txt
-Siphon.egg-info/entry_points.txt
-Siphon.egg-info/top_level.txt
