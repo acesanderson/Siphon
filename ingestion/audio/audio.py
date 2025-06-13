@@ -7,12 +7,12 @@ Annotated transcripts require several steps, and state of the art for open sourc
 - clean up the transcript (with LLM call)
 """
 
-from Siphon.audio.transcribe import transcribe
-from Siphon.audio.diarize import diarize
-from Siphon.audio.example import example_file
-from Siphon.audio.combine import combine
-from Siphon.audio.format import format_transcript
-from Siphon.audio.convert import convert_to_mp3
+from Siphon.ingestion.audio.transcribe import transcribe
+from Siphon.ingestion.audio.diarize import diarize
+from Siphon.ingestion.audio.example import example_file
+from Siphon.ingestion.audio.combine import combine
+from Siphon.ingestion.audio.format import format_transcript
+from Siphon.ingestion.audio.convert import convert_to_mp3
 from pathlib import Path
 
 # Example file
