@@ -5,7 +5,7 @@ We will use this database as a cache for siphon data, keyed to file hashes.
 """
 
 from Siphon.ProcessedFile import ProcessedFile
-from Siphon.database.PGRES_connection import get_db_connection
+from Siphon.database.postgres.PGRES_connection import get_db_connection
 from rich.console import Console
 
 console = Console()

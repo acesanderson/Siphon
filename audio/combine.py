@@ -21,21 +21,24 @@ def combine(diarization_result, transcript_result):
     annotated_transcript = []
 
     for word_data in words:
-        word_text = word_data["text"].strip()
-        word_start, word_end = word_data["timestamp"]
+        try:
+            word_text = word_data["text"].strip()
+            word_start, word_end = word_data["timestamp"]
 
-        # Find speaker for this word using midpoint timestamp
-        word_midpoint = (word_start + word_end) / 2
-        speaker = find_speaker_at_time(word_midpoint, diarization_segments)
+            # Find speaker for this word using midpoint timestamp
+            word_midpoint = (word_start + word_end) / 2
+            speaker = find_speaker_at_time(word_midpoint, diarization_segments)
 
-        annotated_transcript.append(
-            {
-                "word": word_text,
-                "speaker": speaker,
-                "start_time": word_start,
-                "end_time": word_end,
-            }
-        )
+            annotated_transcript.append(
+                {
+                    "word": word_text,
+                    "speaker": speaker,
+                    "start_time": word_start,
+                    "end_time": word_end,
+                }
+            )
+        except:
+            print("SINGLE ERROR")
 
     return annotated_transcript
 

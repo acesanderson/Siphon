@@ -12,6 +12,7 @@ from Siphon.audio.diarize import diarize
 from Siphon.audio.example import example_file
 from Siphon.audio.combine import combine
 from Siphon.audio.format import format_transcript
+from Siphon.audio.convert import convert_to_mp3
 from pathlib import Path
 
 # Example file
@@ -25,10 +26,13 @@ def get_transcript(file_path: Path | str) -> str | None:
     Converts audio file to a format suitable for processing.
     Currently, this is a placeholder function.
     """
+    converted = False
     if isinstance(file_path, str):
         file_path = Path(file_path)
     if not file_path.suffix.lower() == ".mp3":
-        raise NotImplementedError("Only MP3 files are supported at this moment.")
+        # Convert to MP3 if not already in that format
+        file_path = convert_to_mp3(file_path)
+        converted = True
     if file_path.exists() and file_path.suffix.lower() == ".mp3":
         # Diarize
         diarization_result = diarize(str(file_path))
@@ -38,7 +42,14 @@ def get_transcript(file_path: Path | str) -> str | None:
         annotated = combine(diarization_result, transcript_result)
         # Format for display with a dedicate LLM call
         readable_transcript = format_transcript(annotated, group_by_speaker=True)
+        if converted:
+            # Clean up the temporary MP3 file if it was created
+            file_path.unlink(missing_ok=True)
         return readable_transcript
+    else:
+        if converted:
+            # Clean up the temporary MP3 file if it was created
+            file_path.unlink(missing_ok=True)
 
 
 # Example usage:

@@ -11,7 +11,8 @@ def transcribe(file_name: str | Path) -> str:
     transcriber = pipeline(
         "automatic-speech-recognition",
         model="openai/whisper-base",
-        return_timestamps="word",
+        # model="openai/whisper-large-v3",
+        return_timestamps="sentence",
         device =0, 
         torch_dtype=torch.float16,
     )

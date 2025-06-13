@@ -7,7 +7,7 @@ Identify file type, and then use the siphoning method appropriate (markitdown fo
 - add context markers - [IMAGE DESCRIPTION], [AUDIO TRANSCRIPT], [TABLE START/END]
 """
 
-from Siphon.database.PGRES_siphon import insert_siphon, get_siphon_by_hash
+from Siphon.database.postgres.PGRES_siphon import insert_siphon, get_siphon_by_hash
 from Siphon.ProcessedFile import ProcessedFile
 from pathlib import Path
 import hashlib, argparse
