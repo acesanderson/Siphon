@@ -8,7 +8,7 @@ Identify file type, and then use the siphoning method appropriate (markitdown fo
 """
 
 from Siphon.database.postgres.PGRES_siphon import insert_siphon, get_siphon_by_hash
-from Siphon.ProcessedFile import ProcessedFile
+from Siphon.data.ProcessedFile import ProcessedFile
 from pathlib import Path
 import hashlib, argparse
 
@@ -133,7 +133,7 @@ def convert_code(file_path: Path):
 
 def convert_audio(file_path: Path):
     """Convert audio/video files using Whisper."""
-    from Siphon.audio.audio import get_transcript
+    from Siphon.ingestion.audio.audio import get_transcript
 
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")

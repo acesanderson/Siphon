@@ -6,10 +6,11 @@ We also need:
 - datetime (when processed)
 - file_type
 - file_size
+- provenance (command line, sheets, youtube, Downloads, Obsidian, etc.)
 """
 
-
 from pydantic import BaseModel, Field
+
 
 class ProcessedFile(BaseModel):
     sha256: str = Field(..., description="SHA-256 hash of the file")
