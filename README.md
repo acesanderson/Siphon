@@ -15,6 +15,7 @@ An evolution of Leviathan, with the same principles:
 - images
 ### Automated / Chronjob
 - Obsidian vault
+    - daily notes (and todos thereof)
 - Downloads folder
 - GitHub repos
 ### Online
