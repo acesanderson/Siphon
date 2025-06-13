@@ -30,6 +30,7 @@ An evolution of Leviathan, with the same principles:
     - file descriptions (llm generated)
     - file summaries (llm generated)
     - chunks (within documents)
+- neo4j: start with named entities
 
 ## System architecture
 - postgres, chroma: Caruana server
