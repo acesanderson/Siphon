@@ -1,3 +1,4 @@
+from Siphon.database.postgres.PGRES_siphon import 
 from pathlib import Path
 
 
@@ -191,7 +192,7 @@ def convert_specialized(file_path: Path):
     raise NotImplementedError("Specialized file conversion not implemented yet.")
 
 
-def convert_file(file_path: Path):
+def retrieve_file_context(file_path: Path):
     """Convert a file based on its type."""
     category = categorize(file_path)
     # Create hash and check cache here
