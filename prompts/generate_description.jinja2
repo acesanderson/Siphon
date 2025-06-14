@@ -1,0 +1,63 @@
+You are creating a DESCRIPTION for vector similarity search of transcribed audio.
+
+REQUIREMENTS:
+- 50-150 words maximum
+- Focus on: meeting type, key participants, main decisions/topics, action items
+- Include context: formal/informal, internal/external, domain/department
+- Mention specific outcomes, deadlines, or follow-ups
+- Use terms people would search for when looking for meeting content
+- Indicate the type of discussion (planning, review, brainstorm, etc.)
+
+RECORDING CONTEXT: {recording_context}
+PARTICIPANTS: {participants}
+
+TRANSCRIPT TO DESCRIBE:
+{content}
+
+Write a search-optimized description:""",
+
+            "email": """
+You are creating a DESCRIPTION for vector similarity search of email content.
+
+REQUIREMENTS:
+- 50-150 words maximum
+- Focus on: email purpose, key information exchanged, relationships
+- Include: sender context, urgency level, action items
+- Mention specific projects, deadlines, or requests
+- Use searchable terms for email retrieval
+- Indicate email type: informational, request, update, decision, etc.
+
+FROM: {from_address}
+SUBJECT: {subject}
+CONTEXT: {email_context}
+
+EMAIL CONTENT TO DESCRIBE:
+{content}
+
+Write a search-optimized description:""",
+
+            "api_data": """
+You are creating a DESCRIPTION for vector similarity search of structured data.
+
+REQUIREMENTS:
+- 50-150 words maximum
+- Focus on: data source, content type, key insights, time period
+- Include: metrics, trends, important findings
+- Mention specific systems, processes, or business areas
+- Use terms for finding this type of data/analysis
+- Indicate data freshness and scope
+
+SOURCE SYSTEM: {source_system}
+DATA TYPE: {data_type}
+TIME PERIOD: {time_period}
+
+DATA CONTENT TO DESCRIBE:
+{content}
+
+
+
+
+Your descriptions should be information-dense but keyword-rich. Think of them as "search magnets" that capture the essence of content in terms someone would actually search for.
+
+
+"Technical presentation on GraphRAG implementation using Neo4j and vector embeddings. Covers knowledge graph construction, entity extraction with spaCy, and hybrid retrieval combining semantic search with graph traversal. Demonstrates performance improvements over traditional RAG on complex multi-hop queries. Includes code examples for Python integration with Chroma and practical deployment considerations for production systems."
