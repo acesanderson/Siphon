@@ -4,10 +4,11 @@ Each data source gets its own specialized subclass with relevant metadata.
 """
 
 from pydantic import BaseModel, Field
-from typing import Literal, Optional, Dict, Any
+from typing import Literal, Optional, Any
+from pathlib import Path
 from abc import ABC, abstractmethod
-import time
 from urllib.parse import urlparse
+import time
 
 
 class ProcessedContent(BaseModel, ABC):
@@ -166,7 +167,7 @@ class ProcessedAudioRecording(ProcessedContent):
     recording_location: Optional[str] = Field(
         default=None, description="Location if available"
     )
-    device_info: Optional[Dict[str, Any]] = Field(
+    device_info: Optional[dict[str, Any]] = Field(
         default=None, description="Recording device metadata"
     )
 

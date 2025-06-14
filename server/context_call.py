@@ -1,6 +1,7 @@
 from Siphon.data.extensions import extensions
 from pydantic import BaseModel, Field
-import re
+import re, base64
+from pathlib import Path
 
 
 def is_base64_simple(s):
@@ -25,7 +26,37 @@ class ContextCall(BaseModel):
         Post-initialization processing to validate the extension and process the base64 data.
         """
         _ = __context
-        if self.extension not in extensions:
+        if (
+            self.extension
+            not in extensions["audio"] + extensions["video"] + extensions["image"]
+        ):
             raise ValueError(f"Extension '{self.extension}' is not supported.")
         if not is_base64_simple(self.base64_data):
             raise ValueError("Base64 data is not valid.")
+
+
+def create_ContextCall_from_file(file_path: str | Path) -> ContextCall:
+    """
+    Create a ContextCall object from a file path.
+    The file is read, encoded in base64, and the extension is extracted.
+    """
+    if not isinstance(file_path, Path):
+        file_path = Path(file_path)
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    with open(file_path, "rb") as f:
+        file_data = f.read()
+
+    base64_data = base64.b64encode(file_data).decode("utf-8")
+    extension = file_path.suffix.lower()
+
+    return ContextCall(extension=extension, base64_data=base64_data)
+
+
+if __name__ == "__main__":
+    dir_path = Path(__file__).parent
+    file_path = dir_path.parent / "assets" / "allhands.m4a"
+    context_call = create_ContextCall_from_file(file_path)
+    print(context_call)
+    from Siphon.server.server_audio import transcribe_ContextCall

@@ -1,4 +1,4 @@
-from Siphon.database.postgres.PGRES_siphon import 
+from Siphon.database.postgres.PGRES_siphon import get_siphon_by_hash, insert_siphon
 from Siphon.data.extensions import extensions
 from pathlib import Path
 

@@ -4,7 +4,7 @@ CRUD functions for Siphon project. Adapted from Kramer.database.
 We will use this database as a cache for siphon data, keyed to file hashes.
 """
 
-from Siphon.data.ProcessedFile import ProcessedFile
+from Siphon.data.ProcessedContent import ProcessedFile
 from Siphon.database.postgres.PGRES_connection import get_db_connection
 from rich.console import Console
 

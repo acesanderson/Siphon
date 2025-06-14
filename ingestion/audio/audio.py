@@ -9,7 +9,6 @@ Annotated transcripts require several steps, and state of the art for open sourc
 
 from Siphon.ingestion.audio.transcribe import transcribe
 from Siphon.ingestion.audio.diarize import diarize
-from Siphon.ingestion.audio.example import example_file
 from Siphon.ingestion.audio.combine import combine
 from Siphon.ingestion.audio.format import format_transcript
 from Siphon.ingestion.audio.convert import convert_to_mp3
@@ -50,9 +49,3 @@ def get_transcript(file_path: Path | str) -> str | None:
         if converted:
             # Clean up the temporary MP3 file if it was created
             file_path.unlink(missing_ok=True)
-
-
-# Example usage:
-# if __name__ == "__main__":
-#     transcript = get_transcript(example_file)
-#     print(transcript)
