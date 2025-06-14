@@ -1,3 +1,3 @@
-from Siphon.siphon import convert_file
+from Siphon.ingestion.siphon import convert_file
 
 __all__ = ["convert_file"]
