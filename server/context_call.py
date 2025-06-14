@@ -52,11 +52,3 @@ def create_ContextCall_from_file(file_path: str | Path) -> ContextCall:
     extension = file_path.suffix.lower()
 
     return ContextCall(extension=extension, base64_data=base64_data)
-
-
-if __name__ == "__main__":
-    dir_path = Path(__file__).parent
-    file_path = dir_path.parent / "assets" / "allhands.m4a"
-    context_call = create_ContextCall_from_file(file_path)
-    print(context_call)
-    from Siphon.server.server_audio import transcribe_ContextCall

@@ -28,7 +28,7 @@ def transcribe_ContextCall(context_call: ContextCall) -> str:
     temp_path = Path(temp_file.name)
     converted = False
     # See if we need to convert to mp3.
-    if not file_path.suffix.lower() == ".mp3":
+    if context_call.extension != ".mp3":
         # Convert to MP3 if not already in that format
         temp_mp3_file = convert_to_mp3(temp_path)  # type: ignore
         converted = True

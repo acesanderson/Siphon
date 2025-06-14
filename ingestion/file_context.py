@@ -1,5 +1,7 @@
 from Siphon.database.postgres.PGRES_siphon import get_siphon_by_hash, insert_siphon
 from Siphon.data.extensions import extensions
+from Siphon.data.ProcessedContent import ProcessedFile
+import hashlib
 from pathlib import Path
 
 
@@ -156,15 +158,10 @@ def convert_image(file_path: Path):
         raise ValueError(
             f"File type not supported for OCR conversion: {file_path.suffix}"
         )
-    from Chain import create_image_message, Model, Chain
+    from Siphon.ingestion.image.image import describe_image
 
-    prompt_str = "Please describe this image in detail."
-    imagemessage = create_image_message(file_path, prompt_str)
-
-    model = Model("gpt")
-    chain = Chain(model=model)
-    response = chain.run(messages=[imagemessage])
-    return response.content
+    output = describe_image(file_path)
+    return output
 
 
 def convert_archive(file_path: Path):
