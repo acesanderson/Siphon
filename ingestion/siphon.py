@@ -7,13 +7,11 @@ Identify file type, and then use the siphoning method appropriate (markitdown fo
 - add context markers - [IMAGE DESCRIPTION], [AUDIO TRANSCRIPT], [TABLE START/END]
 """
 
-from Siphon.database.postgres.PGRES_siphon import insert_siphon, get_siphon_by_hash
 from Siphon.data.ProcessedContent import ProcessedContent, ProcessedURL, ProcessedFile
 from Siphon.ingestion.file_context import retrieve_file_context
 from Siphon.ingestion.online_context import retrieve_online_context
 from pathlib import Path
-import hashlib, argparse
-from pydantic import BaseModel
+import argparse
 from typing import Literal
 
 
@@ -62,7 +60,7 @@ def main():
         print(f"File not found: {file_path}")
         return
     try:
-        context = convert_file(file_path)
+        context = retrieve_file_context(file_path)
         print(f"Converted context for {file_path}:")
         print(context)
     except Exception as e:

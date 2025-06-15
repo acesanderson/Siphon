@@ -9,61 +9,6 @@ dir_path = Path(__file__).parent
 asset_dir = dir_path / "assets"
 asset_files = list(asset_dir.glob("*.*"))
 
-extensions = {
-    "raw": [".csv", ".json", ".xml", ".txt", ".md", ".yaml", ".yml", ".toml", ".ini"],
-    "code": [
-        ".py",
-        ".js",
-        ".html",
-        ".css",
-        ".java",
-        ".cpp",
-        ".c",
-        ".go",
-        ".rs",
-        ".rb",
-        ".php",
-    ],
-    "markitdown": [
-        ".docx",
-        ".pptx",
-        ".xlsx",
-        ".xls",
-        ".pdf",
-        ".msg",
-        ".html",
-        ".rtf",
-    ],
-    "audio": [
-        ".wav",
-        ".mp3",
-        ".m4a",
-        ".ogg",
-        ".flac",
-    ],
-    "video": [
-        ".mp4",
-        ".avi",
-        ".mov",
-        ".webm",
-        ".mkv",
-    ],
-    "image": [
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".gif",
-        ".bmp",
-        ".tiff",
-        ".svg",
-        ".webp",
-        ".ico",
-    ],
-    "archive": [".zip", ".tar", ".gz", ".rar", ".7z"],
-    "specialized": [".epub", ".mobi"],
-}
-
-
 # Our functions
 def hash_file(filepath):
     """Generate SHA-256 hash of file contents"""
@@ -189,10 +134,9 @@ def convert_specialized(file_path: Path):
     # Placeholder for actual specialized file conversion implementation
     raise NotImplementedError("Specialized file conversion not implemented yet.")
 
-
 def retrieve_file_context(file_path: Path):
     """Convert a file based on its type."""
-    category = categorize(file_path)
+    category = route_file(file_path)
     # Create hash and check cache here
     sha256 = hash_file(file_path)
     llm_context = get_siphon_by_hash(sha256)
