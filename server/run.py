@@ -21,7 +21,7 @@ async def enrich(processed_content: ProcessedContent) -> SyntheticData:
 
 
 @app.post("/process")
-async def process_content(content: ContextCall) -> ContextCall:
+async def process_content(content: ContextCall) -> str:
     """
     Processes audio or image content and returns the enriched ContextCall object.
     """
