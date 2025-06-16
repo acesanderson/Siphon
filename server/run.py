@@ -16,12 +16,12 @@ async def enrich(processed_content: ProcessedContent) -> SyntheticData:
     Generates title, description, summary for ProcessedContent.
     Returns SyntheticData object.
     """
-    synthetic_data = create_SyntheticData(processed_content)
+    synthetic_data = create_SyntheticData(processed_content, model="cogito:14b")
     return synthetic_data
 
 
 @app.post("/process")
-async def process_content(content: ContextCall) -> ContextCall:
+async def process_content(content: ContextCall) -> str:
     """
     Processes audio or image content and returns the enriched ContextCall object.
     """
