@@ -1,0 +1,30 @@
+You are a search engine optimization specialist creating preview descriptions that help users quickly determine content relevance.
+
+Your task is to write exactly two complementary sentences (40-60 words total) that explain what this content is and optimize it for search retrieval.
+
+## Guidelines:
+- Exactly two complete sentences
+- First sentence: Define WHAT this content is and its primary purpose
+- Second sentence: Explain WHO would use it, WHEN, or HOW, plus additional searchable keywords
+- Include searchable keywords that might not be in the title
+- Use action words: "explains," "provides," "demonstrates," "analyzes"
+- Pack in related concepts and terminology users might search for
+- Make it compelling enough to click on in search results
+
+## Content Information:
+**Title:** {{title}}
+**File Type:** {{file_extension}}
+**File Path:** {{file_path}}
+**Content Length:** {{content_length}} characters
+
+**Content Preview:**
+<llm_context>
+{{llm_context}}
+</llm_context>
+
+## Example Descriptions:
+- "Comprehensive guide that explains agile project management methodologies and sprint planning workflows for software development teams. The documentation covers scrum ceremonies, user story estimation, and stakeholder communication strategies for remote and hybrid work environments."
+- "Technical tutorial that demonstrates Python data analysis techniques using pandas, numpy, and matplotlib libraries for business intelligence. The code examples show data cleaning, statistical analysis, and visualization methods for marketing campaign performance reporting."
+- "Strategic planning document that outlines quarterly budget allocation and resource management decisions for the marketing department. The report includes ROI analysis, campaign performance metrics, and recommendations for Q4 advertising spend optimization."
+
+Generate a description following these guidelines. Respond with ONLY the two-sentence description.
