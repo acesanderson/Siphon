@@ -36,5 +36,5 @@ def describe_image_with_cloud_models(file_path: str | Path, model="gpt") -> str:
 if __name__ == "__main__":
     dir_path = Path(__file__).parent
     file_path = dir_path.parent.parent / "assets" / "duchamp.jpg"
-    description = describe_image(file_path)
+    description = describe_image_with_ollama_models(file_path)
     print(description)

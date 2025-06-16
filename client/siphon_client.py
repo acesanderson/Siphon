@@ -50,11 +50,11 @@ class SiphonClient:
             )
         response = requests.post(
             f"{self.server_url}/process",
-            json=context_call.model_dump_json(),
+            json=context_call.model_dump(),
             timeout=300,  # 5 min timeout for heavy processing
         )
         response.raise_for_status()
-        return response.json()["llm_context"]
+        return str(response.json())
 
     def request_synthetic_data(
         self, processed_content: ProcessedContent
@@ -77,8 +77,18 @@ class SiphonClient:
 
 
 if __name__ == "__main__":
-    from Siphon.tests.fixtures.example_ProcessedContent import content
+    # from Siphon.tests.fixtures.example_ProcessedContent import content
+    #
+    # client = SiphonClient()
+    # synthetic_data = client.request_synthetic_data(content)
+    # print(synthetic_data)
 
+    from pathlib import Path
+    from Siphon.data.ContextCall import create_ContextCall_from_file
+
+    dir_path = Path(__file__).parent
+    file_path = dir_path.parent / "assets" / "duchamp.jpg"
+    image_context_call = create_ContextCall_from_file(file_path)
     client = SiphonClient()
-    synthetic_data = client.request_synthetic_data(content)
-    print(synthetic_data)
+    llm_context = client.request_context_call(image_context_call)
+    print(llm_context)
