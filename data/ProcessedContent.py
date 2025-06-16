@@ -5,6 +5,7 @@ from Siphon.data.SyntheticData import SyntheticData
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
+import time
 
 
 class ProcessedContent(BaseModel):
@@ -21,13 +22,13 @@ class ProcessedContent(BaseModel):
         ..., description="Type of source (e.g., obsidian, file, youtube, drive, etc.)"
     )
 
-    # Temporal data
-    content_created_at: datetime
-    content_modified_at: datetime
-    ingested_at: datetime
-    last_updated_at: datetime
+    # Temporal data (as Unix timestamps)
+    content_created_at: int
+    content_modified_at: int
+    ingested_at: int
+    last_updated_at: int
 
-    # Core processed data 
+    # Core processed data
     llm_context: str = Field(
         ..., description="Processed content ready for LLM consumption"
     )
@@ -52,3 +53,25 @@ class ProcessedContent(BaseModel):
         default_factory=SiphonMetadata,
         description="Source-specific metadata, such as file size, author, etc.",
     )
+
+    @classmethod
+    def create_with_current_time(cls, **kwargs):
+        """Helper method to create ProcessedContent with current timestamp"""
+        current_time = int(time.time())
+
+        # Set default timestamps if not provided
+        kwargs.setdefault("content_created_at", current_time)
+        kwargs.setdefault("content_modified_at", current_time)
+        kwargs.setdefault("ingested_at", current_time)
+        kwargs.setdefault("last_updated_at", current_time)
+
+        return cls(**kwargs)
+
+    def get_datetime(self, field_name: str) -> datetime:
+        """Convert Unix timestamp back to datetime object"""
+        timestamp = getattr(self, field_name)
+        return datetime.fromtimestamp(timestamp)
+
+    def update_modified_time(self):
+        """Update the last_updated_at timestamp to current time"""
+        self.last_updated_at = int(time.time())

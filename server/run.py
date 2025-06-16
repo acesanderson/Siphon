@@ -9,14 +9,16 @@ from fastapi import FastAPI
 
 app = FastAPI(title="SiphonServer", version="1.0.0")
 
+
 @app.post("/enrich")
 async def enrich(processed_content: ProcessedContent) -> SyntheticData:
     """
     Generates title, description, summary for ProcessedContent.
     Returns SyntheticData object.
     """
-    synthetic_data = await create_SyntheticData(processed_content)
+    synthetic_data = create_SyntheticData(processed_content)
     return synthetic_data
+
 
 @app.post("/process")
 async def process_content(content: ContextCall) -> ContextCall:
@@ -24,13 +26,15 @@ async def process_content(content: ContextCall) -> ContextCall:
     Processes audio or image content and returns the enriched ContextCall object.
     """
     if content.extension in extensions["audio"]:
-        enriched_content = await transcribe_ContextCall(content)
+        llm_context = transcribe_ContextCall(content)
     elif content.extension in extensions["image"]:
-        enriched_content = await describe_image_ContextCall(content)
+        llm_context = describe_image_ContextCall(content)
     else:
         raise ValueError("Unsupported content type")
+    if not llm_context:
+        raise ValueError("LLM context is empty after processing")
+    return llm_context
 
-    return enriched_content
 
 @app.get("/health")
 async def health_check():
@@ -39,11 +43,12 @@ async def health_check():
     """
     return {"status": "ok", "version": "1.0.0"}
 
+
 def main():
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8001)
+
 
 if __name__ == "__main__":
     main()
-
-
