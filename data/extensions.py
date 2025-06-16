@@ -1,5 +1,6 @@
 """
 This module defines various file extensions categorized into different types.
+This routes incoming requests to the appropriate handler based on the file extension.
 """
 
 extensions = {
