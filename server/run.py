@@ -16,7 +16,7 @@ async def enrich(processed_content: ProcessedContent) -> SyntheticData:
     Generates title, description, summary for ProcessedContent.
     Returns SyntheticData object.
     """
-    synthetic_data = create_SyntheticData(processed_content)
+    synthetic_data = create_SyntheticData(processed_content, model="cogito:14b")
     return synthetic_data
 
 
