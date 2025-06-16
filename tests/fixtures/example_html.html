@@ -1,0 +1,157 @@
+Python’s Global Interpreter Lock (GIL) is a classic case of “love-hate”.
+
+While it simplified the language design, enabling rapid growth and stability, it’s also become a bottleneck for multi-threaded programs seeking to leverage multi-core CPUs.
+
+It is the major reason why software engineers, especially from other programming languages, would say: “Python is slow!”
+
+Fortunately, a breaking-through change happened in the Python community. As per PEP 703 proposed, Python will remove GIL step by step in a few years.
+
+This article will take you on a quick tour of the past, current, and future of the infamous GIL. More importantly, there is a beginner-friendly guide about how to install and try no-GIL Python in your local environment.
+
+Quick Look: What is the GIL?
+Before setting up your no-GIL Python, let’s have a quick look at this infamous GIL first. What on earth is it?
+
+In short, the GIL is a mutex that ensures only one thread executes Python byte code at a time.
+
+Introduced in the early 90s, it provided thread safety and simplicity. At the time, single-core CPUs were standard, and the GIL posed minimal performance issues. It also simplified integration with C extensions, which significantly boosted Python’s adoption.
+
+But it’s 2025 now, where can you buy single-core CPUs?
+
+A CPU
+Photo by Christian Wiediger on Unsplash
+Why Did the GIL Become an Issue?
+Every choice, no matter good or bad, comes with consequences.
+
+Due to GIL, a bold choice of language design, Python threads can’t truly run in parallel, making CPU-bound multi-threaded programs not suitable to be written in Python.
+
+Due to this limitation, developers have turned to alternative solutions such as multiprocessing, which creates separate processes to utilize multiple CPU cores, and external libraries like NumPy or Cython, which offload computationally intensive tasks to compiled C extensions.
+
+Although these workarounds effectively circumvent threading constraints, they introduce additional complexity, overhead, and resource consumption.
+
+All of these have prompted ongoing demand within the Python community to remove the GIL entirely.
+
+However, as Guido van Rossum, the father of Python, wrote in his article, It isn’t Easy to Remove the GIL. He would welcome the removal of the GIL if it didn’t harm single-threaded performance or backward compatibility, but those are tough constraints to satisfy.
+
+So Python never really had a solid plan to remove it until the PEP 703 solution appeared.
+
+PEP 703: A Brave New World (without GIL)
+Here comes PEP 703, an accepted solution by Sam Gross aimed at making the GIL optional.
+
+As it describes, this proposal doesn’t immediately eliminate the GIL but introduces a compile-time option (--disable-gil), which is a new build configuration flag, to experiment with a GIL-free Python.
+
+Sam Gross’s innovative approach addresses previous barriers:
+
+Biased Reference Counting: Reduces overhead by using thread-local counters.
+Immortal Objects: Frequently used immutable objects like integers and singletons never change reference counts, eliminating unnecessary locks.
+Thread-safe Memory Management: Utilizing modern allocators (e.g., mimalloc) to handle concurrent memory operations efficiently.
+The Python Council accepted PEP 703, envisioning a careful and phased introduction:
+
+Python 3.13 (was released in 2024): Optional no-GIL build for testing and community feedback (controlled by a --disable-gil build time flag).
+Transition Phase (~2026–2027): Unify builds, enabling runtime toggling of the GIL.
+Future Goal (~2028+): No-GIL Python becomes the default, fully unlocking multi-core parallelism.
+How to Set Up No-GIL Python
+Talk is cheap, let’s see how to really disable GIL in our local environment.
+
+I’m using MacOS version 15.5 for this setup, other operating system should see similar results but may have slightly different operations.
+
+Firstly, let’s download the latest Python 3.13 installer from its official website (choose the right version based on your OS):
+
+Python 3.13 installer from its official website
+Python 3.13 installer from its official website
+After opening the installer, we can see the exciting information about GIL:
+
+Python 3.13 installer interface
+Python 3.13 installer interface
+Then, on the “Installation Type ” step, we need to tick the “Free-threaded Python [experimental]” option (by default it’s unchecked) and install:
+
+Check the Installation Type
+Check the Installation Type
+After installation, it’s time to execute the “Install Certificates.command ”file in the /Applications/Python 3.13/ path to use the new Python download and install SSL root certificates for its use:
+
+Install SSL certifications
+Install SSL certifications
+Now, the whole installation process is finished. There are two Python 3.13 applications installed on the system: Python 3.13 and Python 3.13t. The latter is the experimental no-GIL Python.
+
+Using it is as straightforward as inputting python3.13t on the terminal.
+
+Now, let’s open two terminal windows and run sysconfig.get_config_var("Py_GIL_DISABLED") under two different Python 3.13 builds:
+
+A comparison of standard and non-GIL Python in the terminal
+A comparison of standard and no-GIL Python in the terminal
+Welcome to the no-GIL world!
+
+To feel its power, let’s write a simple testing script to see if no-GIL Python really makes multithreading faster or not:
+
+import threading
+import time
+
+def cpu_bound_task(n, thread_id):
+    count = 0
+    for i in range(n):
+        count += i*i
+
+N = 100000000
+
+def run_with_threads():
+    threads = []
+    start = time.time()    
+    # Create and start 4 threads
+    for i in range(4):
+        t = threading.Thread(target=cpu_bound_task, args=(N, i))
+        threads.append(t)
+        t.start()
+    
+    # Wait for all threads to complete
+    for t in threads:
+        t.join()
+    
+    end = time.time()
+    print(f'Total time taken: {end - start:.2f} seconds')
+
+if __name__ == '__main__':
+    run_with_threads()
+The above program builds 4 threads and each one will execute the same CPU-bound task. Let’s run it through the standard Python 3.13 first:
+
+Result of running the test program with standard Python 3.13
+Result of running the test program with standard Python 3.13
+13.51 seconds. It’s not fast enough, is it?
+
+Now it’s time to try Python 3.13t, the no-GIL Python:
+
+Result of running the test program with no-GIL Python 3.13
+Result of running the test program with no-GIL Python 3.13
+3.74 seconds!
+
+The numbers told us everything — No GIL, true multithreading.
+
+A video version of this example is here:
+
+
+A YouTube video about how to set up no-GIL Python on Mac
+Community Responses for a No-GIL Python
+No programming language is an island.
+
+The success of this bold move depends on the whole Python community.
+
+The future seems bright so far.
+
+On the one hand, many software engineers, especially from data science and AI communities, eagerly anticipate performance gains.
+
+On the other, major tech players, including Meta, have committed substantial resources to support this transition.
+
+What This Means for Python Developers
+GIL, or no GIL, that was the question.
+
+It won’t be a question anymore in the foreseeable future.
+
+However, given that the no-GIL Python is expected to become the default around 2028 and the current no-GIL Python 3.13 is merely an experimental build, we should not use no-GIL Python in production now.
+
+Because many uncertainties remain — including compatibility, stability, and ecosystem adoption. It needs time for perfection.
+
+But we definitely should keep an eye on how no-GIL Python is evolving. It’s already happened, and it’s quite exciting!
+
+Life is short, and now you have one more reason to choose Python.
+
+Thanks for reading! Stay tuned and enjoy coding!
+
+Feel free to connect with me:

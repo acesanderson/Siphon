@@ -25,6 +25,10 @@ class YouTubeMetadata(SiphonMetadata):
     view_count: Optional[int] = None
     upload_date: Optional[datetime] = None
 
+class OnlineMetadata(SiphonMetadata):
+    url: str
+    html_title: Optional[str] = None
+    content_type: Optional[str] = None  # e.g., "article", "blog", "news"
 
 class EmailMetadata(SiphonMetadata):
     message_id: str

@@ -1,6 +1,10 @@
-from typing import Literal
+from enum import Enum
 
-
-SourceType = Literal[
-    "article", "youtube", "file", "email", "github", "obsidian", "drive"
-]
+class SourceType(Enum):
+    ARTICLE = "article"
+    YOUTUBE = "youtube"
+    FILE = "file"
+    EMAIL = "email"
+    GITHUB = "github"
+    OBSIDIAN = "obsidian"
+    DRIVE = "drive"

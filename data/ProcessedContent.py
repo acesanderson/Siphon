@@ -4,6 +4,7 @@ from Siphon.data.SourceType import SourceType
 from Siphon.data.SyntheticData import SyntheticData
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
 
 
 class ProcessedContent(BaseModel):
@@ -26,14 +27,14 @@ class ProcessedContent(BaseModel):
     ingested_at: datetime
     last_updated_at: datetime
 
-    # Core processed data
+    # Core processed data 
     llm_context: str = Field(
         ..., description="Processed content ready for LLM consumption"
     )
 
-    # Synthetic data (title, description, summary, topics, entities)
-    synthetic_data: SyntheticData = Field(
-        ..., description="AI-generated enrichments applied to the content"
+    # Synthetic data (title, description, summary, topics, entities) -- added post init
+    synthetic_data: Optional[SyntheticData] = Field(
+        default=None, description="AI-generated enrichments applied to the content"
     )
 
     # Relationships
