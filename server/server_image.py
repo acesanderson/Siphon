@@ -2,11 +2,10 @@
 This adapts our image analysis code to work with the ContextCall object.
 """
 
+from Siphon.data.ContextCall import ContextCall
 from Chain.message.convert_image import convert_image
-from Siphon.server.context_call import ContextCall
-from Siphon.ingestion.image.image import describe_image
 from pathlib import Path
-import base64, tempfile
+import base64
 
 
 def describe_image_ContextCall(context_call: ContextCall) -> str:
@@ -30,7 +29,7 @@ def describe_image_ContextCall(context_call: ContextCall) -> str:
 
 
 if __name__ == "__main__":
-    from Siphon.server.context_call import create_ContextCall_from_file
+    from Siphon.data.ContextCall import create_ContextCall_from_file
 
     dir_path = Path(__file__).parent
     file_path = dir_path.parent / "assets" / "dymphna.png"

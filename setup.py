@@ -8,6 +8,7 @@ setup(
         "console_scripts": [
             "siphon = Siphon.ingestion.siphon:main",
             "record = Siphon.audio.record.record:main",
+            "siphonserver = Siphon.server.run:main",
         ],
     },
 )

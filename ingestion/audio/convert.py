@@ -1,5 +1,3 @@
-from Siphon.server.context_call import ContextCall
-from Siphon.data.extensions import extensions
 from pathlib import Path
 from pydub import AudioSegment
 

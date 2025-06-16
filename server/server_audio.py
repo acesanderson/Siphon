@@ -5,7 +5,7 @@ TBD:
 - allow rough estimation of time to completion.
 """
 
-from Siphon.server.context_call import ContextCall
+from Siphon.data.ContextCall import ContextCall
 from Siphon.ingestion.audio.audio import get_transcript
 from Siphon.ingestion.audio.convert import convert_to_mp3
 from pathlib import Path
@@ -46,7 +46,7 @@ def transcribe_ContextCall(context_call: ContextCall) -> str:
 
 
 if __name__ == "__main__":
-    from Siphon.server.context_call import create_ContextCall_from_file
+    from Siphon.data.ContextCall import create_ContextCall_from_file
 
     dir_path = Path(__file__).parent
     file_path = dir_path.parent / "assets" / "allhands.m4a"
