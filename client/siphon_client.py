@@ -1,6 +1,6 @@
 from Siphon.data.ContextCall import ContextCall
 from Siphon.data.ProcessedContent import ProcessedContent
-from Siphon.data.ProcessedContent import SyntheticData
+from Siphon.data.SyntheticData import SyntheticData
 import requests, subprocess
 
 
