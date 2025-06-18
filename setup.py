@@ -10,6 +10,7 @@ setup(
             "record = Siphon.ingestion.audio.record.record:main",
             "play = Siphon.ingestion.audio.record.play:main",
             "siphonserver = Siphon.server.run:main",
+            "flatten = Siphon.ingestion.github.flatten_cli:main",
         ],
     },
 )
