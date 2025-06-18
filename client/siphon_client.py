@@ -87,8 +87,14 @@ if __name__ == "__main__":
     from Siphon.data.ContextCall import create_ContextCall_from_file
 
     dir_path = Path(__file__).parent
-    file_path = dir_path.parent / "assets" / "duchamp.jpg"
-    image_context_call = create_ContextCall_from_file(file_path)
+    # file_path = dir_path.parent / "assets" / "duchamp.jpg"
+    # image_context_call = create_ContextCall_from_file(file_path)
+    # client = SiphonClient()
+    # llm_context = client.request_context_call(image_context_call)
+    # print(llm_context)
+
+    audio_file_path = dir_path.parent / "assets" / "output.mp3"
+    audio_context_call = create_ContextCall_from_file(audio_file_path)
     client = SiphonClient()
-    llm_context = client.request_context_call(image_context_call)
+    llm_context = client.request_context_call(audio_context_call)
     print(llm_context)

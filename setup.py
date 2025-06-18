@@ -7,7 +7,8 @@ setup(
     entry_points={
         "console_scripts": [
             "siphon = Siphon.ingestion.siphon:main",
-            "record = Siphon.audio.record.record:main",
+            "record = Siphon.ingestion.audio.record.record:main",
+            "play = Siphon.ingestion.audio.record.play:main",
             "siphonserver = Siphon.server.run:main",
         ],
     },

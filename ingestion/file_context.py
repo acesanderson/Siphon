@@ -1,6 +1,5 @@
 from Siphon.database.postgres.PGRES_siphon import get_siphon_by_hash, insert_siphon
 from Siphon.data.extensions import extensions
-from Siphon.data.ProcessedContent import ProcessedFile
 import hashlib
 from pathlib import Path
 
@@ -8,6 +7,7 @@ from pathlib import Path
 dir_path = Path(__file__).parent
 asset_dir = dir_path / "assets"
 asset_files = list(asset_dir.glob("*.*"))
+
 
 # Our functions
 def hash_file(filepath):
@@ -134,15 +134,10 @@ def convert_specialized(file_path: Path):
     # Placeholder for actual specialized file conversion implementation
     raise NotImplementedError("Specialized file conversion not implemented yet.")
 
-def retrieve_file_context(file_path: Path):
-    """Convert a file based on its type."""
+
+def retrieve_file_context(file_path: Path) -> str:
     category = route_file(file_path)
-    # Create hash and check cache here
-    sha256 = hash_file(file_path)
-    llm_context = get_siphon_by_hash(sha256)
-    if llm_context:
-        return llm_context
-    # If not in cache, convert the file
+    """Convert a file based on its type."""
     output = ""
     match category:
         case "markitdown":
@@ -165,11 +160,4 @@ def retrieve_file_context(file_path: Path):
             raise ValueError(f"Unknown file type for: {file_path}")
         case _:
             raise ValueError(f"Unsupported file type: {file_path.suffix}")
-
-    if output:
-        abs_path = str(file_path.resolve())
-        processed_file = ProcessedFile(
-            sha256=sha256, abs_path=abs_path, llm_context=str(output)
-        )
-        insert_siphon(processed_file)
-        return output
+    return output

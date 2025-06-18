@@ -2,42 +2,26 @@
 This is adapted from leviathan main script. Within Siphon, this routes a url (passed with -u to Siphon) to either YouTube or an online article.
 """
 
-from Siphon.ingestion.articles.download_article import download_article
-from Siphon.ingestion.youtube.download_youtube_transcript import (
-    download_youtube_transcript,
-)
-from Chain import Prompt, Chain, Model
-from utils.print_markdown import print_markdown
-from typing import Literal
-import argparse, sys
-from pathlib import Path
-
-dir_path = Path(__file__).parent
-prompts_dir = dir_path.parent / "prompts"
-format_prompt_file = prompts_dir / "format_transcript.jinja2"
+from Siphon.ingestion.youtube.retrieve_youtube import retrieve_youtube
+from Siphon.ingestion.github.retrieve_github import retrieve_github
+from Siphon.ingestion.googledrive.retrieve_google_doc import retrieve_google_doc
+from Siphon.ingestion.articles.retrieve_article import retrieve_article
 
 
-def categorize_url(url: str) -> Literal["youtube", "article"]:
+def categorize_url(url: str) -> str:
     """
     Determine the type of URL.
     """
     if "youtube" in url:
         return "youtube"
+    if "github" in url:
+        return "github"
+    if "docs.google.com" in url:
+        return "drive"
     elif "http" in url:
         return "article"
     else:
         raise ValueError("Input must be a YouTube URL or an article URL.")
-
-
-def format_transcript(transcript: str, preferred_model: str = "claude") -> str:
-    """
-    This function takes a raw transcript and formats it.
-    """
-    model = Model(preferred_model)
-    prompt = Prompt(format_prompt_file.read_text())
-    chain = Chain(prompt=prompt, model=model)
-    response = chain.run(input_variables={"transcript": transcript}, verbose=True)
-    return str(response.content)
 
 
 def retrieve_online_context(url: str) -> str:
@@ -47,14 +31,12 @@ def retrieve_online_context(url: str) -> str:
     mode = categorize_url(url)
     match mode:
         case "youtube":
-            transcript = download_youtube_transcript(url)
-            formatted = format_transcript(transcript)
-            return formatted
+            return retrieve_youtube(url)
+        case "github":
+            return retrieve_github(url)
+        case "drive":
+            return retrieve_google_doc(url)
         case "article":
-            return download_article(url)
-
-
-if __name__ == "__main__":
-    youtube_url = "https://www.youtube.com/watch?v=tk3xzg_-Qh4"
-    output = retrieve_online_context(youtube_url)
-    print(output)
+            return retrieve_article(url)
+        case _:
+            raise ValueError(f"Unsupported URL type: {mode}")
