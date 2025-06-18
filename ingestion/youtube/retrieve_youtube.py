@@ -1,23 +1,12 @@
-from pathlib import Path
-
-
-dir_path = Path(__file__).parent
-prompts_dir = dir_path.parent / "prompts"
-format_prompt_file = prompts_dir / "format_transcript.jinja2"
-
-
-def format_transcript(transcript: str, preferred_model: str = "claude") -> str:
-    """
-    This function takes a raw transcript and formats it.
-    """
-    from Chain import Model, Prompt, Chain
-
-    model = Model(preferred_model)
-    prompt = Prompt(format_prompt_file.read_text())
-    chain = Chain(prompt=prompt, model=model)
-    response = chain.run(input_variables={"transcript": transcript}, verbose=True)
-    return str(response.content)
+from Siphon.ingestion.youtube.download_youtube_transcript import (
+    download_youtube_transcript,
+)
+from Siphon.ingestion.youtube.format_youtube import format_youtube
 
 
 def retrieve_youtube(url: str) -> str:
-    pass
+    transcript = download_youtube_transcript(url)
+    if not transcript:
+        raise ValueError(f"No transcript found for URL: {url}")
+    formatted_transcript = format_youtube(transcript)
+    return formatted_transcript
