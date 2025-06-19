@@ -20,7 +20,7 @@ assets_dir = dir_path.parent / "assets"
 allhands_file = assets_dir / "allhands.mp3"
 
 
-def get_transcript(file_path: Path | str) -> str | None:
+def get_local_transcript(file_path: Path | str) -> str | None:
     """
     Converts audio file to a format suitable for processing.
     Currently, this is a placeholder function.

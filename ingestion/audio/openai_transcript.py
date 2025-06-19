@@ -6,7 +6,7 @@ api_key = os.getenv("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=api_key)
 
 
-def transcribe_with_openai(audio_file: str | Path):
+def get_openai_transcript(audio_file: str | Path):
     """
     Use the transcriptions API endpoint.
     We didn't implement this in Chain since it's really tied to a transcription use case.
