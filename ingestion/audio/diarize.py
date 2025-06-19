@@ -2,6 +2,12 @@ import torch
 from pathlib import Path
 from pyannote.audio import Pipeline
 
+# Import our centralized logger - no configuration needed here!
+from Siphon.logging.logging_config import get_logger
+
+# Get logger for this module - will inherit config from retrieve_audio.py
+logger = get_logger(__name__)
+
 
 # Diarization workflow
 def diarize(file_name: str | Path) -> str:
@@ -13,11 +19,7 @@ def diarize(file_name: str | Path) -> str:
     # Move the pipeline to GPU (CUDA)
     pipeline.to(torch.device("cuda"))
     # Apply the pipeline to the audio file
+    logger.info(f"Processing diarization for file: {file_name}")
     diarization = pipeline(file_name)
     return diarization
 
-
-if __name__ == "__main__":
-    from example import example_file
-
-    print(diarize(example_file))

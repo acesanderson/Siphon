@@ -4,6 +4,12 @@ from pathlib import Path
 dir_path = Path(__file__).parent
 prompt_file = dir_path / "system_message.jinja2"
 
+# Import our centralized logger - no configuration needed here!
+from Siphon.logging.logging_config import get_logger
+
+# Get logger for this module - will inherit config from retrieve_audio.py
+logger = get_logger(__name__)
+
 
 def clean_transcript(formatted_transcript: str) -> str:
     """

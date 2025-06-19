@@ -2,6 +2,12 @@ from pathlib import Path
 from transformers import pipeline
 import torch
 
+# Import our centralized logger - no configuration needed here!
+from Siphon.logging.logging_config import get_logger
+
+# Get logger for this module - will inherit config from retrieve_audio.py
+logger = get_logger(__name__)
+
 
 # Transcript workflow
 def transcribe(file_name: str | Path) -> str:
@@ -16,12 +22,7 @@ def transcribe(file_name: str | Path) -> str:
         device =0, 
         torch_dtype=torch.float16,
     )
-    # One line transcription
+    logger.info(f"Transcribing file: {file_name}")
     result = transcriber(file_name)
     return result
 
-
-if __name__ == "__main__":
-    from example import example_file
-
-    print(transcribe(example_file))
