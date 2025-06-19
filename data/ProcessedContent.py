@@ -21,9 +21,6 @@ class ProcessedContent(BaseModel):
     )
 
     # Temporal data (as Unix timestamps)
-    ## If available (from files or otherwise)
-    content_created_at: Optional[int]
-    content_modified_at: Optional[int]
     ## Record-specific time stamps
     ingested_at: int
     last_updated_at: int
