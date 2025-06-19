@@ -1,6 +1,5 @@
 from Siphon.database.postgres.PGRES_siphon import get_siphon_by_hash, insert_siphon
 from Siphon.data.extensions import extensions
-from Siphon.data.ProcessedContent import ProcessedFile
 import hashlib
 from pathlib import Path
 
@@ -167,9 +166,7 @@ def retrieve_file_context(file_path: Path):
             raise ValueError(f"Unsupported file type: {file_path.suffix}")
 
     if output:
-        abs_path = str(file_path.resolve())
-        processed_file = ProcessedFile(
-            sha256=sha256, abs_path=abs_path, llm_context=str(output)
-        )
-        insert_siphon(processed_file)
         return output
+    else:
+        raise ValueError(f"Failed to convert file: {file_path}")
+

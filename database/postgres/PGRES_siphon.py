@@ -4,7 +4,7 @@ CRUD functions for Siphon project. Adapted from Kramer.database.
 We will use this database as a cache for siphon data, keyed to file hashes.
 """
 
-from Siphon.data.ProcessedContent import ProcessedFile
+from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.database.postgres.PGRES_connection import get_db_connection
 from rich.console import Console
 
@@ -30,27 +30,27 @@ def create_table():
 
 
 # Add/Update record
-def insert_siphon(siphon: ProcessedFile):
+def insert_siphon(siphon: ProcessedContent):
     """
     Insert or update a record in the siphon table.
 
     Args:
-        siphon (ProcessedFile): ProcessedFile object to insert or update
+        siphon (ProcessedContent): ProcessedContent object to insert or update
     """
     # Get vars
-    sha256 = siphon.sha256
-    abs_path = siphon.abs_path
-    llm_context = siphon.llm_context
-    # Insert or update record
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO siphon (sha256, abs_path, llm_context) VALUES (%s, %s, %s)",
-            (sha256, abs_path, llm_context),
-        )
-        conn.commit()
-        console.print(f"[green]siphon {abs_path} saved successfully.[/green]")
-
+    # sha256 = siphon.sha256
+    # abs_path = siphon.abs_path
+    # llm_context = siphon.llm_context
+    # # Insert or update record
+    # with get_db_connection() as conn:
+    #     cursor = conn.cursor()
+    #     cursor.execute(
+    #         "INSERT INTO siphon (sha256, abs_path, llm_context) VALUES (%s, %s, %s)",
+    #         (sha256, abs_path, llm_context),
+    #     )
+    #     conn.commit()
+    #     console.print(f"[green]siphon {abs_path} saved successfully.[/green]")
+    raise NotImplementedError("Need to refactor database for new data models.")
 
 def get_siphon_by_hash(sha256: str) -> str | None:
     """
@@ -78,7 +78,7 @@ def get_siphon_by_hash(sha256: str) -> str | None:
         return result[0]
 
 
-def get_all_siphon() -> list[ProcessedFile] | None:
+def get_all_siphon() -> list[ProcessedContent] | None:
     """
     Get all tools for all courses.
 
@@ -92,12 +92,13 @@ def get_all_siphon() -> list[ProcessedFile] | None:
 
         if not results:
             return None
-        # Convert results to list of ProcessedFile objects
-        siphon = [
-            ProcessedFile(sha256=row[0], abs_path=row[1], llm_context=row[2])
-            for row in results
-        ]
-        return siphon
+        # Convert results to list of ProcessedContent objects
+        # siphon = [
+        #     ProcessedContent(sha256=row[0], abs_path=row[1], llm_context=row[2])
+        #     for row in results
+        # ]
+        # return siphon
+        raise NotImplementedError("Need to reformat database for new data models.")
 
 
 def clear_table():

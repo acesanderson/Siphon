@@ -25,8 +25,3 @@ def transcribe_with_openai(audio_file: str | Path):
     return transcript.text
 
 
-if __name__ == "__main__":
-    from example import example_file
-
-    transcript = transcribe_with_openai(example_file)
-    print(transcript)
