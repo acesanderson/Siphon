@@ -1,7 +1,3 @@
-"""
-This is the CLI entry point for Siphon.
-"""
-
 from pathlib import Path
 import argparse
 

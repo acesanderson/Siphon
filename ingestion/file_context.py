@@ -8,6 +8,7 @@ dir_path = Path(__file__).parent
 asset_dir = dir_path / "assets"
 asset_files = list(asset_dir.glob("*.*"))
 
+
 # Our functions
 def hash_file(filepath):
     """Generate SHA-256 hash of file contents"""
@@ -133,15 +134,10 @@ def convert_specialized(file_path: Path):
     # Placeholder for actual specialized file conversion implementation
     raise NotImplementedError("Specialized file conversion not implemented yet.")
 
-def retrieve_file_context(file_path: Path):
-    """Convert a file based on its type."""
+
+def retrieve_file_context(file_path: Path) -> str:
     category = route_file(file_path)
-    # Create hash and check cache here
-    sha256 = hash_file(file_path)
-    llm_context = get_siphon_by_hash(sha256)
-    if llm_context:
-        return llm_context
-    # If not in cache, convert the file
+    """Convert a file based on its type."""
     output = ""
     match category:
         case "markitdown":
@@ -169,4 +165,3 @@ def retrieve_file_context(file_path: Path):
         return output
     else:
         raise ValueError(f"Failed to convert file: {file_path}")
-
