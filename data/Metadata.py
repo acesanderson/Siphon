@@ -49,4 +49,5 @@ class GitHubMetadata(SiphonMetadata):
 class ObsidianMetadata(SiphonMetadata):
     note_path: str
     wiki_links: list[str] = []
+    urls: list[str] = []
     note_type: Optional[str] = None  # "daily", "project", "person"
