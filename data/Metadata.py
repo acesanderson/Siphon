@@ -1,6 +1,6 @@
 from Siphon.data.URI import URI
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
 
 
 class Metadata(BaseModel):
@@ -55,6 +55,7 @@ class Metadata(BaseModel):
         elif "file_id" in data.keys():
             return FileMetadata(**data)
 
+
 class FileMetadata(Metadata):
     file_path: str
     file_size: int
@@ -65,7 +66,7 @@ class FileMetadata(Metadata):
 
     @classmethod
     def from_uri(cls, uri: URI):
-        """ Factory method to create FileMetadata from a URI object. """
+        """Factory method to create FileMetadata from a URI object."""
         from pathlib import Path
         import mimetypes
 
@@ -78,7 +79,8 @@ class FileMetadata(Metadata):
             content_created_at=int(path.stat().st_ctime),
             content_modified_at=int(path.stat().st_mtime),
         )
-    
+
+
 class YouTubeMetadata(Metadata):
     video_id: str
     channel_name: str
@@ -94,7 +96,7 @@ class YouTubeMetadata(Metadata):
         """
         if not uri.uri.startswith("https://www.youtube.com/watch?v="):
             raise ValueError("Invalid YouTube URI format")
-        
+
         raise NotImplementedError("YouTubeMetadata parsing not implemented yet.")
 
 
@@ -111,7 +113,7 @@ class OnlineMetadata(Metadata):
         """
         if not uri.uri.startswith(("http://", "https://")):
             raise ValueError("Invalid URL format")
-        
+
         raise NotImplementedError("OnlineMetadata parsing not implemented yet.")
 
 
@@ -131,7 +133,7 @@ class EmailMetadata(Metadata):
         """
         if not uri.uri.startswith("email:"):
             raise ValueError("Invalid email URI format")
-        
+
         raise NotImplementedError("EmailMetadata parsing not implemented yet.")
 
 
@@ -158,10 +160,13 @@ class GitHubMetadata(Metadata):
 
 class ObsidianMetadata(FileMetadata):
     """Inherits and mixes with FileMetadata for Obsidian-specific notes."""
+
     note_path: str
     wiki_links: list[str] = []
     urls: list[str] = []
-    note_type: Optional[str] = None  # "daily", "project", "person"
+    note_type: Literal["daily", "code_project", "organization", "topic", "generic"] = (
+        "generic"
+    )
 
     @classmethod
     def _parse_obsidian_content(cls, file_path: str):
@@ -186,17 +191,19 @@ class ObsidianMetadata(FileMetadata):
         """
         # Get file metadata first
         file_data = FileMetadata.from_uri(uri)
-        
+
         # Add Obsidian-specific parsing
         obsidian_data = cls._parse_obsidian_content(uri.source)
-        
+
         # Combine and create instance
         return cls(**file_data, **obsidian_data)
+
 
 class DriveMetadata(Metadata):
     """
     Metadata for Google Docs files.
     """
+
     name: str
     description: Optional[str] = None
     mime_type: str
@@ -213,5 +220,29 @@ class DriveMetadata(Metadata):
         """
         if not uri.uri.startswith("https://docs.google.com/"):
             raise ValueError("Invalid Google Drive URI format")
-        
+
         raise NotImplementedError("DriveMetadata parsing not implemented yet.")
+
+
+class ToDoMetadata(Metadata):
+    """
+    Obsidian ToDos, as scraped when prcoessing obsidian files.
+    Needs some special thinking about how to handle, resolve duplicates, etc.
+    Also needs implementation of URI, ingestion, etc.
+    Design backwards from my ADHD brain and how you would handle a mass of todos, some of which will never be completed.
+    """
+
+    source_file: URI = Field(..., description="URI for file to do is associated with.")
+    date_created: int = Field(
+        ...,
+        description="Unix epoch time for when todo was first detected by scripts / last modified data for file on first scrape.",
+    )
+    date_completed: int = Field(
+        ...,
+        description="Unix epoch time for first time todo was noticed to be completed.",
+    )
+
+    @classmethod
+    def from_uri(cls, uri: URI):
+        _ = uri
+        raise NotImplementedError("ToDos not implemented yet.")
