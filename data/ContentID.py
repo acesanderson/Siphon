@@ -1,3 +1,7 @@
+"""
+ContentID inherits from String, with constructor methods.
+"""
+
 from Siphon.data.URI import URI
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 from typing import Optional
@@ -9,23 +13,15 @@ class ContentID(str):
     It is used to uniquely identify content in the system.
     """
 
-    def __init__(self, value: str):
+    def __new__(cls, value: str):
         """
         Initialize the ContentID with a string value.
         :param value: The content identifier as a string.
         """
-        super().__init__()
-        self.value = value
-
-    def __str__(self):
-        """
-        Return the string representation of the ContentID.
-        :return: The content identifier as a string.
-        """
-        return self.value
+        return super().__new__(cls, value)
 
     @classmethod
-    def from_URI(cls, uri: URI):
+    def from_uri(cls, uri: URI):
         """
         Create a ContentID from a URI.
         :param uri: The URI to create the ContentID from.
@@ -249,3 +245,8 @@ class ContentID(str):
             raise ValueError(f"Invalid Google Drive URL: {drive_url}")
         doc_id = match.group(1)
         return doc_id
+
+    @classmethod
+    def generate_email_hash(cls, email: str) -> str:
+        """ Generate a content ID for email addresses. """
+        raise NotImplementedError("Email content ID generation is not implemented yet.")

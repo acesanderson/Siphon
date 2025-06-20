@@ -1,7 +1,4 @@
-from Siphon.database.postgres.PGRES_siphon import get_siphon_by_hash, insert_siphon
 from Siphon.data.extensions import extensions
-from Siphon.data.Metadata import FileMetadata
-import hashlib
 from pathlib import Path
 
 
@@ -11,20 +8,6 @@ asset_files = list(asset_dir.glob("*.*"))
 
 
 # Our functions
-def generate_FileMetadata(filepath: Path) -> FileMetadata:
-    pass
-
-
-def hash_file(filepath: Path):
-    """Generate SHA-256 hash of file contents"""
-    sha256_hash = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        # Read in chunks to handle large files efficiently
-        for chunk in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(chunk)
-    return sha256_hash.hexdigest()
-
-
 def route_file(file_path: Path):
     """Route the file to the appropriate handler based on its extension."""
     ext = file_path.suffix.lower()
