@@ -1,3 +1,55 @@
 Metadata-Version: 2.4
 Name: Siphon
-Version: 0.1
+Version: 0.1.0
+Summary: An evolution of Leviathan - flexible media to LLM context converter with RAG capabilities
+Requires-Python: <3.13,>=3.12
+Requires-Dist: transformers>=4.35.0
+Requires-Dist: sentence-transformers>=2.2.0
+Requires-Dist: openai>=1.0.0
+Requires-Dist: pydub>=0.25.1
+Requires-Dist: pyannote.audio>=3.0.0
+Requires-Dist: markitdown>=0.0.1a2
+Requires-Dist: mammoth>=1.6.0
+Requires-Dist: newspaper3k>=0.2.8
+Requires-Dist: youtube-transcript-api>=0.6.0
+Requires-Dist: yt-dlp>=2023.7.6
+Requires-Dist: requests>=2.28.0
+Requires-Dist: psycopg2-binary>=2.9.0
+Requires-Dist: chromadb>=0.4.0
+Requires-Dist: rerankers>=0.3.0
+Requires-Dist: fastapi>=0.100.0
+Requires-Dist: uvicorn>=0.20.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: rich>=13.0.0
+Requires-Dist: google-api-python-client>=2.80.0
+Requires-Dist: google-auth>=2.16.0
+Requires-Dist: google-auth-oauthlib>=1.0.0
+Requires-Dist: torch
+Requires-Dist: torchvision
+Requires-Dist: torchaudio
+Requires-Dist: instructor>=1.8.3
+Requires-Dist: tiktoken>=0.9.0
+Requires-Dist: anthropic>=0.54.0
+Requires-Dist: ollama>=0.5.1
+Requires-Dist: markdown2>=2.5.3
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: black>=22.0.0; extra == "dev"
+Requires-Dist: flake8>=4.0.0; extra == "dev"
+Requires-Dist: mypy>=0.950; extra == "dev"
+Requires-Dist: pre-commit>=3.0.0; extra == "dev"
+Provides-Extra: cuda126
+Requires-Dist: torch>=2.6.0; extra == "cuda126"
+Requires-Dist: torchvision>=0.21.0; extra == "cuda126"
+Requires-Dist: torchaudio>=2.6.0; extra == "cuda126"
+Requires-Dist: nvidia-cuda-runtime-cu12>=12.6; extra == "cuda126"
+Provides-Extra: cuda121
+Requires-Dist: torch>=2.6.0; extra == "cuda121"
+Requires-Dist: torchvision>=0.21.0; extra == "cuda121"
+Requires-Dist: torchaudio>=2.6.0; extra == "cuda121"
+Requires-Dist: nvidia-cuda-runtime-cu12>=12.1; extra == "cuda121"
+Provides-Extra: vision
+Requires-Dist: opencv-python>=4.5.0; extra == "vision"
+Requires-Dist: pillow>=9.0.0; extra == "vision"
+Provides-Extra: all
+Requires-Dist: Siphon[dev,vision]; extra == "all"

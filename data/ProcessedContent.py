@@ -1,6 +1,5 @@
 from Siphon.data.Metadata import SiphonMetadata
-from Siphon.data.URI import SiphonURI
-from Siphon.data.SourceType import SourceType
+from Siphon.data.URI import URI
 from Siphon.data.SyntheticData import SyntheticData
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -11,19 +10,11 @@ class ProcessedContent(BaseModel):
     content_id: str = Field(
         ..., description="Unique identifier for the content, a hash or doc ID"
     )
-    uri: SiphonURI = Field(
+    uri: URI = Field(
         ..., description="Original URI of the content, used for retrieval"
     )
 
-    # Source classification
-    source_type: SourceType = Field(
-        ..., description="Type of source (e.g., obsidian, file, youtube, drive, etc.)"
-    )
-
     # Temporal data (as Unix timestamps)
-    ## If available (from files or otherwise)
-    content_created_at: Optional[int]
-    content_modified_at: Optional[int]
     ## Record-specific time stamps
     ingested_at: int
     last_updated_at: int

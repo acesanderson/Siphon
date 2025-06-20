@@ -1,3 +1,10 @@
+# Import our centralized logger - no configuration needed here!
+from Siphon.logging.logging_config import get_logger
+
+# Get logger for this module - will inherit config from retrieve_audio.py
+logger = get_logger(__name__)
+
+
 def combine(diarization_result, transcript_result):
     """
     Combine diarization and transcription results into an annotated transcript.
@@ -13,11 +20,13 @@ def combine(diarization_result, transcript_result):
     words = transcript_result["chunks"]
 
     # Convert diarization to list of (start, end, speaker) tuples
+    logger.info("Extracting diarization segments...")
     diarization_segments = []
     for turn, _, speaker in diarization_result.itertracks(yield_label=True):
         diarization_segments.append((turn.start, turn.end, speaker))
 
     # Align words with speakers
+    logger.info("Aligning words with speakers...")
     annotated_transcript = []
 
     for word_data in words:
@@ -58,14 +67,3 @@ def find_speaker_at_time(timestamp, diarization_segments):
         if start <= timestamp <= end:
             return speaker
     return "Unknown"
-
-
-if __name__ == "__main__":
-    from diarize import diarize
-    from transcribe import transcribe
-    from example import example_file
-
-    diarization_result = diarize(example_file)
-    transcript_result = transcribe(example_file)
-    annotated = combine(diarization_result, transcript_result)
-    print(annotated)

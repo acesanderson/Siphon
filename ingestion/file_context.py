@@ -1,6 +1,4 @@
-from Siphon.database.postgres.PGRES_siphon import get_siphon_by_hash, insert_siphon
 from Siphon.data.extensions import extensions
-import hashlib
 from pathlib import Path
 
 
@@ -10,16 +8,6 @@ asset_files = list(asset_dir.glob("*.*"))
 
 
 # Our functions
-def hash_file(filepath):
-    """Generate SHA-256 hash of file contents"""
-    sha256_hash = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        # Read in chunks to handle large files efficiently
-        for chunk in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(chunk)
-    return sha256_hash.hexdigest()
-
-
 def route_file(file_path: Path):
     """Route the file to the appropriate handler based on its extension."""
     ext = file_path.suffix.lower()
@@ -70,7 +58,7 @@ def convert_code(file_path: Path):
 
 def convert_audio(file_path: Path):
     """Convert audio/video files using Whisper."""
-    from Siphon.ingestion.audio.audio import get_transcript
+    from Siphon.ingestion.audio.retrieve_audio import retrieve_audio
 
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -78,7 +66,7 @@ def convert_audio(file_path: Path):
         raise ValueError(
             f"File type not supported for Whisper conversion: {file_path.suffix}"
         )
-    output = get_transcript(file_path)
+    output = retrieve_audio(file_path)
     return output
 
 
@@ -103,9 +91,9 @@ def convert_image(file_path: Path):
         raise ValueError(
             f"File type not supported for OCR conversion: {file_path.suffix}"
         )
-    from Siphon.ingestion.image.image import describe_image
+    from Siphon.ingestion.image.retrieve_image import retrieve_image
 
-    output = describe_image(file_path)
+    output = retrieve_image(file_path)
     return output
 
 
@@ -160,4 +148,8 @@ def retrieve_file_context(file_path: Path) -> str:
             raise ValueError(f"Unknown file type for: {file_path}")
         case _:
             raise ValueError(f"Unsupported file type: {file_path.suffix}")
-    return output
+
+    if output:
+        return output
+    else:
+        raise ValueError(f"Failed to convert file: {file_path}")

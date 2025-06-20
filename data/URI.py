@@ -1,299 +1,200 @@
-from urllib.parse import urlparse
-from typing import Optional
-from pydantic import BaseModel, field_validator
+
+from Siphon.data.SourceType import SourceType
+from urllib.parse import urlparse, parse_qs
+from pydantic import BaseModel, Field
 from pathlib import Path
-import subprocess
-import platform
+import re
 
 
-class SiphonURI(BaseModel):
-    """
-    Represents a Siphon URI with parsing, validation, and navigation capabilities.
-
-    Supported URI schemes:
-    - file:///absolute/path/to/file
-    - https://domain.com/path
-    - obsidian://vault-name/path/to/note
-    - github://owner/repo/path/to/file#commit-hash
-    - sheets://spreadsheet-id/sheet-name?range=A1:C10
-    - recording://timestamp-or-id
-    - email://message-id/thread-id
-    - drive://file-id
-    """
-
-    raw_uri: str
-    scheme: str
-    location: str  # netloc/host part (vault, owner/repo, etc.)
-    path: str
-    fragment: Optional[str] = None
-    query: Optional[str] = None
-
-    @field_validator("scheme")
-    @classmethod
-    def validate_scheme(cls, v: str) -> str:
-        supported_schemes = {
-            "file",
-            "https",
-            "http",
-            "obsidian",
-            "github",
-            "sheets",
-            "recording",
-            "email",
-            "drive",
-            "slack",
-        }
-        if v not in supported_schemes:
-            raise ValueError(f"Unsupported URI scheme: {v}")
-        return v
+class URI(BaseModel):
+    source: str = Field(..., description="The original source URL, filepath, etc.")
+    source_type: SourceType = Field(..., description="The type of source this URI represents.")
+    uri: str = Field(..., description="The URI string representation of the source.")
 
     @classmethod
-    def from_string(cls, uri: str) -> "SiphonURI":
-        """Parse a URI string into a SiphonURI object"""
-        parsed = urlparse(uri)
-        return cls(
-            raw_uri=uri,
-            scheme=parsed.scheme,
-            location=parsed.netloc,
-            path=parsed.path,
-            fragment=parsed.fragment or None,
-            query=parsed.query or None,
-        )
+    def from_source(cls, source: str) -> "URI":
+        """Create a URI object from a source string."""
+        # Fix 1: Strip whitespace from input
+        source = source.strip()
+        source_string, source_type, uri = cls.parse_source(source)
+        return cls(source=source_string, source_type=source_type, uri=uri)
 
     @classmethod
-    def create_file_uri(cls, file_path: str | Path) -> "SiphonURI":
-        """Create a file:// URI from a file path"""
-        if isinstance(file_path, str):
-            file_path = Path(file_path)
+    def parse_source(cls, source: str) -> tuple[str, SourceType, str]:
+        """Parse a source string into its components."""
+        # Strip whitespace
+        source = source.strip()
+        
+        def is_path(source: str) -> bool:
+            """Check if the source is a valid file path."""
+            return Path(source).exists()
 
-        absolute_path = file_path.resolve()
+        def is_url(source: str) -> bool:
+            """Check if the source is a valid URL."""
+            return source.startswith(("http://", "https://", "ftp://"))
+
+        # Check URL first (more specific than file path)
+        if is_url(source):
+            return cls.parse_url(source)
+        elif is_path(source):
+            return cls.parse_file_path(str(source))
+        else:
+            raise ValueError(f"Unsupported source format: {source}")
+
+    @classmethod
+    def parse_url(cls, url: str) -> tuple[str, SourceType, str]:
+        """Parse a URL into its components."""
+        def is_github_url(url: str) -> bool:
+            return "github.com" in url
+
+        def is_youtube_url(url: str) -> bool:
+            return "youtube.com" in url or "youtu.be" in url
+
+        def is_drive_url(url: str) -> bool:
+            # Fix 2: Include docs.google.com in detection
+            return ("docs.google.com" in url or 
+                    "drive.google.com" in url or 
+                    "drive.googleusercontent.com" in url)
+
+        def is_article_url(url: str) -> bool:
+            return url.startswith(("http://", "https://"))
+
+        # Order matters: most specific first
+        if is_github_url(url):
+            return cls._parse_github_url(url)
+        elif is_youtube_url(url):
+            return cls._parse_youtube_url(url)
+        elif is_drive_url(url):
+            return cls._parse_drive_url(url)
+        elif is_article_url(url):
+            return cls._parse_article_url(url)
+        else:
+            raise ValueError(f"Unsupported URL format: {url}")
+
+    @classmethod
+    def _parse_github_url(cls, url: str) -> tuple[str, SourceType, str]:
+        """Parse GitHub URLs"""
+        parsed = urlparse(url)
+        path_parts = parsed.path.strip("/").split("/")
+        
+        if len(path_parts) < 2:
+            raise ValueError("Invalid GitHub URL format - missing owner/repo")
+        
+        owner = path_parts[0]
+        repo = path_parts[1]
+        
+        # Handle different GitHub URL formats:
+        # https://github.com/owner/repo
+        # https://github.com/owner/repo/blob/branch/file.py
+        # https://github.com/owner/repo/tree/branch/path
+        
+        if len(path_parts) > 3 and path_parts[2] in ["blob", "tree"]:
+            # Format: /owner/repo/blob/branch/path/to/file
+            file_path = "/".join(path_parts[4:]) if len(path_parts) > 4 else ""
+        elif len(path_parts) > 2:
+            # Format: /owner/repo/path/to/file (direct path)
+            file_path = "/".join(path_parts[2:])
+        else:
+            # Format: /owner/repo (no file path)
+            file_path = ""
+        
+        # Fix 3: Don't add trailing slash when no file path
+        uri = f"github://{owner}/{repo}"
+        if file_path:
+            uri += f"/{file_path}"
+        
+        # Add fragment if present (for line numbers, etc.)
+        if parsed.fragment:
+            uri += f"#{parsed.fragment}"
+        
+        return url, SourceType.GITHUB, uri
+
+    @classmethod
+    def _parse_youtube_url(cls, url: str) -> tuple[str, SourceType, str]:
+        """Parse YouTube URLs - Fix 4: Extract video ID properly"""
+        
+        # Handle different YouTube URL formats:
+        # https://www.youtube.com/watch?v=VIDEO_ID
+        # https://youtu.be/VIDEO_ID
+        # https://youtube.com/watch?v=VIDEO_ID&t=123
+        
+        if "youtu.be/" in url:
+            # Short format: https://youtu.be/VIDEO_ID
+            video_id = url.split("youtu.be/")[1].split("?")[0].split("&")[0]
+        else:
+            # Long format: extract from query parameter
+            parsed = urlparse(url)
+            query_params = parse_qs(parsed.query)
+            
+            if 'v' not in query_params:
+                raise ValueError(f"Cannot find video ID in YouTube URL: {url}")
+            
+            video_id = query_params['v'][0]
+        
+        # Validate video ID format (11 characters, alphanumeric + - and _)
+        if not re.match(r'^[a-zA-Z0-9_-]{11}$', video_id):
+            raise ValueError(f"Invalid YouTube video ID format: {video_id}")
+        
+        uri = f"youtube://{video_id}"
+        return url, SourceType.YOUTUBE, uri
+
+    @classmethod
+    def _parse_drive_url(cls, url: str) -> tuple[str, SourceType, str]:
+        """Parse Google Drive/Docs URLs - Fix 5: Extract file ID properly"""
+        
+        # Google URLs format: https://docs.google.com/document/d/FILE_ID/edit
+        # Or: https://drive.google.com/file/d/FILE_ID/view
+        
+        # Extract file ID using regex
+        file_id_pattern = r'/d/([a-zA-Z0-9-_]+)'
+        file_id_match = re.search(file_id_pattern, url)
+        
+        if not file_id_match:
+            raise ValueError(f"Cannot extract file ID from Google URL: {url}")
+        
+        file_id = file_id_match.group(1)
+        
+        # Determine file type from URL path
+        if "/spreadsheets/" in url:
+            file_type = "sheet"
+        elif "/presentation/" in url:
+            file_type = "slide" 
+        elif "/document/" in url:
+            file_type = "doc"
+        elif "/forms/" in url:
+            file_type = "form"
+        else:
+            # Default to doc if we can't determine
+            file_type = "doc"
+        
+        uri = f"drive://{file_type}/{file_id}"
+        return url, SourceType.DRIVE, uri
+
+    @classmethod
+    def _parse_article_url(cls, url: str) -> tuple[str, SourceType, str]:
+        """Parse generic article URLs"""
+        # For articles, the URI is just the original URL
+        return url, SourceType.ARTICLE, url
+
+    @classmethod
+    def parse_file_path(cls, file_path: str) -> tuple[str, SourceType, str]:
+        """Parse a file path into its components."""
+        
+        # TODO: Add Obsidian detection logic here
+        # from Siphon.ingestion.obsidian.vault import vault
+        # For now, treat all files as generic files
+        
+        source_type = SourceType.FILE
+        absolute_path = Path(file_path).resolve()
         uri = f"file://{absolute_path}"
-        return cls.from_string(uri)
-
-    @classmethod
-    def create_obsidian_uri(cls, vault: str, note_path: str) -> "SiphonURI":
-        """Create an obsidian:// URI"""
-        # Clean the note path
-        clean_path = note_path.lstrip("/")
-        uri = f"obsidian://{vault}/{clean_path}"
-        return cls.from_string(uri)
-
-    @classmethod
-    def create_github_uri(
-        cls, owner: str, repo: str, file_path: str = ""
-    ) -> "SiphonURI":
-        """Create a github:// URI"""
-        clean_path = file_path.lstrip("/") if file_path else ""
-
-        # Create URI with owner/repo as a single component
-        if clean_path:
-            uri = f"github://{owner}/{repo}/{clean_path}"
-        else:
-            uri = f"github://{owner}/{repo}"
-
-        return cls.from_string(uri)
-
-    @classmethod
-    def create_sheets_uri(
-        cls,
-        spreadsheet_id: str,
-        sheet_name: str = "Sheet1",
-        range_spec: Optional[str] = None,
-    ) -> "SiphonURI":
-        """Create a sheets:// URI for Google Sheets"""
-        uri = f"sheets://{spreadsheet_id}/{sheet_name}"
-        if range_spec:
-            uri += f"?range={range_spec}"
-        return cls.from_string(uri)
-
-    @classmethod
-    def create_recording_uri(cls, recording_id: str) -> "SiphonURI":
-        """Create a recording:// URI"""
-        uri = f"recording://{recording_id}"
-        return cls.from_string(uri)
-
-    @classmethod
-    def create_email_uri(
-        cls, message_id: str, thread_id: Optional[str] = None
-    ) -> "SiphonURI":
-        """Create an email:// URI"""
-        uri = f"email://{message_id}"
-        if thread_id:
-            uri += f"/{thread_id}"
-        return cls.from_string(uri)
-
-    @classmethod
-    def create_drive_uri(cls, file_id: str) -> "SiphonURI":
-        """Create a drive:// URI for Google Drive"""
-        uri = f"drive://{file_id}"
-        return cls.from_string(uri)
-
-    def parse_github_components(self) -> tuple[str, str, str]:
-        """Extract owner, repo, and file_path from GitHub URI"""
-        if self.scheme != "github":
-            raise ValueError("Not a GitHub URI")
-
-        # For github://owner/repo/path/to/file
-        # urlparse gives us:
-        # - netloc: "owner"
-        # - path: "/repo/path/to/file"
-
-        owner = self.location  # This is the netloc part (owner)
-
-        if not self.path or self.path == "/":
-            raise ValueError("Invalid GitHub URI format - missing repo")
-
-        # Split the path to get repo and file_path
-        path_parts = self.path.lstrip("/").split("/")
-
-        if len(path_parts) < 1:
-            raise ValueError("Invalid GitHub URI format - missing repo")
-
-        repo = path_parts[0]
-        file_path = "/".join(path_parts[1:]) if len(path_parts) > 1 else ""
-
-        return owner, repo, file_path
-
-    def parse_sheets_components(self) -> tuple[str, str, Optional[str]]:
-        """Extract spreadsheet_id, sheet_name, and range from Sheets URI"""
-        if self.scheme != "sheets":
-            raise ValueError("Not a Sheets URI")
-
-        spreadsheet_id = self.location
-        sheet_name = self.path.lstrip("/") if self.path else "Sheet1"
-
-        # Parse range from query
-        range_spec = None
-        if self.query:
-            params = dict(
-                param.split("=") for param in self.query.split("&") if "=" in param
-            )
-            range_spec = params.get("range")
-
-        return spreadsheet_id, sheet_name, range_spec
-
-    def to_native_url(self) -> str:
-        """Convert Siphon URI to native app URL for opening"""
-        if self.scheme == "obsidian":
-            # Convert to Obsidian app URL
-            return f"obsidian://open?vault={self.location}&file={self.path.lstrip('/')}"
-
-        elif self.scheme == "github":
-            # Convert to GitHub web URL
-            base = f"https://github.com/{self.location}"
-            if self.path:
-                # Determine if it's a file or directory
-                base += f"/blob/main{self.path}"
-            if self.fragment:
-                base += f"#{self.fragment}"
-            return base
-
-        elif self.scheme == "sheets":
-            # Convert to Google Sheets web URL
-            spreadsheet_id, sheet_name, range_spec = self.parse_sheets_components()
-            base = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
-            if sheet_name != "Sheet1":
-                # Add sheet navigation (gid would need to be looked up)
-                base += f"#gid=0"  # Simplified - would need sheet ID lookup
-            return base
-
-        elif self.scheme == "drive":
-            # Convert to Google Drive web URL
-            return f"https://drive.google.com/file/d/{self.location}/view"
-
-        elif self.scheme in ["http", "https"]:
-            # Already a web URL
-            return self.raw_uri
-
-        elif self.scheme == "file":
-            # Return file path for system to handle
-            return self.raw_uri
-
-        else:
-            # Default: return original URI
-            return self.raw_uri
-
-    def open_in_app(self) -> bool:
-        """Open the URI in the appropriate application"""
-        try:
-            native_url = self.to_native_url()
-
-            # Platform-specific opening
-            if platform.system() == "Darwin":  # macOS
-                subprocess.run(["open", native_url], check=True)
-            elif platform.system() == "Windows":
-                subprocess.run(["start", native_url], shell=True, check=True)
-            elif platform.system() == "Linux":
-                subprocess.run(["xdg-open", native_url], check=True)
-            else:
-                return False
-
-            return True
-        except subprocess.CalledProcessError:
-            return False
-
-    def get_display_name(self) -> str:
-        """Get a human-readable display name for this URI"""
-        if self.scheme == "file":
-            return Path(self.path).name
-
-        elif self.scheme == "obsidian":
-            note_name = Path(self.path).stem
-            return f"{note_name} (Obsidian)"
-
-        elif self.scheme == "github":
-            owner, repo, file_path = self.parse_github_components()
-            if file_path:
-                return f"{Path(file_path).name} ({owner}/{repo})"
-            else:
-                return f"{owner}/{repo}"
-
-        elif self.scheme == "sheets":
-            spreadsheet_id, sheet_name, _ = self.parse_sheets_components()
-            return f"{sheet_name} (Sheets)"
-
-        elif self.scheme == "recording":
-            return f"Recording {self.location}"
-
-        elif self.scheme in ["http", "https"]:
-            return self.location  # Domain name
-
-        else:
-            return self.raw_uri
-
-    def is_file_based(self) -> bool:
-        """Check if this URI represents a file-based resource"""
-        return self.scheme in {"file", "obsidian", "github"}
-
-    def is_web_based(self) -> bool:
-        """Check if this URI represents a web-based resource"""
-        return self.scheme in {"http", "https", "sheets", "drive"}
-
-    def __str__(self) -> str:
-        return self.raw_uri
+        return str(absolute_path), source_type, uri
 
     def __repr__(self) -> str:
-        return f"SiphonURI('{self.raw_uri}')"
+        """Clean, informative representation showing type and processed URI"""
+        return f"URI({self.source_type.value}: '{self.uri}')"
+    
+    def __str__(self) -> str:
+        """String representation is just the processed URI"""
+        return self.uri
 
 
-# Example usage and testing
-if __name__ == "__main__":
-    # Test various URI types
-    uris = [
-        SiphonURI.create_file_uri("/Users/brian/docs/notes.pdf"),
-        SiphonURI.create_obsidian_uri("my-vault", "daily-notes/2024-06-16.md"),
-        SiphonURI.create_github_uri("acesanderson", "Siphon", "ingestion/siphon.py"),
-        SiphonURI.create_sheets_uri(
-            "1BxiMVs0XRA5nFMRrOHP0mBBCH1cjYn6v", "Sheet1", "A1:C10"
-        ),
-        SiphonURI.create_recording_uri("2024-06-16T14:30:00Z"),
-        SiphonURI.create_email_uri("msg123", "thread456"),
-        SiphonURI.from_string("https://youtube.com/watch?v=abc123"),
-    ]
-
-    for uri in uris:
-        print(f"URI: {uri}")
-        print(f"Display: {uri.get_display_name()}")
-        print(f"Native: {uri.to_native_url()}")
-        print(f"File-based: {uri.is_file_based()}")
-        print("---")

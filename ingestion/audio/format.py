@@ -1,3 +1,14 @@
+# Import our centralized logger - no configuration needed here!
+from Siphon.logging.logging_config import get_logger
+
+# Get logger for this module - will inherit config from retrieve_audio.py
+logger = get_logger(__name__)
+
+
+
+
+
+
 def format_transcript(annotated_transcript, group_by_speaker=True):
     """
     Format the annotated transcript into readable text.
@@ -13,6 +24,9 @@ def format_transcript(annotated_transcript, group_by_speaker=True):
         return ""
 
     if not group_by_speaker:
+        logger.warning(
+            "Formatting without grouping by speaker may produce less readable output."
+        )
         # Simple word-by-word format
         lines = []
         for item in annotated_transcript:
@@ -21,6 +35,7 @@ def format_transcript(annotated_transcript, group_by_speaker=True):
         return "\n".join(lines)
 
     # Group by speaker for more readable output
+    logger.info("Formatting transcript by grouping words by speaker.")
     lines = []
     current_speaker = None
     current_words = []
@@ -45,23 +60,10 @@ def format_transcript(annotated_transcript, group_by_speaker=True):
             current_words.append(item["word"])
 
     # Don't forget the last speaker
+    logging.info("Finalizing transcript for last speaker.")
     if current_speaker is not None and current_words:
         timestamp = f"[{current_start_time:.1f}s]"
         text = " ".join(current_words)
         lines.append(f"{timestamp} {current_speaker}: {text}")
 
     return "\n".join(lines)
-
-
-if __name__ == "__main__":
-    from example import example_file
-    from combine import combine
-    from diarize import diarize
-    from transcribe import transcribe
-
-    diarization_result = diarize(example_file)
-    transcript_result = transcribe(example_file)
-    annotated = combine(diarization_result, transcript_result)
-    formatted = format_transcript(annotated, group_by_speaker=True)
-
-    print(formatted)

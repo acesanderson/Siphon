@@ -2,11 +2,18 @@ from openai import OpenAI
 from pathlib import Path
 import os
 
+# Import our centralized logger - no configuration needed here!
+from Siphon.logging.logging_config import get_logger
+
+# Get logger for this module - will inherit config from retrieve_audio.py
+logger = get_logger(__name__)
+
+
 api_key = os.getenv("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=api_key)
 
 
-def transcribe_with_openai(audio_file: str | Path):
+def get_openai_transcript(audio_file: str | Path):
     """
     Use the transcriptions API endpoint.
     We didn't implement this in Chain since it's really tied to a transcription use case.
@@ -17,6 +24,7 @@ def transcribe_with_openai(audio_file: str | Path):
     if extension[1:] not in ["mp3", "wav"]:
         raise ValueError("Wrong extension; whisper only handles mp3 and wav.")
     else:
+        logger.info(f"Transcribing {audio_file} with OpenAI Whisper API.")
         with open(audio_file, "rb") as f:
             transcript = openai_client.audio.transcriptions.create(
                 file=f,
@@ -25,8 +33,3 @@ def transcribe_with_openai(audio_file: str | Path):
     return transcript.text
 
 
-if __name__ == "__main__":
-    from example import example_file
-
-    transcript = transcribe_with_openai(example_file)
-    print(transcript)
