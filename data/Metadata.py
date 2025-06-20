@@ -164,6 +164,7 @@ class ObsidianMetadata(FileMetadata):
     note_path: str
     wiki_links: list[str] = []
     urls: list[str] = []
+    tags: list[str] = []
     note_type: Literal["daily", "code_project", "organization", "topic", "generic"] = (
         "generic"
     )
@@ -240,6 +241,9 @@ class ToDoMetadata(Metadata):
     date_completed: int = Field(
         ...,
         description="Unix epoch time for first time todo was noticed to be completed.",
+    )
+    tags: list[str] = Field(
+        default_factory=list, description="Any tags associated with a todo, a la #tag"
     )
 
     @classmethod
