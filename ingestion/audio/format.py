@@ -60,7 +60,7 @@ def format_transcript(annotated_transcript, group_by_speaker=True):
             current_words.append(item["word"])
 
     # Don't forget the last speaker
-    logging.info("Finalizing transcript for last speaker.")
+    logger.info("Finalizing transcript for last speaker.")
     if current_speaker is not None and current_words:
         timestamp = f"[{current_start_time:.1f}s]"
         text = " ".join(current_words)

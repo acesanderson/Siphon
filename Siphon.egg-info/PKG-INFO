@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: Siphon
 Version: 0.1.0
 Summary: An evolution of Leviathan - flexible media to LLM context converter with RAG capabilities
-Requires-Python: <3.13,>=3.12
+Requires-Python: <3.13.4,>=3.12
 Requires-Dist: transformers>=4.35.0
 Requires-Dist: sentence-transformers>=2.2.0
 Requires-Dist: openai>=1.0.0
