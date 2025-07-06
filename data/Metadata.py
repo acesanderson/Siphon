@@ -5,6 +5,8 @@ from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
+from pathlib import Path
+from time import time
 
 
 class Metadata(BaseModel):
@@ -14,6 +16,14 @@ class Metadata(BaseModel):
     - from_uri: for generating metadata from a URI string (routes to constructors in subclasses)
     - from_dict: for deserializing from a dictionary (handled within this class, returning subclass instances)
     """
+
+    # Temporal data (as Unix timestamps)
+    ingested_at: int = Field(
+        default_factory=lambda: int(time()), description="Unix epoch time for when the metadata was created."
+    )
+    last_updated_at: Optional[int] = Field(
+        default=None, description="Unix epoch time for when the metadata was last updated."
+    )
 
     @classmethod
     def from_uri(cls, uri: URI):
@@ -74,12 +84,18 @@ class Metadata(BaseModel):
 
 
 class FileMetadata(Metadata):
-    file_path: str
+    file_path: str | Path
     file_size: int
     mime_type: str
     file_extension: str
     content_created_at: Optional[int]
     content_modified_at: Optional[int]
+
+    def model_post_init(self, __context):
+        """
+        Coerce from Path to str.
+        """
+        self.file_path = str(self.file_path)
 
     @classmethod
     def from_uri(cls, uri: URI):

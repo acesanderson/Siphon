@@ -11,11 +11,6 @@ class ProcessedContent(BaseModel):
         ..., description="Original URI of the content, used for retrieval"
     )
 
-    # Temporal data (as Unix timestamps)
-    ## Record-specific time stamps
-    ingested_at: int
-    last_updated_at: int
-
     # Source-specific metadata (typed)
     metadata: SiphonMetadata = Field(
         default_factory=SiphonMetadata,
