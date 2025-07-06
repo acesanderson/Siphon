@@ -2,6 +2,7 @@
 Takes URI and generates the relevant Metadata object, which is a necessary part of our ProcessedContent.
 """
 from Siphon.data.URI import URI
+from Siphon.data.SourceType import SourceType
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 
@@ -21,22 +22,35 @@ class Metadata(BaseModel):
         Routes to the appropriate subclass constructor based on the URI type.
         """
         match uri.source_type:
-            case "youtube":
+            case SourceType.YOUTUBE:
                 return YouTubeMetadata.from_uri(uri)
-            case "file":
+            case SourceType.FILE:
                 return FileMetadata.from_uri(uri)
-            case "article":
-                return OnlineMetadata.from_uri(uri)
-            case "email":
+            case SourceType.ARTICLE:
+                return ArticleMetadata.from_uri(uri)
+            case SourceType.EMAIL:
                 return EmailMetadata.from_uri(uri)
-            case "github":
+            case SourceType.GITHUB:
                 return GitHubMetadata.from_uri(uri)
-            case "obsidian":
+            case SourceType.OBSIDIAN:
                 return ObsidianMetadata.from_uri(uri)
-            case "drive":
+            case SourceType.DRIVE:
                 return FileMetadata.from_uri(uri)
             case _:
                 raise ValueError(f"Unsupported source type: {uri.source_type}")
+
+    def __repr__(self):
+        """
+        Custom string representation for debugging.
+        """
+        # We want classname, followed by top four attributes.
+        attrs = ", ".join(
+            f"{k}={v!r}" for k, v in self.__dict__.items() if k in self.__fields__ and v is not None
+            )
+        return f"{self.__class__.__name__}({attrs})"
+
+    def __str__(self):
+        return self.__repr__()
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -48,7 +62,7 @@ class Metadata(BaseModel):
         elif "video_id" in data.keys():
             return YouTubeMetadata(**data)
         elif "url" in data.keys():
-            return OnlineMetadata(**data)
+            return ArticleMetadata(**data)
         elif "message_id" in data.keys():
             return EmailMetadata(**data)
         elif "repository_name" in data.keys():
@@ -103,21 +117,20 @@ class YouTubeMetadata(Metadata):
         raise NotImplementedError("YouTubeMetadata parsing not implemented yet.")
 
 
-class OnlineMetadata(Metadata):
+class ArticleMetadata(Metadata):
     url: str
     html_title: Optional[str] = None
-    content_type: Optional[str] = None  # e.g., "article", "blog", "news"
 
     @classmethod
     def from_uri(cls, uri: URI):
         """
-        Factory method to create OnlineMetadata from a URI object.
+        Factory method to create ArticleMetadata from a URI object.
         Extracts URL and optionally HTML title and content type.
         """
         if not uri.uri.startswith(("http://", "https://")):
             raise ValueError("Invalid URL format")
 
-        raise NotImplementedError("OnlineMetadata parsing not implemented yet.")
+        raise NotImplementedError("ArticleMetadata parsing not implemented yet.")
 
 
 class EmailMetadata(Metadata):

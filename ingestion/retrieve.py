@@ -12,9 +12,9 @@ def retrieve_llm_context(uri: URI) -> str:
     Generate llm_context from a file or online resource.
     Accepts a URI object, returns a rich string representation of the context.
     """
-    if uri.source_type in ["article", "youtube", "drive", "github"]:
+    if uri.source_type in ["ARTICLE", "YOUTUBE", "DRIVE", "GITHUB"]:
         return retrieve_online_context(uri.source)
-    elif uri.source_type in ["obsidian", "file"]:
+    elif uri.source_type in ["OBSIDIAN", "FILE"]:
         file_path = Path(uri.source)
         return retrieve_file_context(file_path)
     elif uri.source_type == "email":

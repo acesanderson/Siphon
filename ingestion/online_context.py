@@ -5,7 +5,7 @@ This is adapted from leviathan main script. Within Siphon, this routes a url (pa
 from Siphon.ingestion.youtube.retrieve_youtube import retrieve_youtube
 from Siphon.ingestion.github.retrieve_github import retrieve_github
 from Siphon.ingestion.googledrive.retrieve_google_doc import retrieve_google_doc
-from Siphon.ingestion.articles.retrieve_article import retrieve_article
+from Siphon.ingestion.article.retrieve_article import retrieve_article
 
 
 def categorize_url(url: str) -> str:

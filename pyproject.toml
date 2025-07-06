@@ -19,7 +19,7 @@ dependencies = [
     "psycopg2",
     "youtube-transcript-api",
     "newspaper3k",
-    "markitdown",
+    "markitdown[all]",
     "pyaudio",
     "pydub",
     "torch==2.7.1",
