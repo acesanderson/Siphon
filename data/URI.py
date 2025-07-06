@@ -26,7 +26,7 @@ class URI(BaseModel):
         """
         logger.info("Source string received.")
         try:
-            source = source.strip()
+            source = str(source).strip() # Convert from PATH if necessary
             source_string, source_type, uri = cls.parse_source(source)
             logger.info("Source string validated, returning URI object.")
             return cls(source=source_string, source_type=source_type, uri=uri)
