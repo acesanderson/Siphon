@@ -1,3 +1,6 @@
+"""
+Takes URI and generates the relevant Metadata object, which is a necessary part of our ProcessedContent.
+"""
 from Siphon.data.URI import URI
 from pydantic import BaseModel, Field
 from typing import Optional, Literal

@@ -1,5 +1,6 @@
 """
 ContentID inherits from String, with constructor methods.
+NOTE: likely deprecating this.
 """
 
 from Siphon.data.URI import URI

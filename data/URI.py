@@ -1,9 +1,16 @@
+"""
+Takes a source (string representation of file_path, url, etc.) and returns a URI object, which is necessary for our ProcessedContent and in fact our main identifier for caching.
+"""
 
 from Siphon.data.SourceType import SourceType
+from Siphon.logs.logging_config import get_logger
 from urllib.parse import urlparse, parse_qs
+from functools import lru_cache
 from pydantic import BaseModel, Field
 from pathlib import Path
 import re
+
+logger = get_logger(__name__)
 
 
 class URI(BaseModel):
@@ -12,38 +19,59 @@ class URI(BaseModel):
     uri: str = Field(..., description="The URI string representation of the source.")
 
     @classmethod
-    def from_source(cls, source: str) -> "URI":
-        """Create a URI object from a source string."""
-        # Fix 1: Strip whitespace from input
-        source = source.strip()
-        source_string, source_type, uri = cls.parse_source(source)
-        return cls(source=source_string, source_type=source_type, uri=uri)
+    def from_source(cls, source: str) -> "URI | None":
+        """
+        Create a URI object from a source string.
+        Also a validation function.
+        """
+        logger.info("Source string received.")
+        try:
+            source = source.strip()
+            source_string, source_type, uri = cls.parse_source(source)
+            logger.info("Source string validated, returning URI object.")
+            return cls(source=source_string, source_type=source_type, uri=uri)
+        except ValueError:
+            logger.debug(f"Failed to parse URI '{source}'")
+            return None
+
+    @classmethod
+    @lru_cache(maxsize=128)
+    def is_path(cls, source: str) -> bool:
+        """
+        Check if the source is a valid file path.
+        """
+        return Path(source).exists()
+
+    @classmethod
+    @lru_cache(maxsize=128)
+    def is_url(cls, source: str) -> bool:
+        """
+        Check if the source is a valid URL.
+        """
+        return source.startswith(("http://", "https://", "ftp://"))
 
     @classmethod
     def parse_source(cls, source: str) -> tuple[str, SourceType, str]:
-        """Parse a source string into its components."""
+        """
+        Parse a source string into its components.
+        """
+        logger.info("Validating source string...")
         # Strip whitespace
         source = source.strip()
-        
-        def is_path(source: str) -> bool:
-            """Check if the source is a valid file path."""
-            return Path(source).exists()
-
-        def is_url(source: str) -> bool:
-            """Check if the source is a valid URL."""
-            return source.startswith(("http://", "https://", "ftp://"))
 
         # Check URL first (more specific than file path)
-        if is_url(source):
+        if cls.is_url(source):
             return cls.parse_url(source)
-        elif is_path(source):
+        elif cls.is_path(source):
             return cls.parse_file_path(str(source))
         else:
             raise ValueError(f"Unsupported source format: {source}")
 
     @classmethod
     def parse_url(cls, url: str) -> tuple[str, SourceType, str]:
-        """Parse a URL into its components."""
+        """
+        Parse a URL into its components.
+        """
         def is_github_url(url: str) -> bool:
             return "github.com" in url
 
@@ -69,11 +97,14 @@ class URI(BaseModel):
         elif is_article_url(url):
             return cls._parse_article_url(url)
         else:
+            logger.warning(f"Unsupported URL format: {url}")
             raise ValueError(f"Unsupported URL format: {url}")
 
     @classmethod
     def _parse_github_url(cls, url: str) -> tuple[str, SourceType, str]:
-        """Parse GitHub URLs"""
+        """
+        Parse GitHub URLs.
+        """
         parsed = urlparse(url)
         path_parts = parsed.path.strip("/").split("/")
         
@@ -111,7 +142,9 @@ class URI(BaseModel):
 
     @classmethod
     def _parse_youtube_url(cls, url: str) -> tuple[str, SourceType, str]:
-        """Parse YouTube URLs - Fix 4: Extract video ID properly"""
+        """
+        Parse YouTube URLs - Fix 4: Extract video ID properly
+        """
         
         # Handle different YouTube URL formats:
         # https://www.youtube.com/watch?v=VIDEO_ID
@@ -140,7 +173,9 @@ class URI(BaseModel):
 
     @classmethod
     def _parse_drive_url(cls, url: str) -> tuple[str, SourceType, str]:
-        """Parse Google Drive/Docs URLs - Fix 5: Extract file ID properly"""
+        """
+        Parse Google Drive/Docs URLs - Fix 5: Extract file ID properly
+        """
         
         # Google URLs format: https://docs.google.com/document/d/FILE_ID/edit
         # Or: https://drive.google.com/file/d/FILE_ID/view
@@ -172,13 +207,17 @@ class URI(BaseModel):
 
     @classmethod
     def _parse_article_url(cls, url: str) -> tuple[str, SourceType, str]:
-        """Parse generic article URLs"""
+        """
+        Parse generic article URLs
+        """
         # For articles, the URI is just the original URL
         return url, SourceType.ARTICLE, url
 
     @classmethod
     def parse_file_path(cls, file_path: str) -> tuple[str, SourceType, str]:
-        """Parse a file path into its components."""
+        """
+        Parse a file path into its components.
+        """
         
         # TODO: Add Obsidian detection logic here
         # from Siphon.ingestion.obsidian.vault import vault
@@ -196,5 +235,3 @@ class URI(BaseModel):
     def __str__(self) -> str:
         """String representation is just the processed URI"""
         return self.uri
-
-

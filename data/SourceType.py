@@ -2,10 +2,10 @@ from enum import Enum
 
 
 class SourceType(str, Enum):
-    ARTICLE = "article"
-    YOUTUBE = "youtube"
-    FILE = "file"
-    EMAIL = "email"
-    GITHUB = "github"
-    OBSIDIAN = "obsidian"
-    DRIVE = "drive"
+    ARTICLE = "ARTICLE"
+    YOUTUBE = "YOUTUBE"
+    FILE = "FILE"
+    EMAIL = "EMAIL"
+    GITHUB = "GITHUB"
+    OBSIDIAN = "OBSIDIAN"
+    DRIVE = "DRIVE"

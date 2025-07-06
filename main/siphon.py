@@ -10,7 +10,7 @@ from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.ingestion.retrieve import retrieve_llm_context
 
 
-def ingest_Siphon(source: str) -> ProcessedContent:
+def siphon(source: str) -> ProcessedContent:
     # 1. Parse source into structured URI
     uri = URI.from_source(source)
     # 2. Generate content_id
