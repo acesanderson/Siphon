@@ -32,15 +32,11 @@ dependencies = [
 
 [project.scripts]
 siphon = "Siphon.cli.siphon_cli:main"
-# record = "Siphon.ingestion.audio.record.record:main"
-record = "Siphon.cli.record_cli:main"
-# play = "Siphon.ingestion.audio.record.play:main"
-play = "Siphon.cli.play_cli:main"
-# siphonserver = "Siphon.server.run:main"
-siphonserver = "Siphon.cli.siphonserver_cli:main"
-# flatten = "Siphon.ingestion.github.flatten_cli:main"
-flatten = "Siphon.cli.flatten_cli:main"
-youtube = "Siphon.cli.youtube_cli:main"
+record = "Siphon.script.record_cli:main"
+play = "Siphon.scripts.play_cli:main"
+siphonserver = "Siphon.scripts.siphonserver_cli:main"
+flatten = "Siphon.scripts.flatten_cli:main"
+youtube = "Siphon.scripts.youtube_cli:main"
 
 [tool.pytest.ini_options]
 addopts = "-v -s --tb=short --no-header --showlocals --pdb -x"

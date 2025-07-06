@@ -1,16 +1,28 @@
 """
 This is pseudocode for now, I am brainstorming on what the high level orchestration will actually look like.
+
+
+7-6-2025:
+- finalize Petrosian-local (i.e. not audio or image processing) siphon flow for:
+    - source string -> URI -> metadata
+        - should be able to see metadata objects for each URI type
+    - source string -> URI -> llm_context
+        - able to generate llm_context for any arbitrary source
+- Connect AlphaBlue for local llm workflows
+    - SiphonServer takes 
+- 
+
 """
 
 from Siphon.data.URI import URI
-from Siphon.data.ContentID import ContentID
 from Siphon.data.Metadata import Metadata
 from Siphon.data.SyntheticData import SyntheticData
+from Siphon.cli.siphon_cli import CLIParams
 from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.ingestion.retrieve import retrieve_llm_context
 
 
-def siphon(source: str) -> ProcessedContent:
+def siphon(cli_params = CLIParams) -> ProcessedContent:
     # 1. Parse source into structured URI
     uri = URI.from_source(source)
     # 2. Generate content_id
