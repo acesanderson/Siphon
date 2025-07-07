@@ -1,11 +1,11 @@
 """
 Takes URI and generates the relevant Metadata object, which is a necessary part of our ProcessedContent.
 """
+
 from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
 from pydantic import BaseModel, Field
-from typing import Optional, Literal
-from pathlib import Path
+from typing import Optional
 from time import time
 
 
@@ -19,10 +19,12 @@ class Metadata(BaseModel):
 
     # Temporal data (as Unix timestamps)
     ingested_at: int = Field(
-        default_factory=lambda: int(time()), description="Unix epoch time for when the metadata was created."
+        default_factory=lambda: int(time()),
+        description="Unix epoch time for when the metadata was created.",
     )
     last_updated_at: Optional[int] = Field(
-        default=None, description="Unix epoch time for when the metadata was last updated."
+        default=None,
+        description="Unix epoch time for when the metadata was last updated.",
     )
 
     @classmethod
@@ -33,19 +35,33 @@ class Metadata(BaseModel):
         """
         match uri.source_type:
             case SourceType.YOUTUBE:
+                from Siphon.metadata.youtube_metadata import YouTubeMetadata
+
                 return YouTubeMetadata.from_uri(uri)
             case SourceType.FILE:
+                from Siphon.metadata.file_metadata import FileMetadata
+
                 return FileMetadata.from_uri(uri)
             case SourceType.ARTICLE:
+                from Siphon.metadata.article_metadata import ArticleMetadata
+
                 return ArticleMetadata.from_uri(uri)
             case SourceType.EMAIL:
+                from Siphon.metadata.email_metadata import EmailMetadata
+
                 return EmailMetadata.from_uri(uri)
             case SourceType.GITHUB:
+                from Siphon.metadata.github_metadata import GitHubMetadata
+
                 return GitHubMetadata.from_uri(uri)
             case SourceType.OBSIDIAN:
+                from Siphon.metadata.obsidian_metadata import ObsidianMetadata
+
                 return ObsidianMetadata.from_uri(uri)
             case SourceType.DRIVE:
-                return FileMetadata.from_uri(uri)
+                from Siphon.metadata.drive_metadata import DriveMetadata
+
+                return DriveMetadata.from_uri(uri)
             case _:
                 raise ValueError(f"Unsupported source type: {uri.source_type}")
 
@@ -55,8 +71,10 @@ class Metadata(BaseModel):
         """
         # We want classname, followed by top four attributes.
         attrs = ", ".join(
-            f"{k}={v!r}" for k, v in self.__dict__.items() if k in self.__fields__ and v is not None
-            )
+            f"{k}={v!r}"
+            for k, v in self.__dict__.items()
+            if k in self.__fields__ and v is not None
+        )
         return f"{self.__class__.__name__}({attrs})"
 
     def __str__(self):
@@ -68,213 +86,30 @@ class Metadata(BaseModel):
         Deserialize from a dictionary to an instance of the appropriate subclass.
         """
         if "file_path" in data.keys():
+            from Siphon.metadata.file_metadata import FileMetadata
+
             return FileMetadata(**data)
         elif "video_id" in data.keys():
+            from Siphon.metadata.youtube_metadata import YouTubeMetadata
+
             return YouTubeMetadata(**data)
         elif "url" in data.keys():
+            from Siphon.metadata.article_metadata import ArticleMetadata
+
             return ArticleMetadata(**data)
         elif "message_id" in data.keys():
+            from Siphon.metadata.email_metadata import EmailMetadata
+
             return EmailMetadata(**data)
         elif "repository_name" in data.keys():
+            from Siphon.metadata.github_metadata import GitHubMetadata
+
             return GitHubMetadata(**data)
         elif "note_path" in data.keys():
+            from Siphon.metadata.obsidian_metadata import ObsidianMetadata
+
             return ObsidianMetadata(**data)
         elif "file_id" in data.keys():
-            return FileMetadata(**data)
+            from Siphon.metadata.drive_metadata import DriveMetadata
 
-
-class FileMetadata(Metadata):
-    file_path: str | Path
-    file_size: int
-    mime_type: str
-    file_extension: str
-    content_created_at: Optional[int]
-    content_modified_at: Optional[int]
-
-    def model_post_init(self, __context):
-        """
-        Coerce from Path to str.
-        """
-        self.file_path = str(self.file_path)
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        """Factory method to create FileMetadata from a URI object."""
-        from pathlib import Path
-        import mimetypes
-
-        path = Path(uri.source)
-        return cls(
-            file_path=str(path.resolve()),
-            file_size=path.stat().st_size,
-            mime_type=mimetypes.guess_type(path)[0] or "application/octet-stream",
-            file_extension=path.suffix,
-            content_created_at=int(path.stat().st_ctime),
-            content_modified_at=int(path.stat().st_mtime),
-        )
-
-
-class YouTubeMetadata(Metadata):
-    video_id: str
-    channel_name: str
-    duration_seconds: float
-    view_count: Optional[int] = None
-    upload_date: Optional[int] = None
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        """
-        Factory method to create YouTubeMetadata from a URI object.
-        Extracts video_id and channel_name from the URI.
-        """
-        if not uri.uri.startswith("https://www.youtube.com/watch?v="):
-            raise ValueError("Invalid YouTube URI format")
-
-        raise NotImplementedError("YouTubeMetadata parsing not implemented yet.")
-
-
-class ArticleMetadata(Metadata):
-    url: str
-    html_title: Optional[str] = None
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        """
-        Factory method to create ArticleMetadata from a URI object.
-        Extracts URL and optionally HTML title and content type.
-        """
-        if not uri.uri.startswith(("http://", "https://")):
-            raise ValueError("Invalid URL format")
-
-        raise NotImplementedError("ArticleMetadata parsing not implemented yet.")
-
-
-class EmailMetadata(Metadata):
-    message_id: str
-    from_address: str
-    to_addresses: list[str]
-    subject: str
-    has_attachments: bool = False
-    received_time: Optional[int] = None  # Unix timestamp
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        """
-        Factory method to create EmailMetadata from a URI object.
-        Extracts message_id and other email-specific fields.
-        """
-        if not uri.uri.startswith("email:"):
-            raise ValueError("Invalid email URI format")
-
-        raise NotImplementedError("EmailMetadata parsing not implemented yet.")
-
-
-class GitHubMetadata(Metadata):
-    repository_name: str
-    file_path_in_repo: str
-    branch_name: str = "main"
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        """
-        Factory method to create GitHubMetadata from a URI object.
-        Extracts repository name, file path, and branch name from the URI.
-        """
-        from urllib.parse import urlparse
-
-        parsed_url = urlparse(uri.source)
-        path_parts = parsed_url.path.strip("/").split("/")
-        if len(path_parts) < 3:
-            raise ValueError("Invalid GitHub URL format")
-
-        raise NotImplementedError("GitHubMetadata parsing not implemented yet.")
-
-
-class ObsidianMetadata(FileMetadata):
-    """Inherits and mixes with FileMetadata for Obsidian-specific notes."""
-
-    note_path: str
-    wiki_links: list[str] = []
-    urls: list[str] = []
-    note_type: Literal["daily", "code_project", "organization", "topic", "generic"] = (
-        "generic"
-    )
-
-    @classmethod
-    def _parse_obsidian_content(cls, file_path: str):
-        """
-        Parse Obsidian-specific content from the file.
-        This is a placeholder for actual parsing logic.
-        """
-        # For now, we will just return an empty dict
-        # In a real implementation, this would extract wiki links, note type, etc.
-        # return {
-        #     "note_path": file_path,
-        #     "wiki_links": [],
-        #     "note_type": None
-        # }
-        raise NotImplementedError("Obsidian content parsing not implemented yet.")
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        """
-        Factory method to create ObsidianMetadata from a URI object.
-        This method first retrieves the file metadata and then parses Obsidian-specific content.
-        """
-        # Get file metadata first
-        file_data = FileMetadata.from_uri(uri)
-
-        # Add Obsidian-specific parsing
-        obsidian_data = cls._parse_obsidian_content(uri.source)
-
-        # Combine and create instance
-        return cls(**file_data, **obsidian_data)
-
-
-class DriveMetadata(Metadata):
-    """
-    Metadata for Google Docs files.
-    """
-
-    name: str
-    description: Optional[str] = None
-    mime_type: str
-    created_time: Optional[int] = None
-    modified_time: Optional[int] = None
-    owned_by_me: bool = False
-    owners: list[str] = []
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        """
-        Factory method to create DriveMetadata from a URI object.
-        Extracts Google Drive-specific metadata.
-        """
-        if not uri.uri.startswith("https://docs.google.com/"):
-            raise ValueError("Invalid Google Drive URI format")
-
-        raise NotImplementedError("DriveMetadata parsing not implemented yet.")
-
-
-class ToDoMetadata(Metadata):
-    """
-    Obsidian ToDos, as scraped when prcoessing obsidian files.
-    Needs some special thinking about how to handle, resolve duplicates, etc.
-    Also needs implementation of URI, ingestion, etc.
-    Design backwards from my ADHD brain and how you would handle a mass of todos, some of which will never be completed.
-    """
-
-    source_file: URI = Field(..., description="URI for file to do is associated with.")
-    date_created: int = Field(
-        ...,
-        description="Unix epoch time for when todo was first detected by scripts / last modified data for file on first scrape.",
-    )
-    date_completed: int = Field(
-        ...,
-        description="Unix epoch time for first time todo was noticed to be completed.",
-    )
-
-    @classmethod
-    def from_uri(cls, uri: URI):
-        _ = uri
-        raise NotImplementedError("ToDos not implemented yet.")
+            return DriveMetadata(**data)
