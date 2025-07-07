@@ -18,10 +18,16 @@ def main():
     parser = argparse.ArgumentParser(description="Siphon file to LLM context")
     parser.add_argument("source", type=str, help="Path to the file to convert")
     parser.add_argument(
-        "-l", "--llm", action="store_true", help="Use cloud LLM for conversion if applicable"
+        "-l",
+        "--llm",
+        action="store_true",
+        help="Use cloud LLM for conversion if applicable",
     )
     parser.add_argument(
-        "-p", "--persist", action="store_true", help="Persist the processed content to disk"
+        "-p",
+        "--persist",
+        action="store_true",
+        help="Persist the processed content to disk",
     )
     parser.add_argument(
         "-r",
@@ -42,6 +48,7 @@ def main():
     if query:
         response = siphon(query)
         print(response)
+
 
 if __name__ == "__main__":
     main()

@@ -7,6 +7,7 @@ from Siphon.ingestion.online_context import retrieve_online_context
 from Siphon.data.URI import URI
 from pathlib import Path
 
+
 def retrieve_llm_context(uri: URI) -> str:
     """
     Generate llm_context from a file or online resource.
@@ -20,4 +21,6 @@ def retrieve_llm_context(uri: URI) -> str:
     elif uri.source_type == "email":
         raise NotImplementedError("Email source type is not yet implemented.")
     else:
-        raise ValueError(f"Unsupported source type: {uri.source_type}. Supported types are: article, youtube, drive, github, obsidian, file.")
+        raise ValueError(
+            f"Unsupported source type: {uri.source_type}. Supported types are: article, youtube, drive, github, obsidian, file."
+        )

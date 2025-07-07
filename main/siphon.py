@@ -9,15 +9,17 @@ This is pseudocode for now, I am brainstorming on what the high level orchestrat
     - source string -> URI -> llm_context
         - able to generate llm_context for any arbitrary source
 - Connect AlphaBlue for local llm workflows
-    - SiphonServer takes 
-- 
+    - SiphonServer takes
+-
 
 """
 
 from Siphon.data.URI import URI
 from Siphon.data.Metadata import Metadata
+
 # from Siphon.data.SyntheticData import SyntheticData
 from Siphon.cli.cli_params import CLIParams
+
 # from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.ingestion.retrieve import retrieve_llm_context
 
@@ -57,11 +59,13 @@ def siphon(cli_params: CLIParams) -> Metadata:
     # return processed_content
     return llm_context
 
+
 def CLI_handler():
     """
     If siphon function got a CLIParams object, then it will run the CLI flow.
     """
     pass
+
 
 def string_handler():
     """
