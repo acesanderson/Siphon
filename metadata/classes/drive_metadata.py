@@ -1,12 +1,15 @@
 from Siphon.data.Metadata import Metadata
 from Siphon.data.URI import URI
-from typing import Optional
+from Siphon.data.SourceType import SourceType
+from typing import Optional, override
 
 
 class DriveMetadata(Metadata):
     """
     Metadata for Google Docs files.
     """
+
+    sourcetype: SourceType = SourceType.DRIVE
 
     name: str
     description: Optional[str] = None
@@ -16,6 +19,7 @@ class DriveMetadata(Metadata):
     owned_by_me: bool = False
     owners: list[str] = []
 
+    @override
     @classmethod
     def from_uri(cls, uri: URI):
         """

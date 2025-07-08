@@ -10,7 +10,7 @@ class ArticleURI(URI):
     Inherits from Metadata to include additional metadata fields.
     """
 
-    source_type: SourceType = Field(
+    sourcetype: SourceType = Field(
         default=SourceType.ARTICLE,
         description="The type of source this URI represents.",
     )

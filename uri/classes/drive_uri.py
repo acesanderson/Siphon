@@ -2,6 +2,7 @@ from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
 from pydantic import Field
 import re
+from typing import override
 
 
 class DriveURI(URI):
@@ -10,11 +11,12 @@ class DriveURI(URI):
     Inherits from Metadata to include additional metadata fields.
     """
 
-    source_type: SourceType = Field(
+    sourcetype: SourceType = Field(
         default=SourceType.DRIVE,
         description="The type of source this URI represents.",
     )
 
+    @override
     @classmethod
     def identify(cls, source: str) -> bool:
         ...
@@ -26,6 +28,7 @@ class DriveURI(URI):
         #         or "drive.googleusercontent.com" in url
         #     )
 
+    @override
     @classmethod
     def from_source(cls, source: str) -> "DriveURI | None":
         """

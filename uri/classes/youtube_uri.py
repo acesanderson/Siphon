@@ -1,6 +1,7 @@
 from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
 from pydantic import Field
+from typing import override
 
 
 class YouTubeURI(URI):
@@ -9,11 +10,12 @@ class YouTubeURI(URI):
     Inherits from Metadata to include additional metadata fields.
     """
 
-    source_type: SourceType = Field(
+    sourcetype: SourceType = Field(
         default=SourceType.YOUTUBE,
         description="The type of source this URI represents.",
     )
 
+    @override
     @classmethod
     def identify(cls, source: str) -> bool:
         ...
@@ -22,6 +24,7 @@ class YouTubeURI(URI):
         #     return "youtube.com" in url or "youtu.be" in url
         #
 
+    @override
     @classmethod
     def from_source(cls, source: str) -> "YouTubeURI | None":
         """

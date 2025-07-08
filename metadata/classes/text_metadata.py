@@ -1,9 +1,13 @@
 from Siphon.data.Metadata import Metadata
+from Siphon.data.SourceType import SourceType
 from Siphon.data.URI import URI
-from typing import Optional
+from typing import Optional, override
+from pathlib import Path
 
 
-class FileMetadata(Metadata):
+class TextMetadata(Metadata):
+    sourcetype: SourceType = SourceType.TEXT
+
     file_path: str | Path
     file_size: int
     mime_type: str
@@ -17,6 +21,7 @@ class FileMetadata(Metadata):
         """
         self.file_path = str(self.file_path)
 
+    @override
     @classmethod
     def from_uri(cls, uri: URI):
         """Factory method to create FileMetadata from a URI object."""
@@ -32,10 +37,3 @@ class FileMetadata(Metadata):
             content_created_at=int(path.stat().st_ctime),
             content_modified_at=int(path.stat().st_mtime),
         )
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        """
-        Factory method to create ArticleMetadata from a dictionary.
-        """
-        ...

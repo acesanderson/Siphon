@@ -4,9 +4,12 @@ Takes URI and generates the relevant Metadata object, which is a necessary part 
 
 from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
+from Siphon.logs.logging_config import get_logger
 from pydantic import BaseModel, Field
 from typing import Optional
 from time import time
+
+logger = get_logger(__name__)
 
 
 class Metadata(BaseModel):
@@ -16,6 +19,11 @@ class Metadata(BaseModel):
     - from_uri: for generating metadata from a URI string (routes to constructors in subclasses)
     - from_dict: for deserializing from a dictionary (handled within this class, returning subclass instances)
     """
+
+    sourcetype: SourceType = Field(
+        ...,
+        description="Type of source for the metadata, e.g., YouTube, File, Article, etc.",
+    )
 
     # Temporal data (as Unix timestamps)
     ingested_at: int = Field(
@@ -31,85 +39,11 @@ class Metadata(BaseModel):
     def from_uri(cls, uri: URI):
         """
         Factory method to create metadata from a URI string.
-        Routes to the appropriate subclass constructor based on the URI type.
+        Routes to the appropriate subclass constructor based on the sourcetype.
         """
-        match uri.source_type:
-            case SourceType.YOUTUBE:
-                from Siphon.metadata.youtube_metadata import YouTubeMetadata
+        from Siphon.metadata.metadata_classes import MetadataClasses
 
-                return YouTubeMetadata.from_uri(uri)
-            case SourceType.FILE:
-                from Siphon.metadata.file_metadata import FileMetadata
-
-                return FileMetadata.from_uri(uri)
-            case SourceType.ARTICLE:
-                from Siphon.metadata.article_metadata import ArticleMetadata
-
-                return ArticleMetadata.from_uri(uri)
-            case SourceType.EMAIL:
-                from Siphon.metadata.email_metadata import EmailMetadata
-
-                return EmailMetadata.from_uri(uri)
-            case SourceType.GITHUB:
-                from Siphon.metadata.github_metadata import GitHubMetadata
-
-                return GitHubMetadata.from_uri(uri)
-            case SourceType.OBSIDIAN:
-                from Siphon.metadata.obsidian_metadata import ObsidianMetadata
-
-                return ObsidianMetadata.from_uri(uri)
-            case SourceType.DRIVE:
-                from Siphon.metadata.drive_metadata import DriveMetadata
-
-                return DriveMetadata.from_uri(uri)
-            case _:
-                raise ValueError(f"Unsupported source type: {uri.source_type}")
-
-    def __repr__(self):
-        """
-        Custom string representation for debugging.
-        """
-        # We want classname, followed by top four attributes.
-        attrs = ", ".join(
-            f"{k}={v!r}"
-            for k, v in self.__dict__.items()
-            if k in self.__fields__ and v is not None
-        )
-        return f"{self.__class__.__name__}({attrs})"
-
-    def __str__(self):
-        return self.__repr__()
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        """
-        Deserialize from a dictionary to an instance of the appropriate subclass.
-        """
-        if "file_path" in data.keys():
-            from Siphon.metadata.file_metadata import FileMetadata
-
-            return FileMetadata(**data)
-        elif "video_id" in data.keys():
-            from Siphon.metadata.youtube_metadata import YouTubeMetadata
-
-            return YouTubeMetadata(**data)
-        elif "url" in data.keys():
-            from Siphon.metadata.article_metadata import ArticleMetadata
-
-            return ArticleMetadata(**data)
-        elif "message_id" in data.keys():
-            from Siphon.metadata.email_metadata import EmailMetadata
-
-            return EmailMetadata(**data)
-        elif "repository_name" in data.keys():
-            from Siphon.metadata.github_metadata import GitHubMetadata
-
-            return GitHubMetadata(**data)
-        elif "note_path" in data.keys():
-            from Siphon.metadata.obsidian_metadata import ObsidianMetadata
-
-            return ObsidianMetadata(**data)
-        elif "file_id" in data.keys():
-            from Siphon.metadata.drive_metadata import DriveMetadata
-
-            return DriveMetadata(**data)
+        for metadata_class in MetadataClasses:
+            if metadata_class.sourcetype == cls.sourcetype:
+                logger.info(f"Using Metadata class: {metadata_class.__name__}")
+                return metadata_class.from_uri(uri)

@@ -1,12 +1,15 @@
 from Siphon.data.Metadata import Metadata
+from Siphon.data.SourceType import SourceType
 from Siphon.data.URI import URI
-from typing import Optional
+from typing import Optional, override
 
 
 class ArticleMetadata(Metadata):
+    sourcetype: SourceType = SourceType.ARTICLE
     url: str
     html_title: Optional[str] = None
 
+    @override
     @classmethod
     def from_uri(cls, uri: URI):
         """
@@ -17,10 +20,3 @@ class ArticleMetadata(Metadata):
             raise ValueError("Invalid URL format")
 
         raise NotImplementedError("ArticleMetadata parsing not implemented yet.")
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        """
-        Factory method to create ArticleMetadata from a dictionary.
-        """
-        ...

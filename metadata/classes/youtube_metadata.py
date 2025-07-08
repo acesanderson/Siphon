@@ -1,15 +1,18 @@
 from Siphon.data.Metadata import Metadata
 from Siphon.data.URI import URI
-from typing import Optional
+from Siphon.data.SourceType import SourceType
+from typing import Optional, override
 
 
 class YouTubeMetadata(Metadata):
+    sourcetype: SourceType = SourceType.YOUTUBE
     video_id: str
     channel_name: str
     duration_seconds: float
     view_count: Optional[int] = None
     upload_date: Optional[int] = None
 
+    @override
     @classmethod
     def from_uri(cls, uri: URI):
         """
@@ -20,10 +23,3 @@ class YouTubeMetadata(Metadata):
             raise ValueError("Invalid YouTube URI format")
 
         raise NotImplementedError("YouTubeMetadata parsing not implemented yet.")
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        """
-        Factory method to create ArticleMetadata from a dictionary.
-        """
-        ...

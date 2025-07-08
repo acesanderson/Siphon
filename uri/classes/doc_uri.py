@@ -1,6 +1,7 @@
 from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
 from pydantic import Field
+from typing import override
 
 
 class DocURI(URI):
@@ -9,14 +10,16 @@ class DocURI(URI):
     Inherits from Metadata to include additional metadata fields.
     """
 
-    source_type: SourceType = Field(
+    sourcetype: SourceType = Field(
         default=SourceType.DOC,
         description="The type of source this URI represents.",
     )
 
+    @override
     @classmethod
     def identify(cls, source: str) -> bool: ...
 
+    @override
     @classmethod
     def from_source(cls, source: str) -> "DocURI | None":
         """

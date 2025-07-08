@@ -1,12 +1,16 @@
 from Siphon.data.Metadata import Metadata
 from Siphon.data.URI import URI
+from Siphon.data.SourceType import SourceType
+from typing import override
 
 
 class GitHubMetadata(Metadata):
+    sourcetype: SourceType = SourceType.GITHUB
     repository_name: str
     file_path_in_repo: str
     branch_name: str = "main"
 
+    @override
     @classmethod
     def from_uri(cls, uri: URI):
         """
@@ -21,10 +25,3 @@ class GitHubMetadata(Metadata):
             raise ValueError("Invalid GitHub URL format")
 
         raise NotImplementedError("GitHubMetadata parsing not implemented yet.")
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        """
-        Factory method to create ArticleMetadata from a dictionary.
-        """
-        ...

@@ -1,9 +1,12 @@
 from Siphon.data.Metadata import Metadata
 from Siphon.data.URI import URI
-from typing import Optional
+from Siphon.data.SourceType import SourceType
+from typing import Optional, override
 
 
 class EmailMetadata(Metadata):
+    sourcetype: SourceType = SourceType.EMAIL
+
     message_id: str
     from_address: str
     to_addresses: list[str]
@@ -11,6 +14,7 @@ class EmailMetadata(Metadata):
     has_attachments: bool = False
     received_time: Optional[int] = None  # Unix timestamp
 
+    @override
     @classmethod
     def from_uri(cls, uri: URI):
         """
@@ -21,10 +25,3 @@ class EmailMetadata(Metadata):
             raise ValueError("Invalid email URI format")
 
         raise NotImplementedError("EmailMetadata parsing not implemented yet.")
-
-    @classmethod
-    def from_dict(cls, data: dict):
-        """
-        Factory method to create ArticleMetadata from a dictionary.
-        """
-        ...

@@ -7,11 +7,12 @@ source_types = [SourceType.ARTICLE, SourceType.YOUTUBE, SourceType.FILE, SourceT
 """
 
 from pathlib import Path
+from Siphon.data.SourceType import SourceType
 
 dir_path = Path(__file__).parent
 assets_path = dir_path.parent.parent / "assets"
 
-files ="""
+files = """
 /home/fishhouses/Brian_Code/Siphon/assets/New-Year-New-Skills-Own-Your-Career-Goals.pptx
 /home/fishhouses/Brian_Code/Siphon/assets/Talent Management Sources.docx
 /home/fishhouses/Brian_Code/Siphon/assets/Zscaler Professional Certificate Pitch 5-20-2025.pdf
@@ -22,7 +23,7 @@ files ="""
 /home/fishhouses/Brian_Code/Siphon/assets/monthly-cert-insights (14).csv
 /home/fishhouses/Brian_Code/Siphon/assets/morris1.jpg
 /home/fishhouses/Brian_Code/Siphon/assets/output.mp3
-""".strip().split('\n')
+""".strip().split("\n")
 
 sample_pptx = assets_path / "New-Year-New-Skills-Own-Your-Career-Goals.pptx"
 sample_docx = assets_path / "Talent Management Sources.docx"
@@ -49,14 +50,21 @@ sample_assets = {
         "zip": sample_zip,
         "csv": sample_csv,
         "jpg": sample_jpg,
-        "mp3": sample_mp3
+        "mp3": sample_mp3,
     },
-    # Our SourceType
-    "FILE": sample_docx,
-    "YOUTUBE": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    "GITHUB": "https://github.com/acesanderson/Siphon",
-    "DRIVE": "https://drive.google.com/file/d/1a2b3c4d5e6f7g8h9i0j/view?usp=sharing",
-    "EMAIL": "NA",
-    "OBSIDIAN": "NA",
-    "ARTICLE": "https://mwichary.medium.com/one-hundred-and-thirty-seven-seconds-2a0a3dfbc59e"
+    # Sourcetypes
+    "sourcetypes": {
+        SourceType("Text"): sample_html,
+        SourceType("Audio"): sample_mp3,
+        SourceType("Image"): sample_image,
+        SourceType("Doc"): sample_docx,
+        SourceType("YouTube"): "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        SourceType("GitHub"): "https://github.com/acesanderson/Siphon",
+        SourceType(
+            "Article"
+        ): "https://mwichary.medium.com/one-hundred-and-thirty-seven-seconds-2a0a3dfbc59e",
+        # SourceType("Drive"): "https://drive.google.com/file/d/1a2b3c4d5e6f7g8h9i0j/view?usp=sharing",
+        # SourceType("Email"): "NA",
+        # SourceType("Obsidian"): "NA",
+    },
 }

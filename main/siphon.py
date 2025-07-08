@@ -16,6 +16,7 @@ This is pseudocode for now, I am brainstorming on what the high level orchestrat
 
 from Siphon.data.URI import URI
 from Siphon.data.Metadata import Metadata
+from Siphon.data.Context import Context
 
 # from Siphon.data.SyntheticData import SyntheticData
 from Siphon.cli.cli_params import CLIParams
@@ -24,7 +25,7 @@ from Siphon.cli.cli_params import CLIParams
 from Siphon.ingestion.retrieve import retrieve_llm_context
 
 
-def siphon(cli_params: CLIParams) -> Metadata:
+def siphon(cli_params: CLIParams) -> str:
     """
     Siphon orchestrates the process of converting a source string (file path or URL).
     Receives either a string (back-end request) or a CLIParams (user-driven request), and routes the flow accordingly.
@@ -38,10 +39,10 @@ def siphon(cli_params: CLIParams) -> Metadata:
     # if existing := db.get_by_id(content_id):
     #     return existing
     # 3. Generate Metadata
-    if uri:
-        metadata = Metadata.from_uri(uri)
+    # if uri:
+    #     metadata = Metadata.from_uri(uri)
     # 5. Generate LLM context from the URI (retrieving text content)
-    llm_context = retrieve_llm_context(uri)
+    context = Context.from_uri(uri)
     # 6. Generate SyntheticData (post-processing)
     # synthetic_data = SyntheticData.from_llm_context(llm_context)
     # 7. Construct ProcessedContent object
@@ -57,6 +58,7 @@ def siphon(cli_params: CLIParams) -> Metadata:
     # db.save(processed_content)
     # 8. Return the processed content
     # return processed_content
+    llm_context = context.context
     return llm_context
 
 
