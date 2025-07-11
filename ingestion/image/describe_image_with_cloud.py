@@ -21,7 +21,6 @@ def describe_image_with_cloud_models(file_path: str | Path, model="gpt") -> str:
 
     logger.info(f"Creating Chain model with name: {model}")
     model = Model(model)
-    chain = Chain(model=model)
-    logger.info(f"Running Chain with model: {model.model} and image: {file_path}")
-    response = chain.run(messages=[imagemessage])
+    logger.info(f"Running query with model: {model.model} and image: {file_path}")
+    response = model.query(imagemessage)
     return str(response.content)
