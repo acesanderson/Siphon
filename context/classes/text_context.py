@@ -9,7 +9,7 @@ class TextContext(Context):
 
     @override
     @classmethod
-    def from_uri(cls, uri: URI) -> "TextContext":
+    def from_uri(cls, uri: URI) -> "TextContext":  # type: ignore
         """
         Create a TextContext from a URI.
         """

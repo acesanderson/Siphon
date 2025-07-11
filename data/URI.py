@@ -56,3 +56,13 @@ class URI(BaseModel):
     def __str__(self) -> str:
         """String representation is just the processed URI"""
         return self.uri
+
+    def __hash__(self) -> int:
+        """Make URI hashable for caching purposes"""
+        return hash((self.uri, self.sourcetype))
+
+    def __eq__(self, other) -> bool:
+        """Define equality for hashing"""
+        if isinstance(other, URI):
+            return self.uri == other.uri and self.sourcetype == other.sourcetype
+        return False

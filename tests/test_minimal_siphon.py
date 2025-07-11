@@ -25,7 +25,9 @@ Image
 GitHub
 YouTube
 Article
-""".strip().split("\n")
+""".strip().split(
+    "\n"
+)
 
 immediately_usable_types = [SourceType(x) for x in immediately_usable_types]
 sourcetype_assets = sample_assets["sourcetypes"]

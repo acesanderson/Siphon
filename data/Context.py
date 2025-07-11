@@ -21,7 +21,7 @@ class Context(BaseModel):
 
     @classmethod
     @lru_cache(maxsize=1000)
-    def from_uri(cls, uri: URI) -> "Context":
+    def from_uri(cls, uri: URI) -> "Context":  # type: ignore
         """
         Create a Context object from a URI object.
         Subclasses for each SourceType override this; they return a context string.
@@ -29,6 +29,16 @@ class Context(BaseModel):
         from Siphon.context.context_classes import ContextClasses
 
         for context_class in ContextClasses:
-            if context_class.source_type == cls.sourcetype:
+            if context_class.sourcetype == cls.sourcetype:
                 logger.info(f"Using URI class: {context_class.__name__}")
                 return context_class.from_uri(uri)
+
+    def __hash__(self) -> int:
+        """Make Context hashable for caching purposes"""
+        return hash((self.context, self.sourcetype))
+
+    def __eq__(self, other) -> bool:
+        """Define equality for hashing"""
+        if isinstance(other, Context):
+            return self.context == other.context and self.sourcetype == other.sourcetype
+        return False
