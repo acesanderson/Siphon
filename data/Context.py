@@ -28,8 +28,9 @@ class Context(BaseModel):
         """
         from Siphon.context.context_classes import ContextClasses
 
+        # Calculate this from the class name minus "Context"
         for context_class in ContextClasses:
-            if context_class.sourcetype == cls.sourcetype:
+            if context_class.__name__.replace("Context", "") == uri.sourcetype.value:
                 logger.info(f"Using URI class: {context_class.__name__}")
                 return context_class.from_uri(uri)
 
