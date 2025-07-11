@@ -9,6 +9,8 @@ from functools import lru_cache
 from Siphon.data.SourceType import SourceType
 from Siphon.logs.logging_config import get_logger
 from pydantic import BaseModel, Field
+from typing import Optional
+from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -21,36 +23,31 @@ class URI(BaseModel):
     uri: str = Field(..., description="The URI string representation of the source.")
 
     @classmethod
-    @lru_cache(maxsize=1000)
-    def identify(cls, source) -> SourceType:
-        """
-        Check the source string against all URI subclasses to determine SourceType.
-        The overriden identify method in each subclass should return True if it can handle the source.
-        """
-        from Siphon.uri.uri_classes import URIClasses
-
-        for uri_class in URIClasses:
-            if uri_class.identify(source):
-                return uri_class.sourcetype
-        logger.warning(f"Unsupported source format: {source}")
-        raise ValueError(f"Unsupported source format: {source}")
+    def identify(cls, source: str) -> bool: ...  # type: ignore
 
     @classmethod
     @lru_cache(maxsize=1000)
-    def from_source(cls, source: str) -> "URI | None":
+    def from_source(cls, source: str | Path) -> Optional["URI"]:
         """
         Create a URI object from a source string.
-        Also a validation function.
+        Tries each URI subclass until one can handle the source.
         """
         from Siphon.uri.uri_classes import URIClasses
 
         logger.info("Source string received.")
-        source_type = cls.identify(source)
-        logger.info(f"Source type determined: {source_type}")
+
+        if isinstance(source, Path):
+            source = str(source)
+
+        # Try each URI class to see if it can handle this source
         for uri_class in URIClasses:
-            if uri_class.sourcetype == sourcetype:
+            if uri_class.identify(source):  # Each subclass has its own identify method
                 logger.info(f"Using URI class: {uri_class.__name__}")
                 return uri_class.from_source(source)
+
+        # No class could handle this source
+        logger.warning(f"Unsupported source format: {source}")
+        return None
 
     def __repr__(self) -> str:
         """Clean, informative representation showing type and processed URI"""

@@ -1,6 +1,11 @@
 from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
+from Siphon.data.URISchemes import URISchemes
 from pydantic import Field
+from urllib.parse import urlparse, parse_qs
+import re
+
+
 from typing import override
 
 
@@ -18,41 +23,28 @@ class YouTubeURI(URI):
     @override
     @classmethod
     def identify(cls, source: str) -> bool:
-        ...
-
-        # def is_youtube_url(url: str) -> bool:
-        #     return "youtube.com" in url or "youtu.be" in url
-        #
+        return "youtube.com" in source or "youtu.be" in source
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "YouTubeURI | None":
+    def from_source(cls, source: str) -> "YouTubeURI | None":  # type: ignore
         """
-        Create an ArticleURI object from a source string.
+        Create an YouTube object from a source string.
         """
-        ...
-
-    @classmethod
-    def _parse_youtube_url(cls, url: str) -> tuple[str, SourceType, str]:
-        """
-        Parse YouTube URLs - Fix 4: Extract video ID properly
-        """
-
         # Handle different YouTube URL formats:
         # https://www.youtube.com/watch?v=VIDEO_ID
         # https://youtu.be/VIDEO_ID
         # https://youtube.com/watch?v=VIDEO_ID&t=123
-
-        if "youtu.be/" in url:
+        if "youtu.be/" in source:
             # Short format: https://youtu.be/VIDEO_ID
-            video_id = url.split("youtu.be/")[1].split("?")[0].split("&")[0]
+            video_id = source.split("youtu.be/")[1].split("?")[0].split("&")[0]
         else:
             # Long format: extract from query parameter
-            parsed = urlparse(url)
+            parsed = urlparse(source)
             query_params = parse_qs(parsed.query)
 
             if "v" not in query_params:
-                raise ValueError(f"Cannot find video ID in YouTube URL: {url}")
+                raise ValueError(f"Cannot find video ID in YouTube URL: {source}")
 
             video_id = query_params["v"][0]
 
@@ -60,5 +52,8 @@ class YouTubeURI(URI):
         if not re.match(r"^[a-zA-Z0-9_-]{11}$", video_id):
             raise ValueError(f"Invalid YouTube video ID format: {video_id}")
 
-        uri = f"youtube://{video_id}"
-        return url, SourceType.YOUTUBE, uri
+        uri = f"{URISchemes["YouTube"]}://{video_id}"
+        return cls(
+            source=source,
+            uri=uri,
+        )

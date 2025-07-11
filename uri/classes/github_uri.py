@@ -1,7 +1,12 @@
 from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
+from Siphon.data.URISchemes import URISchemes
+from Siphon.logs.logging_config import get_logger
+from urllib.parse import urlparse
 from pydantic import Field
 from typing import override
+
+logger = get_logger(__name__)
 
 
 class GitHubURI(URI):
@@ -17,22 +22,20 @@ class GitHubURI(URI):
 
     @override
     @classmethod
-    def identify(cls, source: str) -> bool: ...
+    def identify(cls, source: str) -> bool:
+        """
+        Check if the source string matches the GitHub URI format.
+        """
+        return "github.com" in source
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "GitHubURI | None":
+    def from_source(cls, source: str) -> "GitHubURI | None":  # type: ignore
         """
-        Create an ArticleURI object from a source string.
+        Create an GitHubURI object from a source string.
         """
         ...
-
-    @classmethod
-    def _parse_github_url(cls, url: str) -> tuple[str, SourceType, str]:
-        """
-        Parse GitHub URLs.
-        """
-        parsed = urlparse(url)
+        parsed = urlparse(source)
         path_parts = parsed.path.strip("/").split("/")
 
         if len(path_parts) < 2:
@@ -57,10 +60,15 @@ class GitHubURI(URI):
             file_path = ""
 
         # Fix 3: Don't add trailing slash when no file path
-        uri = f"github://{owner}/{repo}"
+        uri = f"{URISchemes["GitHub"]}://{owner}/{repo}"
         if file_path:
             uri += f"/{file_path}"
 
         # Add fragment if present (for line numbers, etc.)
         if parsed.fragment:
             uri += f"#{parsed.fragment}"
+
+        return cls(
+            source=source,
+            uri=uri,
+        )

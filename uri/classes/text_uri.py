@@ -1,7 +1,13 @@
 from Siphon.data.URI import URI
 from Siphon.data.SourceType import SourceType
+from Siphon.logs.logging_config import get_logger
+from Siphon.data.URISchemes import URISchemes
+from Siphon.data.Extensions import Extensions
 from pydantic import Field
 from typing import override
+from pathlib import Path
+
+logger = get_logger(__name__)
 
 
 class TextURI(URI):
@@ -12,17 +18,40 @@ class TextURI(URI):
 
     sourcetype: SourceType = Field(
         default=SourceType.TEXT,
-        description="The type of source this URI represents.",
     )
 
     @override
     @classmethod
-    def identify(cls, source: str) -> bool: ...
+    def identify(cls, source: str) -> bool:
+        """
+        Check if the source string matches the text URI format.
+        """
+
+        try:
+            source_path = Path(source)
+            if source_path.exists():
+                extension = source_path.suffix.lower()
+                if extension in Extensions["Text"]:
+                    logger.info(f"Identified as TextURI: {source}")
+                    return True
+            else:
+                logger.info(f"Source path does not exist: {source}")
+                return False
+        except:
+            pass
+        return False
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "TextURI | None":
+    def from_source(cls, source: str) -> "TextURI | None":  # type: ignore
         """
-        Create an ArticleURI object from a source string.
+        Create an TextURI object from a source string.
         """
-        ...
+
+        if not cls.identify(source):
+            logger.warning(f"Source does not match TextURI format: {source}")
+            return None
+        return cls(
+            source=source,
+            uri=f"{URISchemes['Text']}://{Path(source).as_posix()}",
+        )
