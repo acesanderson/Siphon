@@ -18,3 +18,10 @@ class SourceType(str, Enum):
     OBSIDIAN = "Obsidian"  # Obsidian notes or vaults
     DRIVE = "Drive"  # Google Drive files (Docs, Sheets, etc.)
     EMAIL = "Email"  # Email messages or threads
+
+
+# Park future implementation ideas here
+"""
+ARXIV
+TODO
+"""

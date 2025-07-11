@@ -9,10 +9,15 @@ class TextContext(Context):
 
     @override
     @classmethod
-    def from_uri(cls, uri: URI) -> "TextContext":  # type: ignore
+    def from_uri(cls, uri: "TextURI") -> "TextContext":  # type: ignore
         """
         Create a TextContext from a URI.
         """
+        from Siphon.uri.classes.text_uri import TextURI
+
+        if not isinstance(uri, TextURI):
+            raise TypeError("Expected uri to be an instance of TextURI.")
+
         with open(uri.source, "r") as file:
             text_content = file.read()
         return cls(context=text_content)

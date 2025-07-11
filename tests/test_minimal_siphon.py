@@ -16,6 +16,11 @@ from Siphon.main.siphon import siphon
 from Siphon.cli.cli_params import CLIParams
 from Siphon.tests.fixtures.assets import sample_assets
 
+# Import Chain so we can set a cache.
+from Chain import Model, ChainCache
+
+Model._chain_cache = ChainCache(db_path=".test_minimal_cache.db")
+
 # Create our list of source types
 immediately_usable_types = """
 Text

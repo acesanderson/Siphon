@@ -3,7 +3,7 @@ from transformers import pipeline
 import torch
 
 # Import our centralized logger - no configuration needed here!
-from Siphon.logging.logging_config import get_logger
+from Siphon.logs.logging_config import get_logger
 
 # Get logger for this module - will inherit config from retrieve_audio.py
 logger = get_logger(__name__)
@@ -19,10 +19,9 @@ def transcribe(file_name: str | Path) -> str:
         model="openai/whisper-base",
         # model="openai/whisper-large-v3",
         return_timestamps="sentence",
-        device =0, 
+        device=0,
         torch_dtype=torch.float16,
     )
     logger.info(f"Transcribing file: {file_name}")
     result = transcriber(file_name)
     return result
-

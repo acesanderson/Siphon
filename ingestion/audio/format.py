@@ -1,12 +1,8 @@
 # Import our centralized logger - no configuration needed here!
-from Siphon.logging.logging_config import get_logger
+from Siphon.logs.logging_config import get_logger
 
 # Get logger for this module - will inherit config from retrieve_audio.py
 logger = get_logger(__name__)
-
-
-
-
 
 
 def format_transcript(annotated_transcript, group_by_speaker=True):
