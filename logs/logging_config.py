@@ -42,7 +42,7 @@ def get_logger(name=None, level=None):
 
 
 def configure_logging(
-    level=logging.INFO,
+        level: int = logging.INFO,
     console=True,
 ):
     """
@@ -54,6 +54,13 @@ def configure_logging(
         log_file: Optional file to log to (default: None)
         trace_mode: If True, add detailed debugging info with line numbers
         console: If True, log to console (via stderr)
+
+    Levels:
+        - logging.DEBUG = 10
+        - logging.INFO = 20
+        - logging.WARNING = 30
+        - logging.ERROR = 40
+        - logging.CRITICAL = 50
     """
     # Create a log formatter with trace information if requested
     log_format = "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d (%(funcName)s) - %(message)s"

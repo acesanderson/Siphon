@@ -2,12 +2,11 @@ from pathlib import Path
 from typing import Literal
 
 # Import our centralized logging configuration
-from Siphon.logs.logging_config import configure_logging
-import logging
+from Siphon.logs.logging_config import get_logger
 
 
 # Configure logging once at the entry point
-logger = configure_logging(level=logging.INFO, console=True)
+logger = get_logger(__name__)
 
 
 def retrieve_audio(
@@ -21,7 +20,7 @@ def retrieve_audio(
 
     if model == "local":
         logger.info("Starting local transcription process.")
-        return get_local_transcript(audio_file)
+        return str(get_local_transcript(audio_file))
     elif model == "openai":
         logger.info("Starting OpenAI transcription process.")
         return get_openai_transcript(audio_file)

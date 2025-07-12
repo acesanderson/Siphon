@@ -11,7 +11,13 @@ and then retrieve the context + store it from the specified source.
 
 from Siphon.main.siphon import siphon
 from Siphon.cli.cli_params import CLIParams
-import argparse
+from Siphon.logs.logging_config import configure_logging
+import argparse, logging
+
+logger = configure_logging(
+    level=logging.ERROR,
+    console=True,
+)
 
 
 def main():

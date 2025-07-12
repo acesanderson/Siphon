@@ -5,9 +5,15 @@ from typing import Optional, override
 
 
 class ArticleMetadata(Metadata):
+    """
+    This is the exemplar for online resources.
+    All online resources (Drive, GitHub, YouTube, Article) should have url, domain, title, and pub date.
+    """
     sourcetype: SourceType = SourceType.ARTICLE
     url: str
-    html_title: Optional[str] = None
+    domain: str
+    title: Optional[str] = None
+    published_date: Optional[int] = None
 
     @override
     @classmethod

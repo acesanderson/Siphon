@@ -5,14 +5,12 @@ from Siphon.ingestion.image.describe_image_with_cloud import (
 from Siphon.ingestion.image.describe_image_with_ollama import (
     describe_image_with_ollama_models,
 )
-import logging
 
 # Import our centralized logging configuration
-from Siphon.logs.logging_config import configure_logging
-
+from Siphon.logs.logging_config import get_logger
 
 # Configure logging once at the entry point
-logger = configure_logging(level=logging.INFO, console=True)
+logger = get_logger(__name__)
 
 
 def retrieve_image(image_path: str | Path, model: str = "ollama") -> str:

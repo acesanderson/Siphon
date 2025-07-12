@@ -28,6 +28,11 @@ dependencies = [
     "ollama",
     "openai",
     "google-genai",
+    "lxml[html-clean]>=6.0.0",
+    "tinydb>=4.8.2",
+    "anthropic>=0.57.1",
+    "instructor>=1.9.2",
+    "tiktoken>=0.9.0",
 ]
 
 [project.scripts]
