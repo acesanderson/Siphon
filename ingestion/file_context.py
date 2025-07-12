@@ -1,4 +1,4 @@
-from Siphon.data.extensions import extensions
+from Siphon.data.Extensions import Extensions
 from pathlib import Path
 
 
@@ -11,7 +11,7 @@ asset_files = list(asset_dir.glob("*.*"))
 def route_file(file_path: Path):
     """Route the file to the appropriate handler based on its extension."""
     ext = file_path.suffix.lower()
-    for category, exts in extensions.items():
+    for category, exts in Extensions.items():
         if ext in exts:
             return category
     return "unknown"
@@ -23,7 +23,7 @@ def convert_markitdown(file_path: Path):
 
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["markitdown"]:
+    if not file_path.suffix.lower() in Extensions["markitdown"]:
         raise ValueError(f"File type not supported for MarkItDown: {file_path.suffix}")
     # Do the conversion
     md = MarkItDown()
@@ -34,7 +34,7 @@ def convert_raw(file_path: Path):
     """Convert raw files (CSV, JSON, etc.) to text."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["raw"]:
+    if not file_path.suffix.lower() in Extensions["raw"]:
         raise ValueError(
             f"File type not supported for raw conversion: {file_path.suffix}"
         )
@@ -47,7 +47,7 @@ def convert_code(file_path: Path):
     """Convert code files to text."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["code"]:
+    if not file_path.suffix.lower() in Extensions["code"]:
         raise ValueError(
             f"File type not supported for code conversion: {file_path.suffix}"
         )
@@ -62,7 +62,7 @@ def convert_audio(file_path: Path):
 
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["audio"]:
+    if not file_path.suffix.lower() in Extensions["audio"]:
         raise ValueError(
             f"File type not supported for Whisper conversion: {file_path.suffix}"
         )
@@ -74,7 +74,7 @@ def convert_video(file_path: Path):
     """Convert video files to text."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["video"]:
+    if not file_path.suffix.lower() in Extensions["video"]:
         raise ValueError(
             f"File type not supported for video conversion: {file_path.suffix}"
         )
@@ -87,7 +87,7 @@ def convert_image(file_path: Path):
     """Convert image files using OCR."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["image"]:
+    if not file_path.suffix.lower() in Extensions["image"]:
         raise ValueError(
             f"File type not supported for OCR conversion: {file_path.suffix}"
         )
@@ -101,7 +101,7 @@ def convert_archive(file_path: Path):
     """Extract and convert archive files."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["archive"]:
+    if not file_path.suffix.lower() in Extensions["archive"]:
         raise ValueError(
             f"File type not supported for archive conversion: {file_path.suffix}"
         )
@@ -114,7 +114,7 @@ def convert_specialized(file_path: Path):
     """Convert specialized files (e.g., ePub, mobi)."""
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
-    if not file_path.suffix.lower() in extensions["specialized"]:
+    if not file_path.suffix.lower() in Extensions["specialized"]:
         raise ValueError(
             f"File type not supported for specialized conversion: {file_path.suffix}"
         )

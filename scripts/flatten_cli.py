@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Flatten - CLI tool for converting GitHub repositories and local directories 
+Flatten - CLI tool for converting GitHub repositories and local directories
 into LLM-friendly XML format.
 
 Usage:
     python Flatten.py .                                    # Flatten current directory
-    python Flatten.py /path/to/directory                   # Flatten specific directory  
+    python Flatten.py /path/to/directory                   # Flatten specific directory
     python Flatten.py https://github.com/owner/repo        # Flatten GitHub repository
 """
 

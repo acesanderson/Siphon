@@ -3,9 +3,17 @@ This module defines various file extensions categorized into different types.
 This routes incoming requests to the appropriate handler based on the file extension.
 """
 
-extensions = {
-    "raw": [".csv", ".json", ".xml", ".txt", ".md", ".yaml", ".yml", ".toml", ".ini"],
-    "code": [
+Extensions = {
+    "Text": [
+        ".csv",
+        ".json",
+        ".xml",
+        ".txt",
+        ".md",
+        ".yaml",
+        ".yml",
+        ".toml",
+        ".ini",
         ".py",
         ".js",
         ".html",
@@ -17,8 +25,11 @@ extensions = {
         ".rs",
         ".rb",
         ".php",
+        ".log",
+        ".env",
+        ".sh",
     ],
-    "markitdown": [
+    "Doc": [
         ".docx",
         ".pptx",
         ".xlsx",
@@ -28,21 +39,21 @@ extensions = {
         ".html",
         ".rtf",
     ],
-    "audio": [
+    "Audio": [
         ".wav",
         ".mp3",
         ".m4a",
         ".ogg",
         ".flac",
     ],
-    "video": [
+    "Video": [
         ".mp4",
         ".avi",
         ".mov",
         ".webm",
         ".mkv",
     ],
-    "image": [
+    "Image": [
         ".jpg",
         ".jpeg",
         ".png",
@@ -53,6 +64,6 @@ extensions = {
         ".webp",
         ".ico",
     ],
-    "archive": [".zip", ".tar", ".gz", ".rar", ".7z"],
-    "specialized": [".epub", ".mobi"],
+    # "archive": [".zip", ".tar", ".gz", ".rar", ".7z"],
+    # "specialized": [".epub", ".mobi"],
 }
