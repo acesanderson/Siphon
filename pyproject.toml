@@ -17,7 +17,7 @@ dependencies = [
     "sentence-transformers",
     "rerankers",
     "psycopg2-binary",
-    "youtube-transcript-api",
+    "youtube-transcript-api>=1.1.1",
     "newspaper3k",
     "markitdown[all]",
     "pyaudio",
