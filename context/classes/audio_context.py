@@ -22,16 +22,16 @@ class AudioContext(Context):
         if not isinstance(uri, AudioURI):
             raise TypeError("Expected uri to be an instance of AudioURI.")
 
-        from Siphon.ingestion.audio.local_transcript import get_local_transcript
-        from Siphon.ingestion.audio.openai_transcript import get_openai_transcript
         from pathlib import Path
 
         audio_file = Path(uri.source)
 
         if model == "local":
+            from Siphon.ingestion.audio.local_transcript import get_local_transcript
             logger.info("Starting local transcription process.")
             llm_context = get_local_transcript(audio_file)
         elif model == "openai":
+            from Siphon.ingestion.audio.openai_transcript import get_openai_transcript
             logger.info("Starting OpenAI transcription process.")
             llm_context = get_openai_transcript(audio_file)
         else:
