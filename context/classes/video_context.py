@@ -1,21 +1,23 @@
-from Siphon.data.Context import Context
+from Siphon.context.classes.text_context import TextContext
 from Siphon.data.SourceType import SourceType
 from Siphon.data.URI import URI
 from typing import override
 
 
-class VideoContext(Context):
+class VideoContext(TextContext):
+    """
+    Context class for handling video files.
+    Inherits from TextContext to provide common functionality; from_uri, _validate_uri, and _get_metadata work under the hood.
+    """
     sourcetype: SourceType = SourceType.VIDEO
 
     @override
     @classmethod
-    def from_uri(cls, uri: "VideoURI") -> "VideoContext":  # type: ignore
+    def _get_context(cls, uri: URI, model: str = "cloud") -> str:
         """
-        Create a VideoContext from a URI.
+        Get the context from the video file.
+        This method is overridden to provide specific functionality for video files.
         """
-        from Siphon.uri.classes.video_uri import VideoURI
+        _, _ = uri, model
+        raise NotImplementedError("VideoContext._get_context is not implemented yet")
 
-        if not isinstance(uri, VideoURI):
-            raise TypeError("Expected uri to be an instance of VideoURI.")
-
-        raise NotImplementedError("VideoContext.from_uri is not implemented yet")

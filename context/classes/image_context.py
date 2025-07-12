@@ -1,27 +1,26 @@
-from Siphon.data.Context import Context
+from Siphon.context.classes.text_context import TextContext
 from Siphon.data.SourceType import SourceType
 from Siphon.data.URI import URI
-from typing import override
+from typing import override, Literal
 
 
-class ImageContext(Context):
+class ImageContext(TextContext):
+    """
+    Context class for handling image files.
+    Inherits from TextContext to provide common functionality; from_uri, _validate_uri, and _get_metadata work under the hood.
+    """
     sourcetype: SourceType = SourceType.IMAGE
 
     @override
     @classmethod
-    def from_uri(cls, uri: "ImageURI") -> "ImageContext":  # type: ignore
+    def _get_context(cls, uri: URI, model: Literal["local", "cloud"] = "cloud") -> str:
         """
-        Create an ImageContext object from a URI object.
+        Get the context from the image file.
+        This method is overridden to provide specific functionality for image files.
         """
-        from Siphon.uri.classes.image_uri import ImageURI
-
-        if not isinstance(uri, ImageURI):
-            raise TypeError("Expected uri to be an instance of ImageURI.")
+        _ = model
 
         from Siphon.ingestion.image.retrieve_image import retrieve_image
 
-        image_description = retrieve_image(uri.source, model="gpt-4.1-mini")
-        assert (
-            isinstance(image_description, str) and len(image_description) > 0
-        ), "The image description should be a non-empty string."
-        return cls(context=image_description)
+        image_description = retrieve_image(uri.source, model=model)
+        return image_description

@@ -1,6 +1,6 @@
-from Siphon.data.Metadata import SiphonMetadata
 from Siphon.data.URI import URI
 from Siphon.data.SyntheticData import SyntheticData
+from Siphon.data.Context import Context
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -11,15 +11,9 @@ class ProcessedContent(BaseModel):
         ..., description="Original URI of the content, used for retrieval"
     )
 
-    # Source-specific metadata (typed)
-    metadata: SiphonMetadata = Field(
-        default_factory=SiphonMetadata,
-        description="Source-specific metadata, such as file size, author, etc.",
-    )    # Core processed data
-
     # AI context for LLM consumption
-    llm_context: str = Field(
-        ..., description="Processed content ready for LLM consumption"
+    llm_context: Context = Field(
+        ..., description="Processed content + metadata ready for LLM consumption"
     )
 
     # Synthetic data (title, description, summary, topics, entities) -- added post init

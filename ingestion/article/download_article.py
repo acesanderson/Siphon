@@ -40,18 +40,15 @@ def convert_markdown_link(link):
     return cleaned_link
 
 
-def download_article(url):
+def download_article(url) -> Article:
     """
     Feed this a url for an article, and it will return the text of the article.
     """
     url = validate_url(url)
-    try:
-        article = Article(url, request_headers=headers)
-        article.download()
-        article.parse()
-        return article.text
-    except:
-        return f"Error with request: {url}."
+    article = Article(url, request_headers=headers)
+    article.download()
+    article.parse()
+    return article
 
 
 if __name__ == "__main__":

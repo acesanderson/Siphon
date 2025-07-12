@@ -1,36 +1,27 @@
-from Siphon.data.Context import Context
+from Siphon.context.classes.text_context import TextContext
 from Siphon.data.SourceType import SourceType
-from Siphon.data.Extensions import Extensions
 from Siphon.data.URI import URI
-from typing import override
+from typing import override, Literal
 
 
-class DocContext(Context):
+class DocContext(TextContext):
+    """
+    Context class for handling document files (e.g., .doc, .docx).
+    Validation, and metadata inherit from TextContext.
+    """
     sourcetype: SourceType = SourceType.DOC
 
     @override
     @classmethod
-    def from_uri(cls, uri: "DocURI") -> "DocContext":  # type: ignore
-        """
-        Create a DocContext from a URI.
-        """
-        from Siphon.uri.classes.doc_uri import DocURI
-
-        if not isinstance(uri, DocURI):
-            raise TypeError("Expected uri to be an instance of DocURI.")
+    def _get_context(cls, uri: URI, model: Literal["local", "cloud"]) -> str:  # type: ignore
+        _ = model
 
         from markitdown import MarkItDown
         from pathlib import Path
 
         file_path = Path(uri.source)
 
-        if not file_path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
-        if not file_path.suffix.lower() in Extensions["Doc"]:
-            raise ValueError(
-                f"File type not supported for MarkItDown: {file_path.suffix}"
-            )
-        # Do the conversion
         md = MarkItDown()
         llm_context = md.convert(file_path)
-        return cls(context=str(llm_context))
+        return str(llm_context)
+

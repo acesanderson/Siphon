@@ -58,7 +58,7 @@ sample_assets = {
         SourceType("Audio"): sample_mp3,
         SourceType("Image"): sample_image,
         SourceType("Doc"): sample_docx,
-        SourceType("YouTube"): "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        SourceType("YouTube"): "https://www.youtube.com/watch?v=6kfxxzCmLmk",
         SourceType("GitHub"): "https://github.com/acesanderson/Siphon",
         SourceType(
             "Article"

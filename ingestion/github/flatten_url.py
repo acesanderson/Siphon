@@ -16,9 +16,10 @@ from Siphon.ingestion.github.flatten_xml import (
 )
 
 
-def parse_github_url(github_url: str) -> str:
+def parse_github_url(github_url: str) -> tuple[str, dict]:
     """
     Convert a GitHub URL to a zipball API URL with better error handling.
+    Also retrieve metadata through GH API.
     """
     parts = github_url.rstrip("/").split("/")
     if len(parts) < 2:
@@ -26,6 +27,30 @@ def parse_github_url(github_url: str) -> str:
 
     owner = parts[-2]
     repo = parts[-1]
+
+    from github import Github
+    import os
+
+    # Initialize GitHub API client
+    g = Github(os.getenv("GITHUB_TOKEN"))
+    repo_obj = g.get_repo(f"{owner}/{repo}")
+    # Extract metadata
+
+    metadata = {
+        # Standard online metadata
+        "url": repo_obj.url,
+        "domain": "github.com",
+        "title": f"{owner}/{repo}",
+        "published_date": int(repo_obj.created_at.timestamp()),
+        # GitHub-specific
+        "stars": repo_obj.stargazers_count,
+        "language": repo_obj.language,
+        "topics": repo_obj.topics,
+        "description": repo_obj.description,
+        "updated_at": int(repo_obj.updated_at.timestamp()),
+        "pushed_at": int(repo_obj.pushed_at.timestamp()),
+        "size": repo_obj.size,
+    }
 
     # First try to get the default branch
     token = os.getenv("GITHUB_TOKEN")
@@ -53,7 +78,7 @@ def parse_github_url(github_url: str) -> str:
     )
     print(f"Using zipball URL: {zipball_url}")
 
-    return zipball_url
+    return zipball_url, metadata
 
 
 def download_github_repo(repo_url: str) -> zipfile.ZipFile:
@@ -173,7 +198,7 @@ def create_github_file_reader(zip_file: zipfile.ZipFile) -> callable:
     return file_reader
 
 
-def flatten_github_repo(github_url: str) -> str:
+def flatten_github_repo(github_url: str) -> tuple[str, dict]:
     """
     Flatten a GitHub repository into XML format.
 
@@ -181,13 +206,15 @@ def flatten_github_repo(github_url: str) -> str:
         github_url: GitHub repository URL
 
     Returns:
-        XML string representation of the repository
+        A tuple of:
+            XML string representation of the repository
+            Metadata dictionary with keys: url, domain, title, published_date
 
     Raises:
         Exception: If the repository cannot be fetched or processed
     """
     # Convert URL to API endpoint
-    repo_url = parse_github_url(github_url)
+    repo_url, metadata = parse_github_url(github_url)
 
     # Download and process the repository
     with download_github_repo(repo_url) as zip_file:
@@ -199,4 +226,4 @@ def flatten_github_repo(github_url: str) -> str:
         file_reader = create_github_file_reader(zip_file)
 
         # Generate XML
-        return package_to_xml(project_name, file_reader, path_iterator)
+        return package_to_xml(project_name, file_reader, path_iterator), metadata

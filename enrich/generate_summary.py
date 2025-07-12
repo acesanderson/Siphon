@@ -1,7 +1,6 @@
 from pathlib import Path
 from Chain import Model, Prompt, Chain
 from Siphon.data.ProcessedContent import ProcessedContent
-from Siphon.data.Metadata import OnlineMetadata
 
 dir_path = Path(__file__).parent
 prompts_dir = dir_path.parent / "prompts"
@@ -36,10 +35,9 @@ def calculate_target_summary_length(content_length: int) -> tuple[int, int]:
 def generate_summary(processed_content: ProcessedContent, model: str = "llama3.3:latest") -> str:
     # Get attributes from processed content
     uri = processed_content.uri
-    metadata = processed_content.metadata
     llm_context = processed_content.llm_context
     target_words, percentage = calculate_target_summary_length(len(llm_context.split()))
-    input_variables = {"uri": uri, "metadata": metadata, "llm_context": llm_context, "target_length": str(target_words), "length_percentage": str(percentage)}
+    input_variables = {"uri": uri, "llm_context": llm_context, "target_length": str(target_words), "length_percentage": str(percentage)}
     # Build our chain
     prompt = Prompt(title_prompt_file.read_text())
     model_obj = Model(model)
@@ -47,32 +45,3 @@ def generate_summary(processed_content: ProcessedContent, model: str = "llama3.3
     response = chain.run(input_variables=input_variables)
     # Return the generated title
     return str(response.content)
-
-    
-if __name__ == "__main__":
-    from Siphon.data.URI import SiphonURI
-    from Siphon.data.SourceType import SourceType
-    from datetime import datetime
-
-    example_html = dir_path / "html_example.md"
-
-    # Example usage
-    content = ProcessedContent(
-        content_id="example_content_id",
-        uri=SiphonURI.from_string("http://example.com/content"),
-        source_type=SourceType.ARTICLE,
-        content_created_at=datetime.now(),
-        content_modified_at=datetime.now(),
-        ingested_at=datetime.now(),
-        last_updated_at=datetime.now(),
-        llm_context=example_html.read_text(),
-    )
-    metadata = OnlineMetadata(
-        url ="http://example.com",
-        html_title="Example Metadata Title",
-        content_type="webpage",
-    )
-    content.metadata = metadata
-
-    title = generate_summary(content)
-    print(f"Generated Description: {title}")

@@ -1,7 +1,6 @@
 from pathlib import Path
 from Chain import Model, Prompt, Chain
 from Siphon.data.ProcessedContent import ProcessedContent
-from Siphon.data.Metadata import OnlineMetadata
 
 dir_path = Path(__file__).parent
 prompts_dir = dir_path.parent / "prompts"
@@ -10,9 +9,8 @@ title_prompt_file = prompts_dir / "enrich_description.jinja2"
 def generate_description(processed_content: ProcessedContent, model: str = "llama3.3:latest") -> str:
     # Get attributes from processed content
     uri = processed_content.uri
-    metadata = processed_content.metadata
     llm_context = processed_content.llm_context
-    input_variables = {"uri": uri, "metadata": metadata, "llm_context": llm_context}
+    input_variables = {"uri": uri, "llm_context": llm_context}
     # Build our chain
     prompt = Prompt(title_prompt_file.read_text())
     model_obj = Model(model)

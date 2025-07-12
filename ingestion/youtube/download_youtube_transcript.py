@@ -7,10 +7,13 @@ From module creator:
     working, let me know!*
 
 """
-
+from Siphon.logs.logging_config import get_logger
 from youtube_transcript_api import YouTubeTranscriptApi
+import yt_dlp
 import sys
 import re
+
+logger = get_logger(__name__)
 
 video_id = "5xb6uWLtCsI"
 example = "https://www.youtube.com/watch?v=VctsqOo8wsc&t=628s"
@@ -36,17 +39,44 @@ def validate_video_id(input):
             r"^https?:\/\/(www\.)?youtube\.com\/live\/([a-zA-Z0-9_-]{11})", input
         ).group(2)
     else:
-        return ValueError("Invalid YouTube URL or Video ID")
+        raise ValueError("Invalid YouTube URL or Video ID")
 
 
-def download_youtube_transcript(video_id) -> str:
+def download_youtube_transcript(video_id) -> tuple[str, dict]:
     """
     Feed this either a youtube link or a youtube video id, and it will return the transcript of the video.
+    Returns a tuple of the transcript and metadata.
     """
+    logger.info(f"Input video_id: {video_id}")
     video_id = validate_video_id(video_id)
+    logger.info(f"Validated video_id: {video_id}")
+    logger.info(f"Type of video_id: {type(video_id)}")
+    logger.info("Getting metadata from GitHub api...")
+    with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+         info = ydl.extract_info(video_id, download=False)
+         metadata = {
+             # Online metadata (standard fields)
+             'url': info.get('webpage_url'),
+             'domain': "youtube.com",
+             'title': info.get('title'),
+             'published_date': info.get('upload_date') if info.get('upload_date') else None,
+             # Youtube-specific
+             'video_id': info.get('id'),
+             'channel': info.get('channel'),
+             'duration': info.get('duration'),
+             'view_count': info.get('view_count'),
+             'description': info.get('description'),
+             'tags': info.get('tags'),
+             'like_count': info.get('like_count'),
+             'comment_count': info.get('comment_count'),
+         }
+    logger.info(f"Metadata: {metadata}")
+    logger.info("Downloading transcript...")
     t = YouTubeTranscriptApi.get_transcript(video_id)
+    assert isinstance(t, list), "Transcript should be a list"
     script = " ".join([line["text"] for line in t])
-    return script
+    assert len(script) > 0, "Transcript should not be empty"
+    return script, metadata
 
 
 if __name__ == "__main__":

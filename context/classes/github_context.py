@@ -1,27 +1,31 @@
-from Siphon.data.Context import Context
+from Siphon.context.classes.article_context import ArticleContext
 from Siphon.data.SourceType import SourceType
 from Siphon.data.URI import URI
-from typing import override
+from typing import override, Optional
 
 
-class GitHubContext(Context):
+class GitHubContext(ArticleContext):
+    """
+    Context class for handling GitHub articles.
+    Inherits from ArticleContext to handle GitHub-specific content.
+    """
     sourcetype: SourceType = SourceType.GITHUB
+
+    # GitHub specific metadata fields
+    stars: int
+    language: str
+    topics: list[str]
+    description: Optional[str]
+    updated_at: int
+    pushed_at: int
+    size: int
 
     @override
     @classmethod
-    def from_uri(cls, uri: "GitHubURI") -> "GitHubContext":  # type: ignore
+    def _get_context(cls, uri: URI) -> tuple[str, dict]:
         """
-        Create a GitHubContext from a URI.
+        Get the text content + metadata from the GitHub article.
         """
-        from Siphon.uri.classes.github_uri import GitHubURI
-
-        if not isinstance(uri, GitHubURI):
-            raise TypeError("Expected uri to be an instance of GitHubURI.")
-
         from Siphon.ingestion.github.retrieve_github import retrieve_github
-        llm_context = retrieve_github(uri.source)
-        assert isinstance(llm_context, str) and len(llm_context) > 0, "Expected llm_context to be a non-empty string."
-        return cls(
-            context=llm_context,
-        )
-
+        llm_context, metadata = retrieve_github(uri.source)
+        return llm_context, metadata

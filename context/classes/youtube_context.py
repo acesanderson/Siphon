@@ -1,28 +1,29 @@
-from Siphon.data.Context import Context
+from Siphon.context.classes.article_context import ArticleContext
 from Siphon.data.SourceType import SourceType
+from Siphon.data.URI import URI
 from typing import override
 
-
-class YouTubeContext(Context):
+class YouTubeContext(ArticleContext):
     sourcetype: SourceType = SourceType.YOUTUBE
+
+    # Youtube specific metadata fields
+    video_id: str
+    channel: str
+    duration: int
+    view_count: int
+    description: str
+    tags: list[str]
+    like_count: int
+    comment_count: int
 
     @override
     @classmethod
-    def from_uri(cls, uri: "YouTubeURI") -> "YouTubeContext":  # type: ignore
+    def _get_context(cls, uri: URI) -> tuple[str, dict]:
         """
-        Create a YouTubeContext from a URI.
+        Get the text content + metadata from the YouTube video.
         """
-        from Siphon.uri.classes.youtube_uri import YouTubeURI
-
-        if not isinstance(uri, YouTubeURI):
-            raise TypeError("Expected uri to be an instance of YouTubeURI.")
-
         from Siphon.ingestion.youtube.retrieve_youtube import retrieve_youtube
 
-        llm_context = retrieve_youtube(uri.source)
+        llm_context, metadata = retrieve_youtube(uri.source)
+        return llm_context, metadata
 
-        assert isinstance(llm_context, str) and len(llm_context) > 0, "Expected llm_context to be a non-empty string."
-
-        return cls(
-            context = llm_context,
-        )

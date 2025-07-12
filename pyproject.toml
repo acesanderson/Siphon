@@ -33,6 +33,9 @@ dependencies = [
     "anthropic>=0.57.1",
     "instructor>=1.9.2",
     "tiktoken>=0.9.0",
+    "yt-dlp[default]>=2025.6.30",
+    "pytest>=8.4.1",
+    "pygithub>=2.6.1",
 ]
 
 [project.scripts]
