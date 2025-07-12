@@ -40,7 +40,7 @@ dependencies = [
 
 [project.scripts]
 siphon = "Siphon.cli.siphon_cli:main"
-record = "Siphon.script.record_cli:main"
+record = "Siphon.scripts.record_cli:main"
 play = "Siphon.scripts.play_cli:main"
 siphonserver = "Siphon.scripts.siphonserver_cli:main"
 flatten = "Siphon.scripts.flatten_cli:main"
