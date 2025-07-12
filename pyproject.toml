@@ -16,7 +16,7 @@ dependencies = [
     "chromadb",
     "sentence-transformers",
     "rerankers",
-    "psycopg2",
+    "psycopg2-binary",
     "youtube-transcript-api",
     "newspaper3k",
     "markitdown[all]",
