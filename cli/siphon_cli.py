@@ -1,6 +1,8 @@
 """
 This is the CLI entry point for Siphon.
 
+Think of this as `cat` for LLMs. A simple command-line interface to convert files or URLs into context for LLMs.
+
 Users can either provide a file path or a URL to retrieve the context.
 Usage:
     python siphon_cli.py <file_or_url>

@@ -18,6 +18,8 @@ def categorize_url(url: str) -> str:
         return "github"
     if "docs.google.com" in url:
         return "drive"
+    if "arxib" in url:
+        return "arxiv"
     elif "http" in url:
         return "article"
     else:
@@ -38,5 +40,7 @@ def retrieve_online_context(url: str) -> str:
             return retrieve_google_doc(url)
         case "article":
             return retrieve_article(url)
+        case "arxiv":
+            raise NotImplementedError("Arxiv not implemented yet.")
         case _:
             raise ValueError(f"Unsupported URL type: {mode}")

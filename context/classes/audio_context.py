@@ -19,10 +19,8 @@ class AudioContext(TextContext):
     def _get_context(cls, uri: URI, model: Literal["local", "cloud"]) -> str:
         from pathlib import Path
         audio_file = Path(uri.source)
-
         from Siphon.ingestion.audio.retrieve_audio import retrieve_audio
         logger.info("Starting transcription process.")
         llm_context = retrieve_audio(audio_file, model=model)
         return llm_context
-
 
