@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 dir_path = Path(__file__).parent
-prompts_dir = dir_path.parent / "prompts"
+prompts_dir = dir_path.parent.parent / "prompts"
 format_prompt_file = prompts_dir / "format_transcript.jinja2"
 
 

@@ -18,4 +18,10 @@ class GitHubContext(Context):
         if not isinstance(uri, GitHubURI):
             raise TypeError("Expected uri to be an instance of GitHubURI.")
 
-        raise NotImplementedError("GitHubContext.from_uri is not implemented yet")
+        from Siphon.ingestion.github.retrieve_github import retrieve_github
+        llm_context = retrieve_github(uri.source)
+        assert isinstance(llm_context, str) and len(llm_context) > 0, "Expected llm_context to be a non-empty string."
+        return cls(
+            context=llm_context,
+        )
+

@@ -1,6 +1,5 @@
 from Siphon.data.Context import Context
 from Siphon.data.SourceType import SourceType
-from Siphon.data.URI import URI
 from typing import override
 
 
@@ -18,6 +17,11 @@ class ArticleContext(Context):
         if not isinstance(uri, ArticleURI):
             raise TypeError("Expected uri to be an instance of ImageURI.")
 
-        raise NotImplementedError(
-            "ArticleContext.from_uri is not implemented yet. Please implement this method in your subclass."
+        from Siphon.ingestion.article.retrieve_article import retrieve_article
+        llm_context = retrieve_article(uri.source)
+
+        assert isinstance(llm_context, str) and len(llm_context) > 0, "Expected llm_context to be a non-empty string."
+
+        return cls(
+            context=llm_context,
         )
