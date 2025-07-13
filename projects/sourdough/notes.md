@@ -1,6 +1,10 @@
+notes: sourdoughs should be generated / maintained for tags (think #profcerts, #boss, #google, etc.)
+
+
 # Sourdough Design Document  
 **Auto-Updating Company Strategic Knowledge Base**  
 **Version 0.1** | *June 18, 2025*
+
 ## 1. Purpose
 
 **Sourdough** is a self-maintaining, auto-curated knowledge base that continuously ingests, summarizes, and prunes company strategy content (e.g., all-hands transcripts, OKRs, product roadmaps) into a concise, up-to-date “strategy snapshot.” It is designed to stay within LLM context limits and to serve as a reliable, always-fresh source of strategic context for Siphon.
