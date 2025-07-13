@@ -54,8 +54,8 @@ def main():
         llm=args_dict["llm"],
     )
     if query:
-        response = siphon(query)
-        print(response)
+        processed_content = siphon(query)
+        processed_content.pretty_print()
 
 
 if __name__ == "__main__":

@@ -1,27 +1,44 @@
-from Siphon.data.URI import SiphonURI
-from Siphon.data.SourceType import SourceType
+"""
+Simple dummy ProcessedContent for testing display.
+
+Usage:
+    from Siphon.tests.fixtures.dummy_processed_content import dummy_content
+    dummy_content.pretty_print()  # assuming you've added the mixin to ProcessedContent
+"""
+
 from Siphon.data.ProcessedContent import ProcessedContent
-from Siphon.data.Metadata import OnlineMetadata
-from pathlib import Path
-import time
+from Siphon.data.URI import URI
+from Siphon.data.Context import Context
+from Siphon.data.SyntheticData import SyntheticData
+from Siphon.data.SourceType import SourceType
 
-dir_path = Path(__file__).parent
-example_html = dir_path / "example_html.html"
+# Simple YouTube context with metadata
+class DummyYouTubeContext(Context):
+    sourcetype: SourceType = SourceType.YOUTUBE
+    context: str = "This is a great tutorial on machine learning basics. We cover linear regression, decision trees, and neural networks with practical Python examples. Perfect for beginners!"
+    
+    # YouTube metadata
+    url: str = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    domain: str = "youtube.com"
+    video_id: str = "dQw4w9WgXcQ"
+    channel: str = "AI Learning Hub"
+    duration: int = 1547  # 25 min 47 sec
+    view_count: int = 45782
 
-# Example usage
-content = ProcessedContent(
-    content_id="example_content_id",
-    uri=SiphonURI.from_string("http://example.com/content"),
-    source_type=SourceType.ARTICLE,
-    content_created_at=int(time.time()) - 7200,
-    content_modified_at=int(time.time()) - 3600,
-    ingested_at=int(time.time()),
-    last_updated_at=int(time.time()) - 1800,
-    llm_context=example_html.read_text(),
+# Create dummy ProcessedContent
+dummy_content = ProcessedContent(
+    uri=URI(
+        source="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        sourcetype=SourceType.YOUTUBE,
+        uri="youtube://dQw4w9WgXcQ"
+    ),
+    llm_context=DummyYouTubeContext(),
+    synthetic_data=SyntheticData(
+        sourcetype=SourceType.YOUTUBE,
+        title="Machine Learning Basics Tutorial",
+        description="Comprehensive guide covering ML fundamentals with Python examples",
+        summary="A 25-minute tutorial covering linear regression, decision trees, and neural networks. Great for beginners looking to get started with machine learning.",
+        topics=["machine learning", "python", "tutorial", "AI"],
+        entities=["Python", "scikit-learn", "TensorFlow"]
+    )
 )
-metadata = OnlineMetadata(
-    url="http://example.com",
-    html_title="Example Metadata Title",
-    content_type="webpage",
-)
-content.metadata = metadata

@@ -1,11 +1,19 @@
+"""
+ProcessedContent is our final output format for content processed by Siphon.
+It combines our URI, LLM context, and synthetic data into a structured format, for storage / caching / retrieval from postgres.
+Our CLI also has a nice display method (.pretty_print()), which we add as a mixin to this class.
+"""
+
+
 from Siphon.data.URI import URI
 from Siphon.data.SyntheticData import SyntheticData
 from Siphon.data.Context import Context
+from Siphon.data.ProcessedContentDisplay import ProcessedContentDisplayMixin
 from pydantic import BaseModel, Field
 from typing import Optional
 
 
-class ProcessedContent(BaseModel):
+class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
     # Primary identifiers
     uri: URI = Field(
         ..., description="Original URI of the content, used for retrieval"
@@ -27,9 +35,11 @@ class ProcessedContent(BaseModel):
         return self.synthetic_data.title if self.synthetic_data else ""
 
     @property
+    def description(self) -> str:
+        """Title of the content, derived from synthetic data if available."""
+        return self.synthetic_data.description if self.synthetic_data else ""
+
+    @property
     def summary(self) -> str:
         """Summary of the content, derived from synthetic data if available."""
         return self.synthetic_data.summary if self.synthetic_data else ""
-
-
-

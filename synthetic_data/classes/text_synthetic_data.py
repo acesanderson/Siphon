@@ -49,7 +49,12 @@ class TextSyntheticData(SyntheticData):
         """
         Retrieve prompt templates.
         """
-        ...
+        from Siphon.prompts.synthetic_data.synthetic_data_prompts import SyntheticDataPrompts
+
+        for syntheticdataprompt in SyntheticDataPrompts:
+            if cls.__name__.replace("SyntheticData", "").lower() in syntheticdataprompt.name:
+                return syntheticdataprompt.prompts
+
 
     @classmethod
     def _render_prompts(cls, context: Context, prompt_templates: list[str]) -> list[str]:

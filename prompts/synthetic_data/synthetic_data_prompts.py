@@ -1,5 +1,11 @@
 """
 This module dynamically loads all SyntheticData prompts for each SourceType defined in the Siphon.data.SourceType enum.
+
+For each sourcetype, we have a dict with the following:
+- `stem`: The lowercase name of the SourceType.
+- `title_prompt`: Path to the title prompt file.
+- `description_prompt`: Path to the description prompt file.
+- `summary_prompt`: Path to the summary prompt file.
 """
 from Siphon.data.SourceType import SourceType
 from pathlib import Path

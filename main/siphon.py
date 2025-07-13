@@ -28,18 +28,15 @@ def siphon(cli_params: CLIParams | str) -> str:
     # 3. Generate LLM context from the URI (retrieving text content)
     context = Context.from_uri(uri)
     # 4. Generate SyntheticData (post-processing)
-    # synthetic_data = SyntheticData.from_llm_context(llm_context)
+    synthetic_data = SyntheticData.from_context(context)
     # 5. Construct ProcessedContent object
-    # processed_content = ProcessedContent(
-    #     uri=uri,
-    #     ingested_at=int(time.time()),
-    #     last_updated=int(time.time()),
-    #     metadata=metadata,
-    #     llm_context=llm_context,
-    #     synthetic_data=synthetic_data,
-    # )
+    processed_content = ProcessedContent(
+        uri=uri,
+        llm_context=context,
+        synthetic_data=synthetic_data,
+    )
     # 5. Save to database
     # db.save(processed_content)
     # 6. Return the processed content
     # return processed_content
-    return context.context
+    return processed_content
