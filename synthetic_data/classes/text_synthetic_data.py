@@ -31,7 +31,7 @@ class TextSyntheticData(SyntheticData):
         from rich.console import Console
 
         ModelAsync._console = Console()
-        model = ModelAsync("gpt3")
+        model = ModelAsync("flash")
         chain = AsyncChain(model=model)
         responses = chain.run(prompt_strings=rendered_prompts)
         # Create the TextSyntheticData instance
@@ -63,7 +63,7 @@ class TextSyntheticData(SyntheticData):
         """
         Retrieve prompt templates.
         """
-        from Siphon.prompts.synthetic_data.synthetic_data_prompts import (
+        from Siphon.prompts.synthetic_data_prompts import (
             SyntheticDataPrompts,
         )
 
@@ -82,7 +82,6 @@ class TextSyntheticData(SyntheticData):
         from jinja2 import Template
 
         # Turn the prompt templates into a list, excluding the stem.
-        prompt_templates.pop("stem")
         template_list = []
         template_list.append(prompt_templates["title_prompt"])
         template_list.append(prompt_templates["description_prompt"])
