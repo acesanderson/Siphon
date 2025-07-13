@@ -1,20 +1,14 @@
 """
-I've spent arguably too much time scaffolding up a complex pipeline of:
-source: str -> URI -> Metadata -> Context -> SyntheticData -> ProcessedContent
-
-Let's get to the meat of it + make it immediately useful with a midway pipeline:
-source: str -> URI -> Context -> Context.context: str
-
-So that siphon_cli can immediately output context to stdout.
-
-Amending siphon.py to return the above minimal pipeline, this test script will orchestrate across a subset of sourcetypes we already have an implementation for.
+Siphon pipeline through iterative development;
+First just did URIs, then context generation, now synthetic data + completed ProcessedContent.
 """
 
-import pytest
 from Siphon.data.SourceType import SourceType
-from Siphon.main.siphon import siphon
+from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.cli.cli_params import CLIParams
+from Siphon.main.siphon import siphon
 from Siphon.tests.fixtures.assets import sample_assets
+import pytest
 
 # Import Chain so we can set a cache.
 from Chain import Model, ChainCache
@@ -53,9 +47,11 @@ def test_minimal_siphon(source_type):
     cli_params = CLIParams(source=str(source))
 
     # Run siphon and get the context
-    context = siphon(cli_params)
+    processed_content = siphon(cli_params)
 
-    # Assert that context is not empty
-    assert context is not None
-    assert isinstance(context, str)
-    assert len(context) > 0
+    # Display
+    processed_content.pretty_print()
+
+    assert isinstance(processed_content, ProcessedContent)
+    assert processed_content.synthetic_data is not None
+

@@ -39,7 +39,13 @@ class SyntheticData(BaseModel):
         """
         from Siphon.synthetic_data.synthetic_data_classes import SyntheticDataClasses
 
+        stem = context.__class__.__name__.replace("Context", "").lower()
+
         for synthetic_data_class in SyntheticDataClasses:
-            if synthetic_data_class.sourcetype == cls.sourcetype:
+            if (
+                synthetic_data_class.__name__.replace("SyntheticData", "").lower()
+                == stem
+            ):
                 logger.info(f"Using URI class: {synthetic_data_class.__name__}")
                 return synthetic_data_class.from_context(context)
+        raise ValueError(f"No SyntheticData class found for context type {stem}.")

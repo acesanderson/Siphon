@@ -5,7 +5,7 @@ from Siphon.cli.cli_params import CLIParams
 from Siphon.data.ProcessedContent import ProcessedContent
 
 
-def siphon(cli_params: CLIParams | str) -> str:
+def siphon(cli_params: CLIParams | str) -> ProcessedContent:
     """
     Siphon orchestrates the process of converting a source string (file path or URL).
     Receives either a string (back-end request) or a CLIParams (user-driven request), and routes the flow accordingly.
@@ -16,7 +16,9 @@ def siphon(cli_params: CLIParams | str) -> str:
     elif isinstance(cli_params, CLIParams):
         source = cli_params.source
     else:
-        raise TypeError("Expected a string or CLIParams object, got: {cli_params.__class__.__name__}")
+        raise TypeError(
+            "Expected a string or CLIParams object, got: {cli_params.__class__.__name__}"
+        )
 
     # 1. Parse source into structured URI
     uri = URI.from_source(source)

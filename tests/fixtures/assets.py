@@ -30,6 +30,7 @@ sample_docx = assets_path / "Talent Management Sources.docx"
 sample_pdf = assets_path / "Zscaler Professional Certificate Pitch 5-20-2025.pdf"
 sample_xlsx = assets_path / "courselist_en_US (6).xlsx"
 sample_html = assets_path / "download.html"
+sample_md = assets_path / "python_dp.md"
 sample_image = assets_path / "dymphna.png"
 sample_zip = assets_path / "ezra-transcripts.zip"
 sample_csv = assets_path / "monthly-cert-insights (14).csv"
@@ -54,7 +55,7 @@ sample_assets = {
     },
     # Sourcetypes
     "sourcetypes": {
-        SourceType("Text"): sample_html,
+        SourceType("Text"): sample_md,
         SourceType("Audio"): sample_mp3,
         SourceType("Image"): sample_image,
         SourceType("Doc"): sample_docx,
