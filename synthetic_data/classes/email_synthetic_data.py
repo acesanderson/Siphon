@@ -1,16 +1,10 @@
-from Siphon.data.Context import Context
 from Siphon.data.SourceType import SourceType
-from Siphon.data.SyntheticData import SyntheticData
-from typing import override
+from Siphon.synthetic_data.classes.text_synthetic_data import TextSyntheticData
 
 
-class EmailSyntheticData(SyntheticData):
+class EmailSyntheticData(TextSyntheticData):
     """
     AI-generated enrichments, applied as a "finishing step" to the content.
     """
 
     sourcetype: SourceType = SourceType.EMAIL
-
-    @override
-    @classmethod
-    def from_context(cls, context: Context) -> "EmailSyntheticData": ...

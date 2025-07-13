@@ -14,7 +14,7 @@ and then retrieve the context + store it from the specified source.
 from Siphon.main.siphon import siphon
 from Siphon.cli.cli_params import CLIParams
 from Siphon.logs.logging_config import configure_logging
-import argparse, logging
+import argparse, logging, sys
 
 logger = configure_logging(
     level=logging.ERROR,
@@ -45,6 +45,16 @@ def main():
         default="s",
         help="Type of data to return: 'm' (metadata), 'c' (context), or 's' (synthetic data). Defaults to 'synthetic_data', i.e. a summary.",
     )
+    parser.add_argument(
+            "--pretty",
+            action="store_true",
+            help="Pretty print the output.",
+            )
+    parser.add_argument(
+            "--raw",
+            action="store_true",
+            help="Output raw markdown without formatting.",
+            )
     args = parser.parse_args()
     args_dict = vars(args)
     query = CLIParams(
@@ -55,7 +65,20 @@ def main():
     )
     if query:
         processed_content = siphon(query)
-        processed_content.pretty_print()
+        output = f"# {processed_content.title}: {processed_content.id}\n\n{processed_content.summary}"
+        if args.pretty:
+            processed_content.pretty_print()
+            sys.exit()
+        if args.raw:
+            print(output)
+            sys.exit()
+        else:
+            from rich.markdown import Markdown
+            from rich.console import Console
+            console = Console()
+            markdown = Markdown(output)
+            console.print(markdown)
+            sys.exit()
 
 
 if __name__ == "__main__":
