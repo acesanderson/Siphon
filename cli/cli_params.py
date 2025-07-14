@@ -8,9 +8,9 @@ class CLIParams(BaseModel):
     source: str = Field(
         ..., description="Path to the file or URL to retrieve context from"
     )
-    return_type: Optional[Literal["m", "c", "s"]] = Field(
-        default="s",
-        description="Type of data to return: 'metadata', 'context', or 'synthetic_data'. Defaults to 'synthetic_data', i.e. a summary.",
+    cache_options: Optional[Literal["c", "u", "r"]] = Field(
+        default="c",
+        description="Special cache flags: 'u' (uncached, do not save), or 'r' (recache, save again). 'c' is default (cache the content).",
     )
 
     # flags

@@ -24,12 +24,10 @@ def siphon(cli_params: CLIParams | str) -> ProcessedContent:
     # Validate input
     if isinstance(cli_params, str):
         source = cli_params
-        use_cache = True  # Default to using cache for string inputs
+        cache_options = "c" # Default, cache it.
     elif isinstance(cli_params, CLIParams):
         source = cli_params.source
-        use_cache = not getattr(
-            cli_params, "no_cache", False
-        )  # Allow cache bypass via CLI flag
+        cache_options = cli_params.cache_options
     else:
         raise TypeError(
             f"Expected a string or CLIParams object, got: {cli_params.__class__.__name__}"
@@ -40,7 +38,7 @@ def siphon(cli_params: CLIParams | str) -> ProcessedContent:
     if not uri:
         raise ValueError(f"Invalid source: {source}. Must be a valid file path or URL.")
 
-    if use_cache:
+    if cache_options == "c":
         logger.info(f"Checking cache for URI: {uri.uri}")
         try:
             cached_content = get_cached_content(uri.uri)
@@ -67,7 +65,7 @@ def siphon(cli_params: CLIParams | str) -> ProcessedContent:
         synthetic_data=synthetic_data,
     )
 
-    if use_cache:
+    if cache_options in ["c", "r"]:
         try:
             logger.info(f"Attempting to cache content for URI: {uri.uri}")
             result = cache_processed_content(processed_content)

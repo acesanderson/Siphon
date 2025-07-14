@@ -41,20 +41,27 @@ def main():
         "-r",
         "--return_type",
         type=str,
-        choices=["m", "c", "s"],
+        choices=["c", "s"],
         default="s",
-        help="Type of data to return: 'm' (metadata), 'c' (context), or 's' (synthetic data). Defaults to 'synthetic_data', i.e. a summary.",
+        help="Type of data to return: 'c' (context), or 's' (synthetic data). Defaults to 'synthetic_data', i.e. a summary.",
     )
     parser.add_argument(
-            "--pretty",
-            action="store_true",
-            help="Pretty print the output.",
-            )
+        "-c",
+        "--cache-options",
+        type=str,
+        choices=["u", "r"],
+        help="Special cache flags: 'u' (uncached, do not save), or 'r' (recache, save again).",
+    )
     parser.add_argument(
-            "--raw",
-            action="store_true",
-            help="Output raw markdown without formatting.",
-            )
+        "--pretty",
+        action="store_true",
+        help="Pretty print the output.",
+    )
+    parser.add_argument(
+        "--raw",
+        action="store_true",
+        help="Output raw markdown without formatting.",
+    )
     args = parser.parse_args()
     args_dict = vars(args)
     query = CLIParams(
@@ -66,6 +73,13 @@ def main():
     if query:
         processed_content = siphon(query)
         output = f"# {processed_content.title}: {processed_content.id}\n\n{processed_content.summary}"
+        if args.return_type:
+            if args.return_type == "c":
+                print(processed_content.context)
+                sys.exit()
+            if args.return_type == "s":
+                print(processed_content.summary)
+                sys.exit()
         if args.pretty:
             processed_content.pretty_print()
             sys.exit()
@@ -75,6 +89,7 @@ def main():
         else:
             from rich.markdown import Markdown
             from rich.console import Console
+
             console = Console()
             markdown = Markdown(output)
             console.print(markdown)

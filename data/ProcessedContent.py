@@ -28,6 +28,13 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
     )
 
     @property
+    def context(self) -> str:
+        """
+        Full context text.
+        """
+        return self.llm_context.context
+
+    @property
     def title(self) -> str:
         """Title of the content, derived from synthetic data if available."""
         return self.synthetic_data.title if self.synthetic_data else ""
