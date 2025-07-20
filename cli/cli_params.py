@@ -13,11 +13,6 @@ class CLIParams(BaseModel):
         description="Special cache flags: 'u' (uncached, do not save), or 'r' (recache, save again). 'c' is default (cache the content).",
     )
 
-    # flags
-    persist: bool = Field(
-        default=False,
-        description="Persist the processed content to disk. Eventually this will be True by default.",
-    )
     llm: bool = Field(
         default=False, description="Use cloud LLM for conversion if applicable."
     )

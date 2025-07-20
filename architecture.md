@@ -11,21 +11,46 @@ siphon/
 │   └── errors.py                 # Custom exceptions
 
 # ───────────── Processed Content Abstraction ─────────────
+models /
+- init
+- data_models /
+     URI
+     Context
+     SyntheticData
+     ProcessedContent
+- types /
+     SourceType
+     Extensions
+     URISchemes
+
+
+
 ├── model/                        # Atomic unit of the system
 │   ├── __init__.py
-│   ├── uri.py                    # URI (with SourceType routing, validation)
-│   ├── metadata_base.py          # Base class for Metadata, common timestamps
-│   ├── synthetic_data.py         # SyntheticData (summaries, tags, etc.)
-│   └── processed_content.py      # ProcessedContent (URI + Metadata + SyntheticData)
+│   ├── data_models /             # URI (with SourceType routing, validation)
+|   │   ├── URI.py                    # URI (with SourceType routing, validation)
+│   ├── Context.py                # Base class for Metadata, common timestamps
+├   │   ├── SyntheticData.py          # SyntheticData (summaries, tags, etc.)
+│   └── ProcessedContent.py       # ProcessedContent (URI + Metadata + SyntheticData)
+
+
+# ───────────── Domain Module ─────────────
+├── audio/                        # as example
+│   ├── __init__.py
+│   ├── audio_uri.py              # URI (with SourceType routing, validation)
+│   ├── audio_context.py          # URI (with SourceType routing, validation)
+│   ├── audio_synthetic_data.py   # URI (with SourceType routing, validation)
+│   ├── ingestion/
+│   │   └── retrieve_audio.py
+
+
+
 
 # ───────────── Domain Modules ─────────────
 ├── domains/
 │   ├── __init__.py               # Registers all known domains (if using registry)
-│   ├── file/
-│   │   ├── __init__.py
-│   │   ├── metadata.py           # FileMetadata
-│   │   ├── pipeline.py           # FilePipeline
-│   │   └── ingest.py             # retrieve_file(), etc.
+│   ├── audio/
+│   │   └── ...
 │   ├── github/
 │   │   └── ...
 │   ├── youtube/

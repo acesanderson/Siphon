@@ -31,7 +31,7 @@ class TextSyntheticData(SyntheticData):
         from rich.console import Console
 
         ModelAsync._console = Console()
-        model = ModelAsync("flash")
+        model = ModelAsync("gemini2.5")
         chain = AsyncChain(model=model)
         responses = chain.run(prompt_strings=rendered_prompts)
         # Create the TextSyntheticData instance
