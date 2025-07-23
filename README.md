@@ -1,4 +1,3 @@
-⠋ claude-sonnet-4-20250514 | [0/0] ✓ claude-sonnet-4-20250514 | [0/0]  | (35.1s)
 # Siphon
 
 A unified content ingestion and processing pipeline that transforms any source (files, URLs, multimedia) into structured, searchable, LLM-ready content with AI-generated enrichments.
