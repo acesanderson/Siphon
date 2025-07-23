@@ -1,6 +1,6 @@
 from Siphon.data.URI import URI
-from Siphon.data.SourceType import SourceType
-from Siphon.data.URISchemes import URISchemes
+from Siphon.data.types.SourceType import SourceType
+from Siphon.data.types.URISchemes import URISchemes
 from pydantic import Field
 from urllib.parse import urlparse, parse_qs
 import re
@@ -52,7 +52,7 @@ class YouTubeURI(URI):
         if not re.match(r"^[a-zA-Z0-9_-]{11}$", video_id):
             raise ValueError(f"Invalid YouTube video ID format: {video_id}")
 
-        uri = f"{URISchemes["YouTube"]}://{video_id}"
+        uri = f"{URISchemes['YouTube']}://{video_id}"
         return cls(
             source=source,
             uri=uri,

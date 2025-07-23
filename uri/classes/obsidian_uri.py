@@ -1,5 +1,5 @@
 from Siphon.data.URI import URI
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from pydantic import Field
 from typing import override
 

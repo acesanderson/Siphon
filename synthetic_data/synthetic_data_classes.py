@@ -1,6 +1,6 @@
 import importlib
 from Siphon.data.SyntheticData import SyntheticData
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.logs.logging_config import get_logger
 
 logger = get_logger(__name__)

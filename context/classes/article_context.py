@@ -1,16 +1,18 @@
 from Siphon.data.Context import Context
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.URI import URI
 from typing import override, Optional
 import re
 
-url_pattern = re.compile(r'^(https?|ftp)://[^\s/$.?#].[^\s]*$')
+url_pattern = re.compile(r"^(https?|ftp)://[^\s/$.?#].[^\s]*$")
+
 
 class ArticleContext(Context):
     """
     Context class for handling articles.
     This is also the base class for other online content contexts (YouTube, GitHub, etc.).
     """
+
     sourcetype: SourceType = SourceType.ARTICLE
 
     # Metadata fields
@@ -21,7 +23,7 @@ class ArticleContext(Context):
 
     @override
     @classmethod
-    def from_uri(cls, uri: URI) -> Context: # type: ignore
+    def from_uri(cls, uri: URI) -> Context:  # type: ignore
         """
         Create a ArticleContext from a URI.
         This is also the base class for other online content contexts.
@@ -70,15 +72,17 @@ class ArticleContext(Context):
         """
 
         from Siphon.ingestion.article.retrieve_article import retrieve_article
+
         article_obj = retrieve_article(uri.source)
         # Get context
         context = article_obj.text
         # Get metadata
         metadata = {
             "url": article_obj.source_url,
-            "domain": article_obj.source_url.split('/')[2],
+            "domain": article_obj.source_url.split("/")[2],
             "title": article_obj.title,
-            "published_date": int(article_obj.publish_date.timestamp()) if article_obj.publish_date else None # type: ignore
+            "published_date": int(article_obj.publish_date.timestamp())
+            if article_obj.publish_date
+            else None,  # type: ignore
         }
         return context, metadata
-

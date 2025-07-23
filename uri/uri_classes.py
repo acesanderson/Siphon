@@ -20,7 +20,7 @@ This ensures strict one-to-one enforcement between defined source types and impl
 
 import importlib
 from Siphon.data.URI import URI
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 
 
 def load_uri_class(source_type: SourceType) -> type[URI]:

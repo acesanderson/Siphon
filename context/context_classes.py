@@ -1,6 +1,6 @@
 import importlib
 from Siphon.data.Context import Context
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 
 
 def load_context_class(sourcetype: SourceType) -> type[Context]:

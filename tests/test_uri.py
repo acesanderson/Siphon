@@ -1,6 +1,6 @@
 import pytest
 from Siphon.tests.fixtures.assets import sample_assets
-from Siphon.data.URISchemes import URISchemes
+from Siphon.data.types.URISchemes import URISchemes
 from Siphon.data.URI import URI
 
 sourcetypes = sample_assets["sourcetypes"]
@@ -16,7 +16,7 @@ def test_URI(source_and_example_uri):
     assert uri.sourcetype == sourcetype
     assert str(uri.source) == str(sourcetypes[sourcetype])
     assert len(uri.uri) > 0
-    assert (
-        URISchemes[sourcetype.value] in uri.uri
-    ), f"URI scheme mismatch for {sourcetype.value}"
+    assert URISchemes[sourcetype.value] in uri.uri, (
+        f"URI scheme mismatch for {sourcetype.value}"
+    )
     print(uri)

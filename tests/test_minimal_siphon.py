@@ -3,7 +3,7 @@ Siphon pipeline through iterative development;
 First just did URIs, then context generation, now synthetic data + completed ProcessedContent.
 """
 
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.cli.cli_params import CLIParams
 from Siphon.main.siphon import siphon
@@ -24,9 +24,7 @@ Image
 GitHub
 YouTube
 Article
-""".strip().split(
-    "\n"
-)
+""".strip().split("\n")
 
 immediately_usable_types = [SourceType(x) for x in immediately_usable_types]
 sourcetype_assets = sample_assets["sourcetypes"]
@@ -54,4 +52,3 @@ def test_minimal_siphon(source_type):
 
     assert isinstance(processed_content, ProcessedContent)
     assert processed_content.synthetic_data is not None
-

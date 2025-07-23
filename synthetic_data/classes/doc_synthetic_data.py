@@ -1,6 +1,6 @@
 from Siphon.data.Context import Context
 from Siphon.synthetic_data.classes.text_synthetic_data import TextSyntheticData
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.SyntheticData import SyntheticData
 from typing import override
 

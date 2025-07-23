@@ -1,4 +1,4 @@
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.synthetic_data.classes.text_synthetic_data import TextSyntheticData
 
 

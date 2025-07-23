@@ -1,5 +1,5 @@
 from Siphon.context.classes.article_context import ArticleContext
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.URI import URI
 from typing import override, Optional
 
@@ -9,6 +9,7 @@ class GitHubContext(ArticleContext):
     Context class for handling GitHub articles.
     Inherits from ArticleContext to handle GitHub-specific content.
     """
+
     sourcetype: SourceType = SourceType.GITHUB
 
     # GitHub specific metadata fields
@@ -27,5 +28,6 @@ class GitHubContext(ArticleContext):
         Get the text content + metadata from the GitHub article.
         """
         from Siphon.ingestion.github.retrieve_github import retrieve_github
+
         llm_context, metadata = retrieve_github(uri.source)
         return llm_context, metadata

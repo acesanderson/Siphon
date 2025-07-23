@@ -1,6 +1,6 @@
 from Siphon.data.URI import URI
-from Siphon.data.SourceType import SourceType
-from Siphon.data.URISchemes import URISchemes
+from Siphon.data.types.SourceType import SourceType
+from Siphon.data.types.URISchemes import URISchemes
 from Siphon.logs.logging_config import get_logger
 from urllib.parse import urlparse
 from pydantic import Field
@@ -60,7 +60,7 @@ class GitHubURI(URI):
             file_path = ""
 
         # Fix 3: Don't add trailing slash when no file path
-        uri = f"{URISchemes["GitHub"]}://{owner}/{repo}"
+        uri = f"{URISchemes['GitHub']}://{owner}/{repo}"
         if file_path:
             uri += f"/{file_path}"
 

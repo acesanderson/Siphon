@@ -1,5 +1,5 @@
 from Siphon.context.classes.text_context import TextContext
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.URI import URI
 from typing import override, Literal
 
@@ -9,6 +9,7 @@ class ImageContext(TextContext):
     Context class for handling image files.
     Inherits from TextContext to provide common functionality; from_uri, _validate_uri, and _get_metadata work under the hood.
     """
+
     sourcetype: SourceType = SourceType.IMAGE
 
     @override

@@ -1,5 +1,5 @@
 from Siphon.context.classes.text_context import TextContext
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.URI import URI
 from typing import override
 
@@ -9,6 +9,7 @@ class VideoContext(TextContext):
     Context class for handling video files.
     Inherits from TextContext to provide common functionality; from_uri, _validate_uri, and _get_metadata work under the hood.
     """
+
     sourcetype: SourceType = SourceType.VIDEO
 
     @override
@@ -20,4 +21,3 @@ class VideoContext(TextContext):
         """
         _, _ = uri, model
         raise NotImplementedError("VideoContext._get_context is not implemented yet")
-

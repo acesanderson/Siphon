@@ -1,5 +1,5 @@
 from Siphon.data.Context import Context
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.URI import URI
 from pathlib import Path
 from typing import override, Optional, Literal
@@ -10,6 +10,7 @@ class TextContext(Context):
     Context class for handling text files.
     This is also the base class for audio, image, video, and obsidian contexts.
     """
+
     sourcetype: SourceType = SourceType.TEXT
 
     # Metadata field
@@ -63,7 +64,7 @@ class TextContext(Context):
         if not path.is_file():
             raise FileNotFoundError(f"The file {path} does not exist.")
 
-        from Siphon.data.Extensions import Extensions
+        from Siphon.data.types.Extensions import Extensions
 
         if path.suffix not in Extensions[sourcetype_value]:
             raise ValueError(f"Unsupported file type: {path.suffix}.")

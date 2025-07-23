@@ -1,5 +1,5 @@
 from Siphon.context.classes.text_context import TextContext
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.URI import URI
 from typing import override, Literal
 
@@ -9,6 +9,7 @@ class DocContext(TextContext):
     Context class for handling document files (e.g., .doc, .docx).
     Validation, and metadata inherit from TextContext.
     """
+
     sourcetype: SourceType = SourceType.DOC
 
     @override
@@ -24,4 +25,3 @@ class DocContext(TextContext):
         md = MarkItDown()
         llm_context = md.convert(file_path)
         return str(llm_context)
-

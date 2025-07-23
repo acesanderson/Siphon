@@ -1,7 +1,8 @@
 from Siphon.context.classes.article_context import ArticleContext
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.URI import URI
 from typing import override
+
 
 class YouTubeContext(ArticleContext):
     sourcetype: SourceType = SourceType.YOUTUBE
@@ -26,4 +27,3 @@ class YouTubeContext(ArticleContext):
 
         llm_context, metadata = retrieve_youtube(uri.source)
         return llm_context, metadata
-

@@ -7,7 +7,7 @@ Our CLI also has a nice display method (.pretty_print()), which we add as a mixi
 from Siphon.data.URI import URI
 from Siphon.data.SyntheticData import SyntheticData
 from Siphon.data.Context import Context
-from Siphon.data.SourceType import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.data.ProcessedContentDisplay import ProcessedContentDisplayMixin
 from pydantic import BaseModel, Field
 from typing import Optional, Any
