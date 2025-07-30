@@ -1,21 +1,21 @@
 from Siphon.context.classes.article_context import ArticleContext
 from Siphon.data.types.SourceType import SourceType
 from Siphon.data.URI import URI
-from typing import override
+from typing import override, Optional
 
 
 class YouTubeContext(ArticleContext):
     sourcetype: SourceType = SourceType.YOUTUBE
 
     # Youtube specific metadata fields
-    video_id: str
-    channel: str
-    duration: int
-    view_count: int
-    description: str
-    tags: list[str]
-    like_count: int
-    comment_count: int
+    video_id: Optional[str]
+    channel: Optional[str]
+    duration: Optional[int]
+    view_count: Optional[int]
+    description: Optional[str]
+    tags: Optional[list[str]]
+    like_count: Optional[int]
+    comment_count: Optional[int]
 
     @override
     @classmethod

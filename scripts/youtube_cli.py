@@ -67,11 +67,19 @@ def get_channel_uploads_playlist(service, channel_type, channel_value):
     try:
         if channel_type == "channel_id":
             request = service.channels().list(part="contentDetails", id=channel_value)
-        else:  # username
-            # NOTE: forUsername parameter might be deprecated - may need to use different approach
-            request = service.channels().list(
-                part="contentDetails", forUsername=channel_value
+        else:  # username - need to search first to get channel ID
+            # Search for the channel to get the actual channel ID
+            search_request = service.search().list(
+                part="snippet", q=channel_value, type="channel", maxResults=1
             )
+            search_response = search_request.execute()
+
+            if not search_response["items"]:
+                print(f"Error: Channel '{channel_value}' not found")
+                return None
+
+            channel_id = search_response["items"][0]["snippet"]["channelId"]
+            request = service.channels().list(part="contentDetails", id=channel_id)
 
         response = request.execute()
 
@@ -79,7 +87,6 @@ def get_channel_uploads_playlist(service, channel_type, channel_value):
             print(f"Error: Channel not found")
             return None
 
-        # NOTE: uploads playlist ID pattern (UC -> UU) might change
         uploads_playlist = response["items"][0]["contentDetails"]["relatedPlaylists"][
             "uploads"
         ]
@@ -90,7 +97,7 @@ def get_channel_uploads_playlist(service, channel_type, channel_value):
         return None
 
 
-def get_playlist_videos(service, playlist_id, max_results=50):
+def get_playlist_videos(service, playlist_id, max_results=100):
     """Get video IDs from a playlist."""
     videos = []
     next_page_token = None
@@ -183,7 +190,7 @@ def handle_channel(url):
     if not uploads_playlist:
         return
 
-    videos = get_playlist_videos(service, uploads_playlist, max_results=50)
+    videos = get_playlist_videos(service, uploads_playlist, max_results=100)
 
     print(f"Found {len(videos)} videos in channel:")
     for video in videos:
