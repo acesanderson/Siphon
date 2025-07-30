@@ -1,108 +1,216 @@
-raise NotImplementedError()
+"""
+YouTube CLI tool for handling playlists and channels.
+Extends Siphon functionality without modifying core YouTubeURI class.
+
+Usage:
+   # Regular video (existing functionality)
+   python scripts/youtube_cli.py "https://youtube.com/watch?v=abc123"
+
+   # Playlist (siphon all videos, return combined transcript)
+   python scripts/youtube_cli.py "https://youtube.com/playlist?list=PLxxx"
+
+   # Channel (return video URL list)
+   python scripts/youtube_cli.py "https://youtube.com/@channelname"
+"""
+
+import argparse
+import os
+import re
+import sys
+import time
+from googleapiclient.discovery import build
+from Siphon.main.siphon import siphon
 
 
+def get_youtube_service():
+    """Initialize YouTube Data API client."""
+    api_key = os.getenv("YOUTUBE_API_KEY")
+    if not api_key:
+        print("Error: YOUTUBE_API_KEY environment variable not set")
+        sys.exit(1)
 
-from Siphon.ingestion.youtube.retrieve_youtube import retrieve_youtube
-# from Chain.cli.
-
-YouTube_prompt_string = """
-You are tasked with summarizing a YouTube video transcript. The purpose of this summary is to highlight the most interesting and useful information from the video, focusing on its unique contributions rather than generic content. This summary will help users quickly understand the key points and valuable insights without watching the entire video.
-
-You will be provided with the following transcript:
-
-<transcript>
-{{transcript}}
-</transcript>
-
-Begin by determining the word count of the provided transcript. This will be used to calculate the appropriate length for your summary.
-
-Read through the entire transcript carefully, paying attention to the main topics, key arguments, and unique insights presented. As you read, make mental notes of the most important points and any recurring themes.
-
-Your summary should be structured as follows:
-1. Brief introduction (1-2 sentences about the video's topic and speaker, if known)
-2. Main topics covered (bullet point list)
-3. Key insights and unique contributions (3-5 paragraphs)
-4. Notable quotes or examples (2-3 direct quotes that illustrate important points)
-5. Conclusion (1-2 sentences summarizing the video's significance or main takeaway)
-
-When writing the summary, follow these guidelines:
-1. Calculate the summary length based on the transcript word count:
-   - For transcripts over 6,000 words, aim for a summary of at least 2,000 words.
-   - For shorter transcripts, use a ratio of approximately 1:3 (summary:transcript). For example, a 3,000-word transcript should have a summary of about 1,000 words.
-2. Focus on the unique contributions and insights presented in the video. Avoid generic summaries that could apply to any video on the topic.
-3. Do not comment on the qualities of the video, we do not need to hear that you found the video insightful.
-4. Use specific examples, data points, or arguments from the transcript to illustrate key points.
-5. Highlight any novel ideas, counterintuitive claims, or particularly compelling arguments made in the video.
-6. If the video presents multiple perspectives on a topic, ensure that you accurately represent each viewpoint.
-7. Pay attention to the speaker's tone and emphasis, noting any points they seem to consider particularly important.
-8. If the transcript includes descriptions of visual elements (e.g., charts, demonstrations), mention these in your summary if they are crucial to understanding the content.
-
-To avoid sounding too generic:
-1. Use specific terminology and jargon from the video when appropriate, explaining it if necessary.
-2. Highlight any unique methodologies, case studies, or research mentioned in the video.
-3. Note any personal anecdotes or experiences shared by the speaker that illustrate key points.
-4. Identify and emphasize any calls to action or practical applications suggested in the video.
-
-For shorter transcripts (under 3,000 words):
-1. Adjust the summary length to approximately 1:3 ratio of the transcript word count.
-2. Focus on the 2-3 most important points rather than trying to cover everything.
-3. Combine the "Key insights" and "Notable quotes" sections if necessary.
-
-Before writing your final summary, use <scratchpad> tags to outline the main points and structure of your summary. This will help you organize your thoughts and ensure you cover all important aspects of the video.
-
-Present your final summary within <summary> tags. Use appropriate markdown formatting for headings, bullet points, and emphasis where necessary.
-
-Remember, the goal is to provide a comprehensive yet concise summary that captures the essence of the video and its unique contributions to the topic at hand.
-""".strip()
-
-def query_text(
-    text: str, query: str, messagestore: MessageStore, preferred_model: str
-) -> str:
-    """
-    This function takes a text and a query and returns the response.
-    """
-    with console.status("[green]Query...", spinner="dots"):
-        model = Model(preferred_model)
-        prompt_string = "Look at this text and answer the following question: <text>{{text}}</text> <query>{{query}}</query>"
-        prompt = Prompt(prompt_string)
-        chain = Chain(prompt=prompt, model=model)
-        response = chain.run(
-            input_variables={"text": text, "query": query}, verbose=True
-        )
-        messagestore.add_new("assistant", response.content)
-    return response.content
+    # NOTE: May need to handle API client initialization errors
+    return build("youtube", "v3", developerKey=api_key)
 
 
-def extract_summary_from_string(text: str, tries: int = 0) -> str:
-    """
-    Our summarization prompts have the LLM put the summary in xml tags.
-    We want to grab text within <summary> xml tags.
-    """
-    if tries > 3:
-        console.print(
-            "Prompt is not working, no <summary> xml tags detected. Attempted three times."
-        )
+def extract_playlist_id(url):
+    """Extract playlist ID from YouTube playlist URL."""
+    # NOTE: This regex might not catch all playlist URL variations
+    match = re.search(r"[?&]list=([a-zA-Z0-9_-]+)", url)
+    return match.group(1) if match else None
+
+
+def extract_channel_info(url):
+    """Extract channel identifier from various YouTube channel URL formats."""
+    # NOTE: YouTube channel URL formats may change - these patterns might need updates
+
+    # @username format
+    if "@" in url:
+        match = re.search(r"@([a-zA-Z0-9_-]+)", url)
+        return ("username", match.group(1)) if match else (None, None)
+
+    # /channel/UC... format
+    if "/channel/" in url:
+        match = re.search(r"/channel/([a-zA-Z0-9_-]+)", url)
+        return ("channel_id", match.group(1)) if match else (None, None)
+
+    # /c/customname or /user/username formats
+    if "/c/" in url or "/user/" in url:
+        match = re.search(r"/(?:c|user)/([a-zA-Z0-9_-]+)", url)
+        return ("username", match.group(1)) if match else (None, None)
+
+    return (None, None)
+
+
+def get_channel_uploads_playlist(service, channel_type, channel_value):
+    """Get the uploads playlist ID for a channel."""
+    try:
+        if channel_type == "channel_id":
+            request = service.channels().list(part="contentDetails", id=channel_value)
+        else:  # username
+            # NOTE: forUsername parameter might be deprecated - may need to use different approach
+            request = service.channels().list(
+                part="contentDetails", forUsername=channel_value
+            )
+
+        response = request.execute()
+
+        if not response["items"]:
+            print(f"Error: Channel not found")
+            return None
+
+        # NOTE: uploads playlist ID pattern (UC -> UU) might change
+        uploads_playlist = response["items"][0]["contentDetails"]["relatedPlaylists"][
+            "uploads"
+        ]
+        return uploads_playlist
+
+    except Exception as e:
+        print(f"Error fetching channel info: {e}")
         return None
-    pattern = r"<summary>(.*?)</summary>"
-    match = re.search(pattern, text, re.DOTALL)
-    if match:
-        return match.group(1).strip()
+
+
+def get_playlist_videos(service, playlist_id, max_results=50):
+    """Get video IDs from a playlist."""
+    videos = []
+    next_page_token = None
+
+    while len(videos) < max_results:
+        try:
+            request = service.playlistItems().list(
+                part="snippet",
+                playlistId=playlist_id,
+                maxResults=min(
+                    50, max_results - len(videos)
+                ),  # API max is 50 per request
+                pageToken=next_page_token,
+            )
+            response = request.execute()
+
+            for item in response["items"]:
+                # NOTE: Video might be private/deleted - snippet might not have videoId
+                video_id = item["snippet"]["resourceId"].get("videoId")
+                title = item["snippet"]["title"]
+                if video_id:
+                    videos.append({"id": video_id, "title": title})
+
+            next_page_token = response.get("nextPageToken")
+            if not next_page_token:
+                break
+
+            time.sleep(1)  # Rate limiting
+
+        except Exception as e:
+            print(f"Error fetching playlist videos: {e}")
+            break
+
+    return videos[:max_results]
+
+
+def handle_playlist(url):
+    """Process YouTube playlist - siphon all videos and return combined transcript."""
+    playlist_id = extract_playlist_id(url)
+    if not playlist_id:
+        print("Error: Could not extract playlist ID from URL")
+        return
+
+    service = get_youtube_service()
+    videos = get_playlist_videos(service, playlist_id, max_results=20)
+
+    if not videos:
+        print("Error: No videos found in playlist")
+        return
+
+    print(f"Processing {len(videos)} videos from playlist...")
+    combined_transcript = []
+
+    for video in videos:
+        video_url = f"https://youtube.com/watch?v={video['id']}"
+        print(f"Processing: {video['title']}")
+
+        try:
+            processed_content = siphon(video_url)
+            separator = f"=== {video['title']} ({video_url}) ==="
+            combined_transcript.append(separator)
+            combined_transcript.append(processed_content.context)
+            combined_transcript.append("")  # Empty line between videos
+
+        except Exception as e:
+            print(f"Error processing {video_url} - {video['title']}: {e}")
+            continue
+
+        time.sleep(1)  # Rate limiting
+
+    # Print combined result
+    print("\n" + "=" * 80)
+    print("COMBINED PLAYLIST TRANSCRIPT")
+    print("=" * 80 + "\n")
+    print("\n".join(combined_transcript))
+
+
+def handle_channel(url):
+    """Process YouTube channel - return list of video URLs."""
+    channel_type, channel_value = extract_channel_info(url)
+    if not channel_type:
+        print("Error: Could not extract channel info from URL")
+        return
+
+    service = get_youtube_service()
+    uploads_playlist = get_channel_uploads_playlist(
+        service, channel_type, channel_value
+    )
+
+    if not uploads_playlist:
+        return
+
+    videos = get_playlist_videos(service, uploads_playlist, max_results=50)
+
+    print(f"Found {len(videos)} videos in channel:")
+    for video in videos:
+        print(f"https://youtube.com/watch?v={video['id']}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="YouTube playlist and channel processor"
+    )
+    parser.add_argument("url", help="YouTube video, playlist, or channel URL")
+    args = parser.parse_args()
+
+    url = args.url.strip()
+
+    if "playlist?list=" in url:
+        handle_playlist(url)
+    elif any(x in url for x in ["@", "/channel/", "/c/", "/user/"]):
+        handle_channel(url)
     else:
-        console.print("LLM output didn't have <summarize> tags.")
-        tries += 1
-        return extract_summary_from_string(text=text, tries=tries)
+        # Regular video - just siphon it
+        try:
+            processed_content = siphon(url)
+            processed_content.pretty_print()
+        except Exception as e:
+            print(f"Error processing video: {e}")
 
 
-def summarize_youtube_transcript(transcript: str, preferred_model: str) -> str:
-    """
-    This function takes a YouTube transcript and summarizes it.
-    """
-    with console.status("[green]Summarizing YouTube transcript...", spinner="dots"):
-        model = Model(preferred_model)
-        prompt = Prompt(YouTube_prompt_string)
-        chain = Chain(prompt=prompt, model=model)
-        response = chain.run(input_variables={"transcript": transcript}, verbose=True)
-    summary = extract_summary_from_string(response.content)
-    return summary
-
-
+if __name__ == "__main__":
+    main()
