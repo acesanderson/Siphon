@@ -1,7 +1,11 @@
 assets/
+sourdough/
 *.log
 .DS_Store
 .DS_Store/*
 *.pyc
 *.egg-info/
 *.db
+*.md
+*.pdf
+*.txt
