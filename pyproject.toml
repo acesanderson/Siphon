@@ -48,6 +48,7 @@ peek = "Siphon.scripts.peek_cli:main"
 flatten = "Siphon.scripts.flatten_cli:main"
 youtube = "Siphon.scripts.youtube_cli:main"
 ocr = "Siphon.scripts.ocr_cli:main"
+research = "Siphon.scripts.research_cli:main"
 
 [tool.pytest.ini_options]
 addopts = "-v -s --tb=short --no-header --showlocals --pdb -x"
