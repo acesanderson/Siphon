@@ -13,8 +13,12 @@ class CLIParams(BaseModel):
         description="Special cache flags: 'u' (uncached, do not save), or 'r' (recache, save again). 'c' is default (cache the content).",
     )
 
-    llm: bool = Field(
-        default=False, description="Use cloud LLM for conversion if applicable."
+    local: bool = Field(
+        default=False, description="Use local LLM for conversion if applicable."
+    )
+
+    tags: list[str] = Field(
+        default_factory=list, description="Tags to apply to the context."
     )
 
     @field_validator("source")

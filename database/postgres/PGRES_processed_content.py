@@ -57,10 +57,9 @@ def create_table():
 
 def ensure_table_exists():
     """Ensure the processed_content table exists, create if not."""
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            # Check if table exists
-            cur.execute("""
+    with get_db_connection() as conn, conn.cursor() as cur:
+        # Check if table exists
+        cur.execute("""
                 SELECT EXISTS (
                     SELECT FROM information_schema.tables 
                     WHERE table_schema = 'public' 
@@ -68,13 +67,13 @@ def ensure_table_exists():
                 );
             """)
 
-            table_exists = cur.fetchone()[0]
+        table_exists = cur.fetchone()[0]
 
-            if not table_exists:
-                logger.info("processed_content table not found, creating...")
-                create_table()
-                return True
-            return False
+        if not table_exists:
+            logger.info("processed_content table not found, creating...")
+            create_table()
+            return True
+        return False
 
 
 # =============================================================================
@@ -89,33 +88,30 @@ def get_cached_content_direct(uri_key: str) -> Optional[ProcessedContent]:
     """
     ensure_table_exists()
 
-    with get_db_connection() as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(
-                """
+    with get_db_connection() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute(
+            """
                 SELECT data FROM processed_content 
                 WHERE uri_key = %s
             """,
-                (uri_key,),
+            (uri_key,),
+        )
+
+        row = cur.fetchone()
+        if not row:
+            logger.debug(f"PostgreSQL cache miss for URI: {uri_key}")
+            return None
+
+        try:
+            # Deserialize using factory-based reconstruction
+            processed_content = ProcessedContent.model_validate_from_cache(row["data"])
+            logger.debug(f"PostgreSQL cache hit for URI: {uri_key}")
+            return processed_content
+        except Exception as e:
+            logger.error(
+                f"Failed to deserialize PostgreSQL cached content for {uri_key}: {e}"
             )
-
-            row = cur.fetchone()
-            if not row:
-                logger.debug(f"PostgreSQL cache miss for URI: {uri_key}")
-                return None
-
-            try:
-                # Deserialize using factory-based reconstruction
-                processed_content = ProcessedContent.model_validate_from_cache(
-                    row["data"]
-                )
-                logger.debug(f"PostgreSQL cache hit for URI: {uri_key}")
-                return processed_content
-            except Exception as e:
-                logger.error(
-                    f"Failed to deserialize PostgreSQL cached content for {uri_key}: {e}"
-                )
-                return None
+            return None
 
 
 def cache_processed_content_direct(processed_content: ProcessedContent) -> str:
@@ -128,11 +124,10 @@ def cache_processed_content_direct(processed_content: ProcessedContent) -> str:
     uri_key = processed_content.uri.uri
     data_json = processed_content.model_dump_for_cache()
 
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            # Use ON CONFLICT to handle cache updates
-            cur.execute(
-                """
+    with get_db_connection() as conn, conn.cursor() as cur:
+        # Use ON CONFLICT to handle cache updates
+        cur.execute(
+            """
                 INSERT INTO processed_content (uri_key, data, updated_at)
                 VALUES (%s, %s, NOW())
                 ON CONFLICT (uri_key) 
@@ -141,14 +136,14 @@ def cache_processed_content_direct(processed_content: ProcessedContent) -> str:
                     updated_at = NOW()
                 RETURNING uri_key;
             """,
-                (uri_key, Json(data_json)),
-            )
+            (uri_key, Json(data_json)),
+        )
 
-            result = cur.fetchone()
-            conn.commit()
+        result = cur.fetchone()
+        conn.commit()
 
-            logger.info(f"Cached content to PostgreSQL with URI: {uri_key}")
-            return result[0] if result else uri_key
+        logger.info(f"Cached content to PostgreSQL with URI: {uri_key}")
+        return result[0] if result else uri_key
 
 
 # =============================================================================
@@ -210,16 +205,15 @@ def cache_exists(uri_key: str) -> bool:
         # Direct PostgreSQL check
         try:
             ensure_table_exists()
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        """
+            with get_db_connection() as conn, conn.cursor() as cur:
+                cur.execute(
+                    """
                         SELECT 1 FROM processed_content 
                         WHERE uri_key = %s
                     """,
-                        (uri_key,),
-                    )
-                    return cur.fetchone() is not None
+                    (uri_key,),
+                )
+                return cur.fetchone() is not None
         except Exception as e:
             logger.error(f"Failed to check cache existence for {uri_key}: {e}")
             return False
@@ -307,25 +301,24 @@ def get_siphon_by_id(id: str) -> Optional[ProcessedContent]:
 
     ensure_table_exists()
 
-    with get_db_connection() as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(
-                """
+    with get_db_connection() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute(
+            """
                 SELECT data FROM processed_content 
                 WHERE id = %s
             """,
-                (record_id,),
-            )
+            (record_id,),
+        )
 
-            row = cur.fetchone()
-            if not row:
-                return None
+        row = cur.fetchone()
+        if not row:
+            return None
 
-            try:
-                return ProcessedContent.model_validate_from_cache(row["data"])
-            except Exception as e:
-                logger.error(f"Failed to deserialize content with ID {record_id}: {e}")
-                return None
+        try:
+            return ProcessedContent.model_validate_from_cache(row["data"])
+        except Exception as e:
+            logger.error(f"Failed to deserialize content with ID {record_id}: {e}")
+            return None
 
 
 def get_all_siphon() -> list[ProcessedContent]:
@@ -335,28 +328,52 @@ def get_all_siphon() -> list[ProcessedContent]:
     """
     ensure_table_exists()
 
-    with get_db_connection() as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("""
+    with get_db_connection() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("""
                 SELECT data FROM processed_content 
                 ORDER BY updated_at DESC 
                 LIMIT 100
             """)
 
-            rows = cur.fetchall()
-            results = []
+        rows = cur.fetchall()
+        results = []
 
-            for row in rows:
-                try:
-                    processed_content = ProcessedContent.model_validate_from_cache(
-                        row["data"]
-                    )
-                    results.append(processed_content)
-                except Exception as e:
-                    logger.warning(f"Skipping invalid cached content: {e}")
-                    continue
+        for row in rows:
+            try:
+                processed_content = ProcessedContent.model_validate_from_cache(
+                    row["data"]
+                )
+                results.append(processed_content)
+            except Exception as e:
+                logger.warning(f"Skipping invalid cached content: {e}")
+                continue
 
-            return results
+        return results
+
+
+def get_last_siphon() -> Optional[ProcessedContent]:
+    """
+    Get the most recently updated ProcessedContent object (PostgreSQL only).
+    Returns None if no content is cached.
+    """
+    ensure_table_exists()
+
+    with get_db_connection() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("""
+                SELECT data FROM processed_content 
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            """)
+
+        row = cur.fetchone()
+        if not row:
+            return None
+
+        try:
+            return ProcessedContent.model_validate_from_cache(row["data"])
+        except Exception as e:
+            logger.error(f"Failed to deserialize latest cached content: {e}")
+            return None
 
 
 def search_cached_content(
@@ -374,132 +391,127 @@ def search_cached_content(
     """
     ensure_table_exists()
 
-    with get_db_connection() as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            where_conditions = []
-            params = []
+    with get_db_connection() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
+        where_conditions = []
+        params = []
 
-            if source_type:
-                where_conditions.append("data->>'sourcetype' = %s")
-                params.append(source_type)
+        if source_type:
+            where_conditions.append("data->>'sourcetype' = %s")
+            params.append(source_type)
 
-            if title_query:
-                where_conditions.append("""
+        if title_query:
+            where_conditions.append("""
                     to_tsvector('english', COALESCE(data->'synthetic_data'->>'title', ''))
                     @@ plainto_tsquery('english', %s)
                 """)
-                params.append(title_query)
+            params.append(title_query)
 
-            where_clause = ""
-            if where_conditions:
-                where_clause = "WHERE " + " AND ".join(where_conditions)
+        where_clause = ""
+        if where_conditions:
+            where_clause = "WHERE " + " AND ".join(where_conditions)
 
-            cur.execute(
-                f"""
+        cur.execute(
+            f"""
                 SELECT data FROM processed_content
                 {where_clause}
                 ORDER BY updated_at DESC
                 LIMIT %s
             """,
-                params + [limit],
-            )
+            params + [limit],
+        )
 
-            rows = cur.fetchall()
-            results = []
+        rows = cur.fetchall()
+        results = []
 
-            for row in rows:
-                try:
-                    processed_content = ProcessedContent.model_validate_from_cache(
-                        row["data"]
-                    )
-                    results.append(processed_content)
-                except Exception as e:
-                    logger.warning(f"Skipping invalid search result: {e}")
-                    continue
+        for row in rows:
+            try:
+                processed_content = ProcessedContent.model_validate_from_cache(
+                    row["data"]
+                )
+                results.append(processed_content)
+            except Exception as e:
+                logger.warning(f"Skipping invalid search result: {e}")
+                continue
 
-            return results
+        return results
 
 
 def delete_cached_content(uri_key: str) -> bool:
     """Delete cached content by URI key. Returns True if deleted (PostgreSQL only)."""
     ensure_table_exists()
 
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
+    with get_db_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
                 DELETE FROM processed_content 
                 WHERE uri_key = %s
             """,
-                (uri_key,),
-            )
+            (uri_key,),
+        )
 
-            deleted = cur.rowcount > 0
-            conn.commit()
+        deleted = cur.rowcount > 0
+        conn.commit()
 
-            if deleted:
-                logger.info(f"Deleted cached content from PostgreSQL: {uri_key}")
+        if deleted:
+            logger.info(f"Deleted cached content from PostgreSQL: {uri_key}")
 
-            return deleted
+        return deleted
 
 
 def get_cache_stats() -> dict[str, Any]:
     """Get basic statistics about the PostgreSQL cache."""
     ensure_table_exists()
 
-    with get_db_connection() as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("""
-                SELECT 
-                    COUNT(*) as total_cached,
-                    COUNT(DISTINCT data->>'sourcetype') as unique_source_types,
-                    MIN(created_at) as oldest_cached,
-                    MAX(updated_at) as most_recent_update,
-                    pg_size_pretty(pg_total_relation_size('processed_content')) as table_size
-            """)
-            overall_stats = cur.fetchone()
+    with get_db_connection() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("""
+            SELECT 
+                COUNT(*) as total_cached,
+                COUNT(DISTINCT data->>'sourcetype') as unique_source_types,
+                MIN(created_at) as oldest_cached,
+                MAX(updated_at) as most_recent_update,
+                pg_size_pretty(pg_total_relation_size('processed_content')) as table_size
+        """)
+        overall_stats = cur.fetchone()
 
-            # Source type breakdown
-            cur.execute("""
-                SELECT 
-                    data->>'sourcetype' as source_type,
-                    COUNT(*) as count
-                FROM processed_content 
-                GROUP BY data->>'sourcetype'
-                ORDER BY count DESC
-            """)
-            source_type_stats = cur.fetchall()
+        # Source type breakdown
+        cur.execute("""
+            SELECT 
+                data->>'sourcetype' as source_type,
+                COUNT(*) as count
+            FROM processed_content 
+            GROUP BY data->>'sourcetype'
+            ORDER BY count DESC
+        """)
+        source_type_stats = cur.fetchall()
 
-            return {
-                "overall": dict(overall_stats) if overall_stats else {},
-                "by_source_type": [dict(row) for row in source_type_stats],
-            }
+        return {
+            "overall": dict(overall_stats) if overall_stats else {},
+            "by_source_type": [dict(row) for row in source_type_stats],
+        }
 
 
 def clear_table():
     """Clear all cached data from PostgreSQL. Use with caution!"""
     ensure_table_exists()
 
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM processed_content")
-            deleted_count = cur.rowcount
-            conn.commit()
+    with get_db_connection() as conn, conn.cursor() as cur:
+        cur.execute("DELETE FROM processed_content")
+        deleted_count = cur.rowcount
+        conn.commit()
 
-            logger.warning(
-                f"Cleared all PostgreSQL cached content. Deleted {deleted_count} records."
-            )
-            return deleted_count
+        logger.warning(
+            f"Cleared all PostgreSQL cached content. Deleted {deleted_count} records."
+        )
+        return deleted_count
 
 
 def delete_table():
     """Delete the entire PostgreSQL table. Use only for testing!"""
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("DROP TABLE IF EXISTS processed_content CASCADE")
-            conn.commit()
+    with get_db_connection() as conn, conn.cursor() as cur:
+        cur.execute("DROP TABLE IF EXISTS processed_content CASCADE")
+        conn.commit()
 
-            logger.warning("Deleted processed_content table entirely.")
+        logger.warning("Deleted processed_content table entirely.")
 
 
 # =============================================================================
@@ -518,10 +530,9 @@ def debug_cache_status() -> dict:
 
     # Test PostgreSQL connection
     try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1")
-                status["postgres_connection"] = "available"
+        with get_db_connection() as conn, conn.cursor() as cur:
+            cur.execute("SELECT 1")
+            status["postgres_connection"] = "available"
     except Exception as e:
         status["postgres_connection"] = f"failed: {e}"
 
