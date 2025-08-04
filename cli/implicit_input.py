@@ -1,8 +1,6 @@
-from pydantic import BaseModel
-from typing import Literal, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from PIL.Image import Image
+from pydantic import BaseModel, field_validator
+from typing import Literal
+from PIL.Image import Image
 
 
 class ImplicitInput(BaseModel):
@@ -22,6 +20,26 @@ class ImplicitInput(BaseModel):
 
     type: Literal["stdin", "clipboard_text", "clipboard_image"]
     content: str | Image
+
+    class Config:
+        """
+        Pydantic configuration to allow for arbitrary types.
+        This is necessary because the content can be either a string or a PIL Image.
+        """
+
+        arbitrary_types_allowed = True
+
+    @field_validator("content")
+    def check_image(cls, v):
+        """
+        Pydantic doesn't knkow how to validate PIL Image types, so we need to do it manually.
+        This ensures that the content is either a string or a PIL Image.
+        """
+        if isinstance(v, str):
+            return v
+        if not isinstance(v, Image):
+            raise TypeError("content must be a str or PIL.Image.Image")
+        return v
 
     # Convenience methods
     def print(self) -> None:
@@ -99,7 +117,7 @@ class ImplicitInput(BaseModel):
             stdin_data = sys.stdin.read()
             if stdin_data.strip():
                 return cls(type="stdin", content=stdin_data.strip())
-"
+
     @classmethod
     def _from_clipboard_text(cls) -> "ImplicitInput | None":
         """

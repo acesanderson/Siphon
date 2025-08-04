@@ -96,6 +96,9 @@ def main():
             "No arguments provided. Attempting to grab from stdin or clipboard."
         )
         implicit_input = ImplicitInput.from_environment()
+        if implicit_input:
+            implicit_input.print()
+            sys.exit()
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Siphon file to LLM context")
