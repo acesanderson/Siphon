@@ -5,7 +5,8 @@ Handles flattening local project directories into XML format.
 
 import os
 from pathlib import Path
-from typing import Iterator, Tuple, Callable
+from typing import Callable
+from collections.abc import Iterable
 
 from Siphon.ingestion.github.flatten_xml import (
     package_to_xml,
@@ -16,7 +17,7 @@ from Siphon.ingestion.github.flatten_xml import (
 
 def read_local_file(file_path: str) -> str:
     """Read content from a local file."""
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         return f.read()
 
 
@@ -31,7 +32,7 @@ def get_local_file_iterator(directory: Path) -> Callable:
         Function that yields (file_path, filename) tuples
     """
 
-    def iterator() -> Iterator[Tuple[str, str]]:
+    def iterator() -> Iterable[tuple[str, str]]:
         for dirpath, dirnames, filenames in os.walk(directory):
             # Skip excluded directories
             path_str = str(dirpath)

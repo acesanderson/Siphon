@@ -1,172 +1,249 @@
 # Siphon
 
-A unified content ingestion and processing pipeline that transforms any source (files, URLs, multimedia) into structured, searchable, LLM-ready content with AI-generated enrichments.
+**Stop manually hunting for documents. Stop copy-pasting context for LLMs. Own your knowledge.**
 
-## Features
+Siphon transforms any content source into structured, searchable, LLM-ready knowledge while you retain complete control over your data. Built for the age of AI agents, designed for minds that work in parallel.
 
-- **Universal Content Ingestion**: Process files (documents, audio, video, images), URLs (YouTube, GitHub, articles), and cloud sources (Google Drive)
-- **Intelligent Content Processing**: Extract text from any format using specialized handlers for each content type
-- **AI-Powered Enrichment**: Generate titles, descriptions, summaries, topics, and entities using local or cloud LLMs
-- **Robust Caching System**: PostgreSQL-backed cache with SQLite fallback for offline operation
-- **CLI and Server Modes**: Use as a command-line tool or deploy as a FastAPI server
-- **Extensible Architecture**: Modular design supporting easy addition of new content sources and processors
+## Philosophy
 
-## Installation
+In the age of AI, human cognitive work is shifting to a higher altitude—managing context, connecting ideas, and making strategic decisions on the fly. Yet we're still trapped in fragmented tools with inconsistent search, scattered across Outlook, Google Drive, Slack, and dozens of other silos.
+
+Siphon operates on four core principles:
+
+1. **Everything is LLM context** — The process of converting any data source into usable context should be frictionless
+2. **Retention vs. recall** — Save everything, optimize for retrieval. Embrace the chaos of an arbitrary corpus rather than forcing hierarchical organization
+3. **Frictionless context engineering** — Assembling the right context for LLM tasks should be effortless
+4. **Automate what you're bad at** — Use AI to compensate for executive function challenges and cognitive bottlenecks
+
+This isn't just another RAG system. It's your personal knowledge infrastructure for the agent future.
+
+## What Siphon Does
+
+**Process once, query forever.** Siphon converts any content source into structured, cached knowledge:
 
 ```bash
-pip install -e .
+# Ingest anything
+siphon quarterly-strategy.pdf
+siphon https://www.youtube.com/watch?v=xyz  
+siphon https://github.com/company/repo
+siphon meeting-recording.m4a
+siphon competitive-analysis.pptx
+
+# Get what you need
+siphon document.pdf --return_type s    # Summary for quick scanning
+siphon audio.mp3 --return_type c       # Full context for LLM input
 ```
 
-### System Dependencies
+Every source becomes a **ProcessedContent** object with:
+- **Raw LLM context** — Clean, structured text ready for any AI model
+- **AI-generated enrichments** — Searchable titles, descriptions, and summaries
+- **Source-specific metadata** — YouTube view counts, GitHub stars, document authors
+- **Persistent caching** — Process once, access instantly
 
-For audio processing:
+## The Siphon Advantage
+
+### Universal Ingestion Engine
+11 source types supported out of the box:
+
+| **Content Type** | **Examples** | **What You Get** |
+|------------------|--------------|------------------|
+| **Documents** | `.pdf`, `.docx`, `.pptx`, `.xlsx` | MarkItDown processing with preserved structure |
+| **Audio/Video** | `.mp3`, `.wav`, `.m4a`, `.mp4` | Transcription + speaker diarization |
+| **Code** | GitHub repos, local projects | Flattened XML structure for LLM analysis |
+| **Web Content** | Articles, YouTube videos | Clean text + rich metadata |
+| **Visual** | `.jpg`, `.png`, images | OCR + AI-powered descriptions |
+
+### Intelligent Caching
+PostgreSQL-backed cache with SQLite fallback ensures you never process the same content twice:
+
 ```bash
-# macOS
-brew install portaudio ffmpeg
-
-# Ubuntu/Debian
-sudo apt-get install portaudio19-dev ffmpeg
+siphon important-doc.pdf        # First run: full processing
+siphon important-doc.pdf        # Subsequent runs: instant retrieval
 ```
 
-### Environment Variables
+### Research Synthesis
+Multi-document analysis powered by async LLM processing:
 
 ```bash
-export POSTGRES_PASSWORD="your_postgres_password"
-export GITHUB_TOKEN="your_github_token"  # For GitHub repository processing
-export OPENAI_API_KEY="your_openai_key"  # For cloud-based processing
+research_cli.py "Datadog's AI strategy" --dir ./competitive-intel/
+# Analyzes entire directory, extracts relevant insights, synthesizes findings
 ```
 
 ## Quick Start
 
-### Command Line Usage
+### Installation
+```bash
+pip install -e .
 
-```python
-# Process a local file
-siphon document.pdf
+# System dependencies for audio processing
+brew install portaudio ffmpeg  # macOS
+# OR
+sudo apt-get install portaudio19-dev ffmpeg  # Ubuntu
+```
 
-# Process a YouTube video
-siphon https://www.youtube.com/watch?v=VIDEO_ID
+### Environment Setup
+```bash
+export POSTGRES_PASSWORD="your_postgres_password"
+export GITHUB_TOKEN="your_github_token"
+export OPENAI_API_KEY="your_openai_key"  # For cloud processing
+```
 
-# Process a GitHub repository
-siphon https://github.com/owner/repo
+### Basic Usage
 
-# Use cloud LLM for processing
-siphon audio.mp3 --llm
+```bash
+# Process a document
+siphon strategy-doc.pdf
 
-# Get raw context without enrichment
-siphon document.docx --return_type c
+# Get YouTube transcript with metadata
+siphon "https://youtube.com/watch?v=abc123"
 
-# Pretty print output
-siphon article_url --pretty
+# Analyze GitHub repository
+siphon "https://github.com/company/important-repo"
+
+# Audio transcription with speaker identification
+siphon meeting-recording.m4a --llm  # Cloud processing
+siphon meeting-recording.m4a        # Local processing (private)
+
+# Research synthesis across multiple sources
+research_cli.py "competitive AI positioning" --dir ./research-docs/
+```
+
+## Advanced Workflows
+
+### Competitive Intelligence Pipeline
+```bash
+# Gather intelligence sources
+siphon https://youtube.com/watch?v=product-demo
+siphon competitor-earnings-call.mp3
+siphon https://github.com/competitor/open-source-tool
+siphon industry-analysis.pdf
+
+# Synthesize insights
+research_cli.py "competitive AI strategy and market positioning"
+```
+
+### Meeting Intelligence
+```bash
+# Process all-hands recording
+siphon all-hands-january.m4a
+
+# Get quick summary
+siphon all-hands-january.m4a --return_type s
+
+# Use full context for follow-up analysis
+siphon strategy-followup.docx
+# Both automatically cached and ready for cross-referencing
+```
+
+## Architecture: Built for Scale
+
+### Factory Pattern Design
+Every source type implements a consistent interface:
+- **URI parsing** — Unified identification system
+- **Context extraction** — Source-specific processing logic  
+- **Metadata enrichment** — Relevant metadata per source type
+- **Synthetic data generation** — AI-powered titles, descriptions, summaries
+
+### Database Strategy
+- **PostgreSQL** — Primary cache with full-text search and JSONB queries
+- **SQLite fallback** — Offline operation when PostgreSQL unavailable
+- **Automatic sync** — Seamless failover and recovery
+
+### Processing Pipeline
+```
+Source → URI → Context → Synthetic Data → ProcessedContent → Cache
+```
+
+Every step is modular, testable, and extensible.
+
+## The Sourdough Vision
+
+*"Like sourdough starter, knowledge needs regular feeding and maintenance to stay alive and valuable."*
+
+**Coming soon:** Auto-maintaining knowledge bases that:
+- **Continuously curate** relevant content for specific research topics
+- **Intelligent pruning** — Remove outdated information, retain evergreen insights  
+- **Contextual summarization** — Always-current strategic snapshots
+- **User feedback loops** — Learn your priorities through interaction
+
+Example sourdough starter: Maintain a living intelligence base on "Datadog's AI strategy" that automatically incorporates new earnings calls, product announcements, and competitive moves.
+
+## Integration Ecosystem
+
+### CLI Power User
+```bash
+# Pipe to your LLM tools
+siphon document.pdf --return_type c | llm "summarize key decisions"
+
+# Batch processing
+find ./docs -name "*.pdf" -exec siphon {} \;
 ```
 
 ### Python API
-
 ```python
 from Siphon import siphon
 from Siphon.cli.cli_params import CLIParams
 
-# Process content programmatically
-params = CLIParams(source="path/to/file.pdf")
-processed_content = siphon(params)
+# Programmatic processing
+content = siphon(CLIParams(source="important-doc.pdf"))
+print(f"Title: {content.title}")
+print(f"Summary: {content.summary}")
 
-print(f"Title: {processed_content.title}")
-print(f"Summary: {processed_content.summary}")
-
-# Display formatted output
-processed_content.pretty_print()
+# Access raw context for LLM prompts
+llm_context = content.context
 ```
 
-### Server Mode
+### FastAPI Server
+Deploy Siphon as a service for audio/video processing, image analysis, and content enrichment.
 
-```python
-# Start the FastAPI server
-from Siphon.api.server.run import main
-main()
+## Production Features
 
-# Or use the client
-from Siphon.api.client.siphon_client import SiphonClient
+### Security & Privacy
+- **Local processing by default** — Keep sensitive data on your infrastructure
+- **Cloud processing opt-in** — Use `--llm` flag when appropriate
+- **Comprehensive caching** — Never re-process the same content
 
-client = SiphonClient()
-# Process audio/video/images remotely
-result = client.request_context_call(context_call)
-```
+### Observability
+- **Comprehensive logging** — Track all processing operations
+- **Cache statistics** — Monitor storage usage and hit rates
+- **Fallback monitoring** — Visibility into offline operation
 
-## Project Structure
+### Extensibility
+Adding new source types is straightforward:
+1. Implement `URI`, `Context`, and `SyntheticData` classes
+2. Add source-specific processing logic
+3. Register with the factory system
 
-```
-Siphon/
-├── main/siphon.py              # Core orchestration logic
-├── cli/                        # Command-line interface
-├── api/                        # FastAPI server and client
-├── data/                       # Core data models (URI, Context, ProcessedContent)
-├── ingestion/                  # Content retrieval and processing
-│   ├── audio/                  # Audio transcription (local + cloud)
-│   ├── image/                  # Image description (OCR + vision models)
-│   ├── youtube/                # YouTube transcript processing
-│   ├── github/                 # Repository flattening
-│   └── article/                # Web article extraction
-├── context/classes/            # Source-specific context processors
-├── uri/classes/                # URI parsing and validation
-├── synthetic_data/classes/     # AI enrichment generators
-├── database/                   # PostgreSQL + SQLite caching
-├── enrich/                     # AI-powered content enhancement
-└── tests/                      # Comprehensive test suite
-```
+## Why This Matters
 
-## Configuration
+We're building toward a future where:
+- **Agents handle routine work** — You focus on strategy and creativity
+- **Context is everything** — The right information at the right time drives decisions
+- **Knowledge compounds** — Your accumulated insights become your competitive advantage
+- **You own your data** — No vendor lock-in, no privacy compromises
 
-### Database Setup
-
-Siphon automatically creates PostgreSQL tables and handles connection fallback:
-
-```python
-# Configure cache behavior
-params = CLIParams(
-    source="content.pdf",
-    cache_options="c"  # 'c' (cache), 'u' (uncached), 'r' (recache)
-)
-```
-
-### Audio Processing
-
-Choose between local (private) or cloud-based transcription:
-
-```python
-# Local processing with Whisper + speaker diarization
-processed = siphon(CLIParams(source="meeting.mp3"))
-
-# Cloud processing with OpenAI
-processed = siphon(CLIParams(source="meeting.mp3", llm=True))
-```
-
-## Supported Content Types
-
-| Type | Extensions | Features |
-|------|------------|----------|
-| **Documents** | `.pdf`, `.docx`, `.pptx`, `.xlsx` | MarkItDown processing |
-| **Audio** | `.mp3`, `.wav`, `.m4a`, `.ogg` | Transcription + diarization |
-| **Images** | `.jpg`, `.png`, `.gif`, `.svg` | OCR + vision description |
-| **Video** | `.mp4`, `.avi`, `.mov`, `.webm` | Planned audio extraction |
-| **Text** | `.txt`, `.md`, `.csv`, `.json` | Direct processing |
-| **Code** | `.py`, `.js`, `.html`, `.css` | Syntax-aware handling |
-| **YouTube** | Video URLs | Transcript + metadata |
-| **GitHub** | Repository URLs | Flatten to XML structure |
-| **Articles** | Web URLs | Clean text extraction |
-| **Google Drive** | Docs/Sheets/Slides | Planned integration |
+Siphon prepares you for this future by making knowledge retention effortless and recall instantaneous.
 
 ## Contributing
 
-1. **Add New Content Sources**: Implement URI, Context, and SyntheticData classes following the pattern
-2. **Extend Processing**: Add handlers in `ingestion/` for new content types
-3. **Improve AI**: Customize prompts in `synthetic_data/classes/` for source-specific enrichment
-4. **Testing**: Run `pytest tests/` - comprehensive integration tests included
+Siphon is designed for extensibility. Whether you're adding support for new content types, improving AI processing, or building workflow integrations, we welcome contributions.
+
+Key areas for development:
+- **New source types** — Slack, email, Notion, etc.
+- **Enhanced AI processing** — Better summarization, entity extraction, topic modeling
+- **Integration layers** — MCP servers, agent frameworks, workflow tools
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License — Use it, modify it, own it.
 
 ---
 
-*Transform any content into structured, searchable knowledge with Siphon's intelligent processing pipeline.*
-None
+*Transform any content into structured knowledge. Build your personal intelligence infrastructure. Prepare for the agent future.*
+
+**Ready to own your knowledge?**
+
+```bash
+pip install -e .
+siphon your-first-document.pdf
+```

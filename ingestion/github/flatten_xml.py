@@ -6,7 +6,8 @@ from both local directories and GitHub repositories.
 
 import xml.dom.minidom as md
 import xml.etree.ElementTree as ET
-from typing import TypeAlias, Callable, Iterator, Tuple
+from typing import TypeAlias, Callable
+from collections.abc import Iterable
 
 XMLString: TypeAlias = str
 
@@ -48,7 +49,7 @@ def should_include_file(filename: str) -> bool:
 def create_directory_tree_xml(
     project_name: str,
     path_iterator: Callable[
-        [], Iterator[Tuple[str, str]]
+        [], Iterable[tuple[str, str]]
     ],  # Returns (file_path, filename) tuples
 ) -> ET.Element:
     """
@@ -105,7 +106,7 @@ def create_directory_tree_xml(
 def create_file_contents_xml(
     file_reader: Callable[[str], str],  # Function that reads file content by path
     path_iterator: Callable[
-        [], Iterator[Tuple[str, str]]
+        [], Iterable[tuple[str, str]]
     ],  # Returns (file_path, filename) tuples
 ) -> ET.Element:
     """
@@ -155,7 +156,7 @@ def create_file_contents_xml(
 def package_to_xml(
     project_name: str,
     file_reader: Callable[[str], str],
-    path_iterator: Callable[[], Iterator[Tuple[str, str]]],
+    path_iterator: Callable[[], Iterable[tuple[str, str]]],
 ) -> XMLString:
     """
     Create a complete XML package with directory tree and file contents.

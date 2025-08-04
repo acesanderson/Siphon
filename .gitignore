@@ -9,3 +9,4 @@ sourdough/
 *.md
 *.pdf
 *.txt
+/__pycache__/
