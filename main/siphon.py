@@ -84,6 +84,8 @@ def siphon(cli_params: CLIParams | str) -> ProcessedContent:
     elif isinstance(cli_params, CLIParams):
         source = cli_params.source
         cache_options = cli_params.cache_options
+        tags = cli_params.tags
+        local = cli_params.local  # Not implemented yet
     else:
         raise TypeError(
             f"Expected a string or CLIParams object, got: {cli_params.__class__.__name__}"
@@ -99,10 +101,10 @@ def siphon(cli_params: CLIParams | str) -> ProcessedContent:
         try:
             cached_content = get_cached_content(uri.uri)
             if cached_content:
-                logger.info(f"Cache HIT! Returning cached content")
+                logger.info("Cache HIT! Returning cached content")
                 return cached_content
             else:
-                logger.info(f"Cache MISS - no content found")
+                logger.info("Cache MISS - no content found")
         except Exception as e:
             logger.warning(f"Cache lookup failed: {e}")
 
@@ -119,6 +121,7 @@ def siphon(cli_params: CLIParams | str) -> ProcessedContent:
         uri=uri,
         llm_context=context,
         synthetic_data=synthetic_data,
+        tags=tags or [],
     )
 
     if cache_options in ["c", "r"]:
