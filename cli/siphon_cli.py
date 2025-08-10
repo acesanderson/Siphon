@@ -110,12 +110,6 @@ def main():
         help="Use local LLMs for conversion if applicable",
     )
     parser.add_argument(
-        "-p",
-        "--persist",
-        action="store_true",
-        help="Persist the processed content to disk",
-    )
-    parser.add_argument(
         "-r",
         "--return_type",
         type=str,
@@ -127,8 +121,9 @@ def main():
         "-c",
         "--cache-options",
         type=str,
-        choices=["u", "r"],
-        help="Special cache flags: 'u' (uncached, do not save), or 'r' (recache, save again).",
+        choices=["u", "r", "c"],
+        default="c",
+        help="Special cache flags: 'u' (uncached, do not save), 'r' (recache, save again), or 'c' (cached, use existing cache if available). Defaults to 'c'.",
     )
     parser.add_argument(
         "-i",
@@ -190,12 +185,15 @@ def main():
             match args.return_type:
                 case "c":
                     output = processed_content.context
+                    print(output)
                     sys.exit()
                 case "s":
                     output = processed_content.summary
+                    print(output)
                     sys.exit()
                 case "u":
                     output = processed_content.uri
+                    print(output)
                     sys.exit()
                 case _:
                     logger.error("Invalid return type specified.")
