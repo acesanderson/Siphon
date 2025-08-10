@@ -20,58 +20,6 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-def grab_image_from_clipboard() -> tuple | None:
-    """
-    Attempt to grab image from clipboard; return tuple of mime_type and base64.
-    """
-    import os
-
-    if "SSH_CLIENT" in os.environ or "SSH_TTY" in os.environ:
-        print("Image paste not available over SSH.")
-        return
-
-    import warnings
-    from PIL import ImageGrab
-    import base64, io, sys
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")  # Suppress PIL warnings
-        image = ImageGrab.grabclipboard()
-
-    if image:
-        buffer = io.BytesIO()
-        image.save(buffer, format="PNG")  # type: ignore[reportCallIssue]
-        img_base64 = base64.b64encode(buffer.getvalue()).decode()
-        # Save for next query
-        print("Image captured!")
-        # Build our ImageMessage
-        image_content = img_base64
-        mime_type = "image/png"
-        return mime_type, image_content
-    else:
-        print("No image detected.")
-        sys.exit()
-
-
-def create_image_message(
-    combined_query: str, mime_type: str, image_content: str
-) -> "ImageMessage | None":
-    if not image_content or not mime_type:
-        return
-    role = "user"
-    text_content = combined_query
-
-    from Chain.message.imagemessage import ImageMessage
-
-    imagemessage = ImageMessage(
-        role=role,
-        text_content=text_content,
-        image_content=image_content,
-        mime_type=mime_type,
-    )
-    return imagemessage
-
-
 def siphon(cli_params: CLIParams | str) -> ProcessedContent:
     """
     Siphon orchestrates the process of converting a source string (file path or URL).
