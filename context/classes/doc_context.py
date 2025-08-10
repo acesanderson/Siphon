@@ -24,4 +24,4 @@ class DocContext(TextContext):
 
         md = MarkItDown()
         llm_context = md.convert(file_path)
-        return str(llm_context)
+        return llm_context.text_content
