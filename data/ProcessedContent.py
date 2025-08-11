@@ -27,6 +27,11 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
         ..., description="AI-generated enrichments applied to the content"
     )
 
+    tags: list[str] = Field(
+        default_factory=list,
+        description="List of user-generated and auto-generated tags applied to the content for categorization",
+    )
+
     @property
     def context(self) -> str:
         """
@@ -66,6 +71,8 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
             "synthetic_data": self.synthetic_data.model_dump()
             if self.synthetic_data
             else None,
+            # Store tags
+            "tags": self.tags,
         }
 
     @classmethod
@@ -100,4 +107,9 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
         if data.get("synthetic_data"):
             synthetic_data = SyntheticData.model_validate(data["synthetic_data"])
 
-        return cls(uri=uri, llm_context=llm_context, synthetic_data=synthetic_data)
+        return cls(
+            uri=uri,
+            llm_context=llm_context,
+            synthetic_data=synthetic_data,
+            tags=data.get("tags", []),
+        )

@@ -22,6 +22,11 @@ class SourceType(str, Enum):
 
 # Park future implementation ideas here
 """
+EPHEMERAL (stdin, clipboard, and other temporary sources like web scraping)
 ARXIV
 TODO
+TEXTMESSAGES
+CALENDAR
+PODCAST (maybe)
+RSS (the first "self-updating" source type)
 """

@@ -37,6 +37,7 @@ dependencies = [
     "pytest>=8.4.1",
     "pygithub>=2.6.1",
     "pytesseract>=0.3.13",
+    "pyperclip>=1.9.0",
 ]
 
 [project.scripts]
@@ -49,6 +50,7 @@ flatten = "Siphon.scripts.flatten_cli:main"
 youtube = "Siphon.scripts.youtube_cli:main"
 ocr = "Siphon.scripts.ocr_cli:main"
 research = "Siphon.scripts.research_cli:main"
+snapshot = "Siphon.database.snapshot:main"
 
 [tool.pytest.ini_options]
 addopts = "-v -s --tb=short --no-header --showlocals --pdb -x"

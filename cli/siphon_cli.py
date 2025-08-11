@@ -13,6 +13,7 @@ and then retrieve the context + store it from the specified source.
 
 from Siphon.main.siphon import siphon
 from Siphon.cli.cli_params import CLIParams
+from Siphon.cli.implicit_input import ImplicitInput
 from Siphon.logs.logging_config import configure_logging
 import argparse, logging, sys
 from typing import TYPE_CHECKING
@@ -79,41 +80,62 @@ def create_image_message(
     return imagemessage
 
 
+def parse_tags(tags: str) -> list[str]:
+    """
+    Parse a comma-delimited string of tags into a list.
+    """
+    if not tags:
+        return []
+    return [tag.strip() for tag in tags.split(",") if tag.strip()]
+
+
 def main():
+    # If script was run with no arguments, attempt to grab implicit input.
+    if len(sys.argv) == 1:
+        logger.info(
+            "No arguments provided. Attempting to grab from stdin or clipboard."
+        )
+        implicit_input = ImplicitInput.from_environment()
+        if implicit_input:
+            implicit_input.print()
+            sys.exit()
+
+    # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Siphon file to LLM context")
     parser.add_argument("source", type=str, help="Path to the file to convert")
     parser.add_argument(
-        "-l",
-        "--llm",
+        "-L",
+        "--local",
         action="store_true",
-        help="Use cloud LLM for conversion if applicable",
-    )
-    parser.add_argument(
-        "-p",
-        "--persist",
-        action="store_true",
-        help="Persist the processed content to disk",
+        help="Use local LLMs for conversion if applicable",
     )
     parser.add_argument(
         "-r",
         "--return_type",
         type=str,
-        choices=["c", "s"],
+        choices=["c", "s", "u"],
         default="s",
-        help="Type of data to return: 'c' (context), or 's' (synthetic data). Defaults to 'synthetic_data', i.e. a summary.",
+        help="Type of data to return: 'c' (context), 's' (synthetic data), or 'u' (URI). Defaults to 'synthetic_data', i.e. a summary.",
     )
     parser.add_argument(
         "-c",
         "--cache-options",
         type=str,
-        choices=["u", "r"],
-        help="Special cache flags: 'u' (uncached, do not save), or 'r' (recache, save again).",
+        choices=["u", "r", "c"],
+        default="c",
+        help="Special cache flags: 'u' (uncached, do not save), 'r' (recache, save again), or 'c' (cached, use existing cache if available). Defaults to 'c'.",
     )
     parser.add_argument(
         "-i",
         "--image",
         action="store_true",
         help="Grab an image from the clipboard and use it as context.",
+    )
+    parser.add_argument(
+        "-t",
+        "--tags",
+        type=str,
+        help="Comma-delimited list of tags. Useful for organizing content.",
     )
     parser.add_argument(
         "--pretty",
@@ -125,24 +147,57 @@ def main():
         action="store_true",
         help="Output raw markdown without formatting.",
     )
+    parser.add_argument(
+        "--last",
+        "-l",
+        action="store_true",
+        help="Load the last processed content from the cache.",
+    )
     args = parser.parse_args()
     args_dict = vars(args)
     query = CLIParams(
         source=args_dict["source"],
-        return_type=args_dict["return_type"],
-        persist=args_dict["persist"],
-        llm=args_dict["llm"],
+        cache_options=args_dict["cache_options"],
+        local=args_dict["local"],
+        tags=parse_tags(args_dict["tags"]),
     )
+    # Get ProcessedContent, by various means.
+    ## If we just want the last siphon:
+    if args.last:
+        from Siphon.database.postgres.PGRES_processed_content import get_last_siphon
+
+        processed_content = get_last_siphon()
+        if not processed_content:
+            logger.error("No last processed content found in cache.")
+            sys.exit(1)
+
+    ## If we want to grab an image from the clipboard and process it:
+    if args.image:
+        raise NotImplementedError(
+            "Image context is not yet implemented. Please use a file or URL."
+        )
+
+    ## If we want to process a Source:
     if query:
         processed_content = siphon(query)
         output = f"# {processed_content.title}: {processed_content.id}\n\n{processed_content.summary}"
         if args.return_type:
-            if args.return_type == "c":
-                print(processed_content.context)
-                sys.exit()
-            if args.return_type == "s":
-                print(processed_content.summary)
-                sys.exit()
+            match args.return_type:
+                case "c":
+                    output = processed_content.context
+                    print(output)
+                    sys.exit()
+                case "s":
+                    output = processed_content.summary
+                    print(output)
+                    sys.exit()
+                case "u":
+                    output = processed_content.uri
+                    print(output)
+                    sys.exit()
+                case _:
+                    logger.error("Invalid return type specified.")
+                    sys.exit(1)
         if args.pretty:
             processed_content.pretty_print()
             sys.exit()

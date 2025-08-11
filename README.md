@@ -13,7 +13,7 @@ Siphon operates on four core principles:
 1. **Everything is LLM context** — The process of converting any data source into usable context should be frictionless
 2. **Retention vs. recall** — Save everything, optimize for retrieval. Embrace the chaos of an arbitrary corpus rather than forcing hierarchical organization
 3. **Frictionless context engineering** — Assembling the right context for LLM tasks should be effortless
-4. **Automate what you're bad at** — Use AI to compensate for executive function challenges and cognitive bottlenecks
+4. **Optimize for human efficiency** — Use AI to eliminate information silos and accelerate knowledge work
 
 This isn't just another RAG system. It's your personal knowledge infrastructure for the agent future.
 
@@ -85,13 +85,13 @@ sudo apt-get install portaudio19-dev ffmpeg  # Ubuntu
 ```bash
 export POSTGRES_PASSWORD="your_postgres_password"
 export GITHUB_TOKEN="your_github_token"
-export OPENAI_API_KEY="your_openai_key"  # For cloud processing
+export OPENAI_API_KEY="your_openai_key"  # Optional: for cloud processing
 ```
 
 ### Basic Usage
 
 ```bash
-# Process a document
+# Process a document (local processing by default)
 siphon strategy-doc.pdf
 
 # Get YouTube transcript with metadata
@@ -101,30 +101,52 @@ siphon "https://youtube.com/watch?v=abc123"
 siphon "https://github.com/company/important-repo"
 
 # Audio transcription with speaker identification
-siphon meeting-recording.m4a --llm  # Cloud processing
-siphon meeting-recording.m4a        # Local processing (private)
+siphon meeting-recording.m4a        # Local processing (secure by default)
+siphon meeting-recording.m4a --llm  # Cloud processing (when explicitly opted-in)
 
 # Research synthesis across multiple sources
 research_cli.py "competitive AI positioning" --dir ./research-docs/
 ```
 
+## Data Security & Privacy
+
+### Local-First Architecture
+Siphon processes sensitive content locally by default:
+- **Local LLMs** — Use Ollama, LM Studio, or other local inference engines
+- **On-premises processing** — Audio transcription, document parsing, and analysis run locally
+- **No cloud uploads** — Proprietary data never leaves your infrastructure unless explicitly opted-in
+
+### Cloud Processing (Opt-In Only)
+For non-sensitive content, cloud LLMs can be enabled:
+```bash
+# Explicit opt-in required for cloud processing
+siphon public-content.pdf --llm
+siphon youtube-video.mp4 --llm  # OK for public content
+```
+
+### Data Classification
+Built-in safeguards for handling different data types:
+- **Proprietary documents** — Always processed locally
+- **Public content** — User choice of local or cloud processing
+- **Personal content** — Local processing recommended
+- **Encrypted storage** — All cached content encrypted at rest
+
 ## Advanced Workflows
 
 ### Competitive Intelligence Pipeline
 ```bash
-# Gather intelligence sources
-siphon https://youtube.com/watch?v=product-demo
-siphon competitor-earnings-call.mp3
-siphon https://github.com/competitor/open-source-tool
-siphon industry-analysis.pdf
+# Gather intelligence sources (local processing for proprietary data)
+siphon competitor-earnings-call.mp3        # Local transcription
+siphon industry-analysis.pdf               # Local processing
+siphon https://youtube.com/watch?v=product-demo --llm  # Public content, cloud OK
 
-# Synthesize insights
+# Synthesize insights (local LLM recommended for strategic analysis)
 research_cli.py "competitive AI strategy and market positioning"
 ```
 
 ### Meeting Intelligence
 ```bash
-# Process all-hands recording
+# Process all-hands recording (always local for internal meetings)
 siphon all-hands-january.m4a
 
 # Get quick summary
@@ -200,8 +222,10 @@ Deploy Siphon as a service for audio/video processing, image analysis, and conte
 
 ### Security & Privacy
 - **Local processing by default** — Keep sensitive data on your infrastructure
-- **Cloud processing opt-in** — Use `--llm` flag when appropriate
+- **Explicit cloud opt-in** — Use `--llm` flag only when appropriate for non-sensitive content
 - **Comprehensive caching** — Never re-process the same content
+- **Encrypted storage** — All cached data encrypted at rest
+- **Audit logging** — Track all processing operations and data flows
 
 ### Observability
 - **Comprehensive logging** — Track all processing operations
