@@ -22,7 +22,7 @@ Siphon operates on four core principles:
 siphon quarterly-strategy.pdf
 siphon https://www.youtube.com/watch?v=xyz  
 siphon https://github.com/company/repo
-siphon meeting-recording.m4a
+siphon podcast.m4a
 siphon competitive-analysis.pptx
 
 # Get what you need
