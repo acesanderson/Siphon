@@ -23,31 +23,35 @@ class VideoURI(URI):
 
     @override
     @classmethod
-    def identify(cls, source: str) -> bool:  # type: ignore
+    def identify(cls, source: str) -> bool:
         """
-        Check if the source string matches the text URI format.
+        Check if the source string matches the video URI format.
         """
-        source_path = Path(source)
-        if source_path.exists():
+        try:
+            source_path = Path(source)
             extension = source_path.suffix.lower()
             if extension in Extensions["Video"]:
                 logger.info(f"Identified as VideoURI: {source}")
                 return True
-        else:
-            logger.info(f"Source path does not exist: {source}")
+            return False
+        except Exception:
             return False
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "VideoURI | None":  # type: ignore
+    def from_source(cls, source: str) -> "VideoURI | None":
         """
-        Create an VideoURI object from a source string.
+        Create a VideoURI object from a source string.
         """
         if not cls.identify(source):
             logger.warning(f"Source does not match VideoURI format: {source}")
             return None
+
+        # Always convert to absolute path for consistency
+        absolute_source = str(Path(source).resolve())
+
         return cls(
-            source=source,
+            source=absolute_source,
             sourcetype=SourceType.VIDEO,
-            uri=f"{URISchemes['Video']}://{Path(source).as_posix()}",
+            uri=f"{URISchemes['Video']}://{Path(absolute_source).as_posix()}",
         )

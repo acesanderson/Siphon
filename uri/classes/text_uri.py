@@ -25,33 +25,33 @@ class TextURI(URI):
     def identify(cls, source: str) -> bool:
         """
         Check if the source string matches the text URI format.
+        No file access required - just check the extension.
         """
-
         try:
             source_path = Path(source)
-            if source_path.exists():
-                extension = source_path.suffix.lower()
-                if extension in Extensions["Text"]:
-                    logger.info(f"Identified as TextURI: {source}")
-                    return True
-            else:
-                logger.info(f"Source path does not exist: {source}")
-                return False
-        except:
-            pass
-        return False
+            extension = source_path.suffix.lower()
+            if extension in Extensions["Text"]:
+                logger.info(f"Identified as TextURI: {source}")
+                return True
+            return False
+        except Exception:
+            return False
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "TextURI | None":  # type: ignore
+    def from_source(cls, source: str) -> "TextURI | None":
         """
-        Create an TextURI object from a source string.
+        Create a TextURI object from a source string.
+        No file access required.
         """
-
         if not cls.identify(source):
             logger.warning(f"Source does not match TextURI format: {source}")
             return None
+
+        # Always convert to absolute path for consistency
+        absolute_source = str(Path(source).resolve())
+
         return cls(
-            source=source,
-            uri=f"{URISchemes['Text']}://{Path(source).as_posix()}",
+            source=absolute_source,
+            uri=f"{URISchemes['Text']}://{Path(absolute_source).as_posix()}",
         )

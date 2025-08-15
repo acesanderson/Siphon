@@ -27,32 +27,30 @@ class DocURI(URI):
         """
         Check if the source string matches the doc URI format.
         """
-
         try:
             source_path = Path(source)
-            if source_path.exists():
-                extension = source_path.suffix.lower()
-                if extension in Extensions["Doc"]:
-                    logger.info(f"Identified as DocURI: {source}")
-                    return True
-            else:
-                logger.info(f"Source path does not exist: {source}")
-                return False
-        except:
-            pass
-        return False
+            extension = source_path.suffix.lower()
+            if extension in Extensions["Doc"]:
+                logger.info(f"Identified as DocURI: {source}")
+                return True
+            return False
+        except Exception:
+            return False
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "DocURI | None":  # type: ignore
+    def from_source(cls, source: str) -> "DocURI | None":
         """
-        Create an DocURI object from a source string.
+        Create a DocURI object from a source string.
         """
-
         if not cls.identify(source):
             logger.warning(f"Source does not match DocURI format: {source}")
             return None
+
+        # Always convert to absolute path for consistency
+        absolute_source = str(Path(source).resolve())
+
         return cls(
-            source=source,
-            uri=f"{URISchemes['Doc']}://{Path(source).as_posix()}",
+            source=absolute_source,
+            uri=f"{URISchemes['Doc']}://{Path(absolute_source).as_posix()}",
         )
