@@ -1,7 +1,5 @@
 # Siphon
 
-**Stop manually hunting for documents. Stop copy-pasting context for LLMs. Own your knowledge.**
-
 Siphon transforms any content source into structured, searchable, LLM-ready knowledge while you retain complete control over your data. Built for the age of AI agents, designed for minds that work in parallel.
 
 ## Philosophy
@@ -15,8 +13,6 @@ Siphon operates on four core principles:
 3. **Frictionless context engineering** — Assembling the right context for LLM tasks should be effortless
 4. **Optimize for human efficiency** — Use AI to eliminate information silos and accelerate knowledge work
 
-This isn't just another RAG system. It's your personal knowledge infrastructure for the agent future.
-
 ## What Siphon Does
 
 **Process once, query forever.** Siphon converts any content source into structured, cached knowledge:
@@ -26,7 +22,7 @@ This isn't just another RAG system. It's your personal knowledge infrastructure 
 siphon quarterly-strategy.pdf
 siphon https://www.youtube.com/watch?v=xyz  
 siphon https://github.com/company/repo
-siphon meeting-recording.m4a
+siphon podcast.m4a
 siphon competitive-analysis.pptx
 
 # Get what you need

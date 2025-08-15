@@ -7,6 +7,7 @@ From module creator:
     working, let me know!*
 
 """
+
 from Siphon.logs.logging_config import get_logger
 from youtube_transcript_api import YouTubeTranscriptApi
 import yt_dlp
@@ -52,27 +53,32 @@ def download_youtube_transcript(video_id) -> tuple[str, dict]:
     logger.info(f"Validated video_id: {video_id}")
     logger.info(f"Type of video_id: {type(video_id)}")
     logger.info("Getting metadata from GitHub api...")
-    with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
-         info = ydl.extract_info(video_id, download=False)
-         metadata = {
-             # Online metadata (standard fields)
-             'url': info.get('webpage_url'),
-             'domain': "youtube.com",
-             'title': info.get('title'),
-             'published_date': info.get('upload_date') if info.get('upload_date') else None,
-             # Youtube-specific
-             'video_id': info.get('id'),
-             'channel': info.get('channel'),
-             'duration': info.get('duration'),
-             'view_count': info.get('view_count'),
-             'description': info.get('description'),
-             'tags': info.get('tags'),
-             'like_count': info.get('like_count'),
-             'comment_count': info.get('comment_count'),
-         }
+    with yt_dlp.YoutubeDL({"quiet": True}) as ydl:
+        info = ydl.extract_info(video_id, download=False)
+        metadata = {
+            # Online metadata (standard fields)
+            "url": info.get("webpage_url"),
+            "domain": "youtube.com",
+            "title": info.get("title"),
+            "published_date": info.get("upload_date")
+            if info.get("upload_date")
+            else None,
+            # Youtube-specific
+            "video_id": info.get("id"),
+            "channel": info.get("channel"),
+            "duration": info.get("duration"),
+            "view_count": info.get("view_count"),
+            "description": info.get("description"),
+            "tags": info.get("tags"),
+            "like_count": info.get("like_count"),
+            "comment_count": info.get("comment_count"),
+        }
     logger.info(f"Metadata: {metadata}")
     logger.info("Downloading transcript...")
-    t = YouTubeTranscriptApi.get_transcript(video_id)
+    # this is the latest logic from the youtube-transcript-api package (v1.2.2)
+    ytt_api = YouTubeTranscriptApi()
+    fetched_transcript = ytt_api.fetch(video_id)
+    t = fetched_transcript.to_raw_data()
     assert isinstance(t, list), "Transcript should be a list"
     script = " ".join([line["text"] for line in t])
     assert len(script) > 0, "Transcript should not be empty"
