@@ -25,6 +25,8 @@ def siphon(cli_params: CLIParams | str) -> ProcessedContent:
     Siphon orchestrates the process of converting a source string (file path or URL).
     Now includes PostgreSQL caching for performance.
     """
+    # Grab local flag -- do we use cloud or SiphonServer?
+    local = cli_params.local if isinstance(cli_params, CLIParams) else False
     # Validate input
     if isinstance(cli_params, str):
         source = cli_params
@@ -61,8 +63,11 @@ def siphon(cli_params: CLIParams | str) -> ProcessedContent:
     context = Context.from_uri(uri)
 
     # 4. Generate SyntheticData (post-processing)
-    logger.info("Generating synthetic data...")
-    synthetic_data = SyntheticData.from_context(context)
+    logger.info(f"Generating synthetic data from context...")
+    synthetic_data = SyntheticData.from_context(context, local=local)
+    if not synthetic_data:
+        raise ValueError("Failed to generate synthetic data from context.")
+    logger.info("Synthetic data generation complete.")
 
     # 5. Construct ProcessedContent object
     processed_content = ProcessedContent(
