@@ -20,7 +20,7 @@ def get_logger(name=None, level=None):
 
     # Default to the root logger if no name is provided
     if name is None:
-        name = "audio_pipeline"
+        name = "SiphonServer"
 
     if name in _loggers:
         logger = _loggers[name]
@@ -42,7 +42,7 @@ def get_logger(name=None, level=None):
 
 
 def configure_logging(
-        level: int = logging.INFO,
+    level: int = logging.INFO,
     console=True,
 ):
     """
@@ -63,7 +63,9 @@ def configure_logging(
         - logging.CRITICAL = 50
     """
     # Create a log formatter with trace information if requested
-    log_format = "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d (%(funcName)s) - %(message)s"
+    log_format = (
+        "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d (%(funcName)s) - %(message)s"
+    )
 
     formatter = logging.Formatter(log_format)
 
@@ -82,11 +84,10 @@ def configure_logging(
         root_logger.addHandler(console_handler)
 
     # Create the main application logger
-    logger = get_logger("audio_pipeline")
+    logger = get_logger("SiphonServer", level)
     logger.info(
         "Audio pipeline logging configured with level: %s, trace_mode: True",
         logging.getLevelName(level),
     )
 
     return logger
-
