@@ -107,7 +107,6 @@ def main():
         "-L",
         "--local",
         action="store_true",
-        default=True,  # FOR DEBUG: SETTING THIS TO TRUE BY DEFAULT WHILE I BUILD OUT LOCAL LLM SUPPORT
         help="Use local LLMs for conversion if applicable",
     )
     parser.add_argument(

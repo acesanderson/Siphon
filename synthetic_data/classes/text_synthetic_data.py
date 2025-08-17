@@ -17,7 +17,9 @@ class TextSyntheticData(SyntheticData):
 
     @override
     @classmethod
-    def from_context(cls, context: Context) -> "TextSyntheticData":
+    def from_context(
+        cls, context: Context, model_str: str = "gemini2.5"
+    ) -> "TextSyntheticData":
         """
         Create a TextSyntheticData instance from a Context object.
         """
@@ -31,7 +33,7 @@ class TextSyntheticData(SyntheticData):
         from rich.console import Console
 
         ModelAsync._console = Console()
-        model = ModelAsync("gemini2.5")
+        model = ModelAsync(model_str)
         chain = AsyncChain(model=model)
         responses = chain.run(prompt_strings=rendered_prompts)
         # Create the TextSyntheticData instance
