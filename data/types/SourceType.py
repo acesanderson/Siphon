@@ -22,6 +22,7 @@ class SourceType(str, Enum):
 
 # Park future implementation ideas here
 """
+BOOK (for example those oreilly books I bought)
 EPHEMERAL (stdin, clipboard, and other temporary sources like web scraping)
 ARXIV
 TODO
