@@ -24,30 +24,34 @@ class ImageURI(URI):
 
     @override
     @classmethod
-    def identify(cls, source: str) -> bool:  # type: ignore
+    def identify(cls, source: str) -> bool:
         """
-        Check if the source string matches the text URI format.
+        Check if the source string matches the image URI format.
         """
-        source_path = Path(source)
-        if source_path.exists():
+        try:
+            source_path = Path(source)
             extension = source_path.suffix.lower()
             if extension in Extensions["Image"]:
                 logger.info(f"Identified as ImageURI: {source}")
                 return True
-        else:
-            logger.info(f"Source path does not exist: {source}")
+            return False
+        except Exception:
             return False
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "ImageURI | None":  # type: ignore
+    def from_source(cls, source: str) -> "ImageURI | None":
         """
         Create an ImageURI object from a source string.
         """
         if not cls.identify(source):
             logger.warning(f"Source does not match ImageURI format: {source}")
             return None
+
+        # Always convert to absolute path for consistency
+        absolute_source = str(Path(source).resolve())
+
         return cls(
-            source=source,
-            uri=f"{URISchemes['Image']}://{Path(source).as_posix()}",
+            source=absolute_source,
+            uri=f"{URISchemes['Image']}://{Path(absolute_source).as_posix()}",
         )

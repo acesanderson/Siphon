@@ -1,6 +1,7 @@
 import importlib
 from Siphon.data.Context import Context
 from Siphon.data.types.SourceType import SourceType
+from typing import Union
 
 
 def load_context_class(sourcetype: SourceType) -> type[Context]:
@@ -37,3 +38,6 @@ def load_context_class(sourcetype: SourceType) -> type[Context]:
 
 # Build the list of valid URI subclasses
 ContextClasses = [load_context_class(st) for st in SourceType]
+
+# A union type for all context classes
+ContextUnion = Union[tuple(ContextClasses)]
