@@ -12,6 +12,7 @@ from Siphon.database.postgres.PGRES_processed_content import (
     cache_processed_content,
 )
 from Siphon.logs.logging_config import get_logger
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -20,15 +21,21 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-def siphon(cli_params: CLIParams | str) -> ProcessedContent:
+def siphon(cli_params: CLIParams | Path | str) -> ProcessedContent:
     """
     Siphon orchestrates the process of converting a source string (file path or URL).
     Now includes PostgreSQL caching for performance.
     """
+    # Coerce Path to string
+    if isinstance(cli_params, Path):
+        source = str(cli_params)
+        cache_options = "c"
+        tags = []
     # Validate input
-    if isinstance(cli_params, str):
+    elif isinstance(cli_params, str):
         source = cli_params
         cache_options = "c"  # Default, cache it.
+        tags = []
     elif isinstance(cli_params, CLIParams):
         source = cli_params.source
         cache_options = cli_params.cache_options
