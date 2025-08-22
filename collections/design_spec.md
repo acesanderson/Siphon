@@ -1,3 +1,36 @@
+"""
+# Example 1: Database → Query → In-Memory
+all_content = CorpusFactory.from_library()
+research_query = all_content.query()\
+   .filter_by_source_type(SourceType.YOUTUBE)\
+   .filter_by_tags(["AI", "research"])\
+   .limit(50)
+research_corpus = research_query.to_corpus()
+
+# Example 2: Direct corpus operations
+youtube_corpus = CorpusFactory.from_library()\
+   .filter_by_source_type(SourceType.YOUTUBE)
+
+# Example 3: Complex query chain
+strategic_content = SiphonQuery(CorpusFactory.from_library())\
+   .filter_by_date_range(last_30_days)\
+   .semantic_search("strategic planning")\
+   .order_by_date(ascending=False)\
+   .limit(20)\
+   .to_sourdough(focus_areas=["strategy", "planning"])
+
+# Example 4: In-memory corpus from files
+local_corpus = CorpusFactory.from_directory("./docs")\
+   .query()\
+   .filter_by_content("important")\
+   .to_corpus()
+"""
+
+
+
+
+
+
 # Collections Module Design Specification
 
 ## Overview

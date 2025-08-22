@@ -33,117 +33,78 @@ These would use the same interface, but have different implementations for the u
 We then have a `CorpusFactory` that provides methods to create the appropriate corpus type based on the source:
 """
 
-from collections.abc import Iterable
-from abc import ABC, abstractmethod
-from pathlib import Path
-
 from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.data.types.SourceType import SourceType
 from Siphon.database.postgres.PGRES_connection import get_db_connection
-from Siphon.main.siphon import siphon
-from Siphon.cli.cli_params import CLIParams
 from psycopg2.extras import RealDictCursor
 from typing import override
+from collections.abc import Iterator
+from abc import ABC, abstractmethod
+from pathlib import Path
 
 
 class SiphonCorpus(ABC):
     """Abstract interface - all corpus types look the same to SiphonQuery."""
 
+    # Collection Management
     @abstractmethod
-    def __iter__(self): ...  # For when you DO need to iterate
-
-    # ============================================================================
-    # Metadata - Basic information about the corpus
-    # ============================================================================
-
-    # ============================================================================
-    # Synthetic Data - Automatically generated metadata like summaries, tags, etc.
-    # ============================================================================
-
-    # ============================================================================
-    # Constructors - Create corpus from various sources
-    # ============================================================================
-
-    # ============================================================================
-    # Collection Management - Add/Remove operations
-    # ============================================================================
+    def add(self, content: ProcessedContent) -> None: ...
 
     @abstractmethod
-    def add(self, content: ProcessedContent) -> None:
-        """Add ProcessedContent to the corpus."""
-        ...
+    def remove(self, content: ProcessedContent) -> None: ...
 
     @abstractmethod
-    def remove(self, content: ProcessedContent) -> None:
-        """Remove ProcessedContent from the corpus."""
-        ...
+    def remove_by_uri(self, uri: str) -> bool: ...
+
+    # Iteration & Access
+    @abstractmethod
+    def __iter__(self) -> Iterator[ProcessedContent]: ...
 
     @abstractmethod
-    def remove_by_uri(self, uri: str) -> bool:
-        """
-        Remove content by URI string.
-
-        Returns:
-            True if content was found and removed, False otherwise
-        """
-        ...
-
-    # ============================================================================
-    # View Operations - Different representations of the corpus
-    # ============================================================================
+    def __len__(self) -> int: ...
 
     @abstractmethod
-    def snapshot(self) -> str:
-        """
-        Get high-level overview (titles + descriptions) for quick scanning.
-        Perfect for getting the gist of the corpus without full context.
-        """
-        ...
+    def __contains__(self, content: ProcessedContent) -> bool: ...
 
-    # ============================================================================
-    # Utility Methods
-    # ============================================================================
+    # Query Interface (returns new corpus for chaining)
+    @abstractmethod
+    def filter_by_source_type(self, source_type: SourceType) -> "SiphonCorpus": ...
 
     @abstractmethod
-    def __len__(self) -> int:
-        """Return number of items in corpus."""
-        ...
+    def filter_by_date_range(self, start_date, end_date) -> "SiphonCorpus": ...
 
     @abstractmethod
-    def __contains__(self, content: ProcessedContent) -> bool:
-        """Check if content is in corpus."""
-        ...
+    def filter_by_tags(self, tags: list[str]) -> "SiphonCorpus": ...
+
+    # Metadata & Views
+    @abstractmethod
+    def snapshot(self) -> str: ...
 
     @abstractmethod
-    def is_empty(self) -> bool:
-        """Check if corpus is empty."""
-        ...
+    def get_source_type_counts(self) -> dict[SourceType, int]: ...
 
     @abstractmethod
-    def get_source_type_counts(self) -> dict[SourceType, int]:
-        """Get count of content by source type."""
-        ...
+    def is_empty(self) -> bool: ...
 
-    @abstractmethod
-    def pretty_print(self) -> None:
-        """Display corpus in a beautiful, structured format."""
-        ...
+    # Query Entry Point
+    def query(self) -> "SiphonQuery":
+        """Create a SiphonQuery instance for this corpus"""
+        from .siphon_query import SiphonQuery
+
+        return SiphonQuery(self)
 
 
 class DatabaseCorpus(SiphonCorpus):
-    """
-    Corpus backed by a persistent database (e.g., Postgres, Neo4j).
-    Provides efficient querying and storage for large datasets.
-    """
+    """Database-backed corpus with lazy SQL query building"""
 
-    def __init__(self, db_manager=get_db_connection):
+    def __init__(self, db_connection=get_db_connection):
         """
         Initialize a database-backed corpus.
 
         Args:
             db_connection_func: contextlib.contextmanager to get a database connection
         """
-        self.db_connection = get_db_connection
+        self.db_connection = db_connection
 
     @override
     def __len__(self) -> int:
@@ -153,78 +114,17 @@ class DatabaseCorpus(SiphonCorpus):
             count = cursor.fetchone()[0]
         return count
 
-    # ============================================================================
-    # Metadata - Basic information about the corpus
-    # ============================================================================
-
-    # ============================================================================
-    # Synthetic Data - Automatically generated metadata like summaries, tags, etc.
-    # ============================================================================
-
-    # ============================================================================
-    # Constructors - Create corpus from various sources
-    # ============================================================================
-
-    # ============================================================================
-    # Collection Management - Add/Remove operations
-    # ============================================================================
+    # Collection Management
+    @override
+    def add(self, content: ProcessedContent) -> None: ...
 
     @override
-    def add(self, content: ProcessedContent) -> None:
-        """Add ProcessedContent to the corpus."""
-        ...
+    def remove(self, content: ProcessedContent) -> None: ...
 
     @override
-    def remove(self, content: ProcessedContent) -> None:
-        """Remove ProcessedContent from the corpus."""
-        ...
+    def remove_by_uri(self, uri: str) -> bool: ...
 
-    @override
-    def remove_by_uri(self, uri: str) -> bool:
-        """
-        Remove content by URI string.
-
-        Returns:
-            True if content was found and removed, False otherwise
-        """
-        ...
-
-    # ============================================================================
-    # View Operations - Different representations of the corpus
-    # ============================================================================
-
-    @override
-    def snapshot(self) -> str:
-        """
-        Get high-level overview (titles + descriptions) for quick scanning.
-        Perfect for getting the gist of the corpus without full context.
-        """
-        ...
-
-    # ============================================================================
-    # Utility Methods
-    # ============================================================================
-
-    @override
-    def __contains__(self, content: ProcessedContent) -> bool:
-        """Check if content is in corpus."""
-        ...
-
-    @override
-    def is_empty(self) -> bool:
-        """Check if corpus is empty."""
-        return len(self.corpus) == 0
-
-    @override
-    def get_source_type_counts(self) -> dict[SourceType, int]:
-        """Get count of content by source type."""
-        ...
-
-    @override
-    def pretty_print(self) -> None:
-        """Display corpus in a beautiful, structured format."""
-        ...
-
+    # Iteration & Access
     @override
     def __iter__(self):
         with (
@@ -239,168 +139,124 @@ class DatabaseCorpus(SiphonCorpus):
                 for row in rows:
                     yield ProcessedContent.model_validate_from_cache(row["data"])
 
+    @override
+    def __len__(self) -> int: ...
+
+    @override
+    def __contains__(self, content: ProcessedContent) -> bool: ...
+
+    # Query Interface (returns new DatabaseCorpus with modified SQL)
+    @override
+    def filter_by_source_type(self, source_type: SourceType) -> "DatabaseCorpus": ...
+
+    @override
+    def filter_by_date_range(self, start_date, end_date) -> "DatabaseCorpus": ...
+
+    @override
+    def filter_by_tags(self, tags: list[str]) -> "DatabaseCorpus": ...
+
+    # Database-specific methods
+    @override
+    def _build_sql_query(self) -> str: ...
+
+    @override
+    def _execute_query(self) -> Iterator[ProcessedContent]: ...
+
+    # Metadata & Views
+    @override
+    def snapshot(self) -> str: ...
+
+    @override
+    def get_source_type_counts(self) -> dict[SourceType, int]: ...
+
+    @override
+    def is_empty(self) -> bool: ...
+
 
 class InMemoryCorpus(SiphonCorpus):
-    """
-    Corpus stored in memory, suitable for ephemeral use cases.
-    Provides fast access and manipulation of ProcessedContent objects.
-    Ideal for testing, prototyping, and small datasets.
-    """
+    """In-memory corpus for fast operations on materialized data"""
 
     def __init__(self, source: str, corpus: list[ProcessedContent] = None):
-        """
-        Initialize an in-memory corpus.
-
-        Args:
-            source: Identifier for the source of the corpus (e.g., "urls", "dir")
-            corpus: Optional list of ProcessedContent objects to initialize with
-        """
         self.source = source
         self.corpus = corpus if corpus is not None else []
 
-    # Implementation of abstract methods from SiphonCorpus
-    def __len__(self) -> int:
-        """Return the number of items in the corpus."""
-        ...
+    # Collection Management
+    @override
+    def add(self, content: ProcessedContent) -> None: ...
 
-    def __contains__(self, content: ProcessedContent) -> bool:
-        """Check if a ProcessedContent object is in the corpus."""
-        ...
+    @override
+    def remove(self, content: ProcessedContent) -> None: ...
 
-    def is_empty(self) -> bool:
-        """Check if the corpus is empty."""
-        ...
+    @override
+    def remove_by_uri(self, uri: str) -> bool: ...
 
-    def get_source_type_counts(self) -> dict[SourceType, int]:
-        """
-        Get a count of content items by their source type.
+    # Iteration & Access
+    @override
+    def __iter__(self) -> Iterator[ProcessedContent]: ...
 
-        Returns:
-            Dictionary mapping SourceType to count of items
-        """
-        counts = {}
-        for content in self.corpus:
-            sourcetype = content.uri.sourcetype
-            counts[sourcetype] = counts.get(sourcetype, 0) + 1
-        return counts
+    @override
+    def __len__(self) -> int: ...
 
-    def snapshot(self) -> str:
-        if not self.corpus:
-            return "Empty corpus"
+    @override
+    def __contains__(self, content: ProcessedContent) -> bool: ...
 
-        snapshot_lines = [f"Corpus Snapshot ({len(self.corpus)} items)"]
-        snapshot_lines.append("=" * 50)
+    # Query Interface (returns new InMemoryCorpus with filtered data)
+    @override
+    def filter_by_source_type(self, source_type: SourceType) -> "InMemoryCorpus": ...
 
-        for i, content in enumerate(self.corpus, 1):
-            title = content.title or f"Content from {content.uri.sourcetype.value}"
-            description = content.description or "No description available"
+    @override
+    def filter_by_date_range(self, start_date, end_date) -> "InMemoryCorpus": ...
 
-            # Truncate long descriptions
-            if len(description) > 100:
-                description = description[:97] + "..."
+    @override
+    def filter_by_tags(self, tags: list[str]) -> "InMemoryCorpus": ...
 
-            snapshot_lines.append(f"{i}. {title}")
-            snapshot_lines.append(f"   {description}")
-            snapshot_lines.append("")
+    # In-memory specific methods
+    def text(self) -> str: ...
 
-        return "\n".join(snapshot_lines)
+    def to_dataframe(self): ...
 
-    # Specific to InMemoryCorpus
-    def text(self) -> str:
-        """
-        Get full context text from all content in corpus.
-        Suitable for LLM consumption or detailed analysis.
-        """
-        if not self.corpus:
-            return ""
+    # Metadata & Views
+    @override
+    def snapshot(self) -> str: ...
 
-        text_sections = []
-        for content in self.corpus:
-            section = [
-                f"=== {content.title or 'Untitled'} ===",
-                f"Source: {content.uri.uri}",
-                f"Type: {content.uri.sourcetype.value}",
-                "",
-                content.context,
-                "\n" + "=" * 80 + "\n",
-            ]
-            text_sections.append("\n".join(section))
+    @override
+    def get_source_type_counts(self) -> dict[SourceType, int]: ...
 
-        return "\n".join(text_sections)
-
-    def __iter__(self) -> Iterable[ProcessedContent]:
-        """
-        Allow iteration over corpus content.
-
-        Returns:
-            Iterator over ProcessedContent objects
-
-        Careful -- if you list(corpus) you will load everything into memory!
-
-        Generator usecase:
-            for item in corpus:
-                process(item)
-        """
-        return iter(self.corpus)
+    @override
+    def is_empty(self) -> bool: ...
 
 
 class CorpusFactory:
-    """Factory for creating the right corpus implementation."""
+    """Factory for creating appropriate corpus implementations"""
 
+    # Database-backed creation
     @staticmethod
-    def from_library() -> "DatabaseCorpus":
-        """Create database-backed corpus for entire library."""
+    def from_library() -> DatabaseCorpus:
+        """Create a DatabaseCorpus from the entire library of ProcessedContent."""
         return DatabaseCorpus()
 
     @staticmethod
-    def from_directory(
-        directory_path: str | Path, pattern: str = "*"
-    ) -> "InMemoryCorpus":
-        """Create in-memory corpus from directory files."""
-        directory = Path(directory_path)
-        if not directory.exists():
-            raise FileNotFoundError(f"Directory not found: {directory}")
-
-        files = list(directory.glob(pattern))
-        corpus_items = []
-
-        for file_path in files:
-            try:
-                cli_params = CLIParams(source=str(file_path))
-                processed_content = siphon(cli_params)
-                corpus_items.append(processed_content)
-            except Exception as e:
-                print(f"Error processing {file_path}: {e}")
-                continue
-
-        return InMemoryCorpus(corpus_items)
+    def from_tag(tag: str) -> DatabaseCorpus: ...
 
     @staticmethod
-    def from_url_list(urls: list[str]) -> "InMemoryCorpus":
-        """Create in-memory corpus from URL list."""
-        corpus_items = []
-        for url in urls:
-            try:
-                cli_params = CLIParams(source=url)
-                processed_content = siphon(cli_params)
-                corpus_items.append(processed_content)
-            except Exception as e:
-                print(f"Error processing {url}: {e}")
-                continue
-        return InMemoryCorpus(corpus_items)
+    def from_date_range(start_date, end_date) -> DatabaseCorpus: ...
+
+    # In-memory creation
+    @staticmethod
+    def from_directory(
+        directory_path: str | Path, pattern: str = "*"
+    ) -> InMemoryCorpus: ...
+
+    @staticmethod
+    def from_url_list(urls: list[str]) -> InMemoryCorpus: ...
 
     @staticmethod
     def from_processed_content_list(
         content_list: list[ProcessedContent],
-    ) -> "InMemoryCorpus":
-        """Create in-memory corpus from existing content."""
-        return InMemoryCorpus(content_list)
+    ) -> InMemoryCorpus: ...
 
     @staticmethod
-    def from_tag(tag: str) -> "DatabaseCorpus":
-        """Create database-backed corpus filtered by tag."""
-        # This would use database queries
-        raise NotImplementedError("Tag-based corpus construction not yet implemented")
+    def from_files(file_paths: list[str]) -> InMemoryCorpus: ...
 
 
 if __name__ == "__main__":

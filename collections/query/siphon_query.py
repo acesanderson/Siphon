@@ -20,34 +20,87 @@ class SiphonQuery:
         return self._add_operation('semantic_search', query, k)
 """
 
-from Siphon.database.postgres.PGRES_connection import get_db_connection
 from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.logs.logging_config import get_logger
-from psycopg2.extras import RealDictCursor
+from Siphon.data.types.source_type import SourceType
+from Siphon.collections.corpus.siphon_corpus import (
+    SiphonCorpus,
+    InMemoryCorpus,
+)
 
 logger = get_logger(__name__)
 
 
 class SiphonQuery:
-    """
-    A class to handle siphon queries.
-    """
+    """Monadic query interface for fluen| t corpus operations"""
 
-    def __init__(self, corpus: ProcessedCorpus):
-        """
-        Initializes the SiphonQuery instance.
-        Has our own get_db_connection function as a default parameter.
-        """
-        self.corpus = corpus
+    def __init__(self, corpus: SiphonCorpus):
+        self.corpus: SiphonCorpus = corpus
 
-    def last(self) -> ProcessedContent | None:
-        """
-        Queries the latest processed content from the corpus.
-        Returns a ProcessedContent instance or None if no content is found.
-        """
+    # ========================================================================
+    # Monadic operations return new SiphonQuery instances
+    # ========================================================================
 
+    # Filtering Operations (return new SiphonQuery)
 
-if __name__ == "__main__":
-    sq = SiphonQuery()
-    last = sq.last()
-    print(last)
+    def filter_by_source_type(self, source_type: SourceType) -> "SiphonQuery": ...
+
+    def filter_by_date_range(self, start_date, end_date) -> "SiphonQuery": ...
+
+    def filter_by_tags(self, tags: list[str]) -> "SiphonQuery": ...
+
+    def filter_by_content(self, search_term: str) -> "SiphonQuery": ...
+
+    def filter_by_title(self, title_pattern: str) -> "SiphonQuery": ...
+
+    # Ordering & Limiting (return new SiphonQuery)
+
+    def order_by_date(self, ascending: bool = True) -> "SiphonQuery": ...
+
+    def order_by_title(self, ascending: bool = True) -> "SiphonQuery": ...
+
+    def limit(self, n: int) -> "SiphonQuery": ...
+
+    def offset(self, n: int) -> "SiphonQuery": ...
+
+    def paginate(self, page_size: int, page_number: int) -> "SiphonQuery": ...
+
+    # Advanced Queries (return new SiphonQuery)
+
+    def semantic_search(self, query: str, k: int = 10) -> "SiphonQuery": ...
+
+    def similar_to(self, content: ProcessedContent, k: int = 10) -> "SiphonQuery": ...
+
+    def graph_traverse(
+        self, start_content: ProcessedContent, depth: int = 2
+    ) -> "SiphonQuery": ...
+
+    # Aggregation Operations (return new SiphonQuery)
+
+    def group_by_source_type(self) -> "SiphonQuery": ...
+
+    def group_by_date(self, granularity: str = "day") -> "SiphonQuery": ...
+
+    # ========================================================================
+    # Terminal Operations (return non-SiphonQuery results)
+    # ========================================================================
+
+    def to_list(self) -> list[ProcessedContent]: ...
+
+    def to_corpus(self) -> InMemoryCorpus: ...
+
+    def to_sourdough(self, **kwargs) -> "Sourdough": ...
+
+    def to_dataframe(self): ...
+
+    def first(self) -> ProcessedContent | None: ...
+
+    def last(self) -> ProcessedContent | None: ...
+
+    def count(self) -> int: ...
+
+    def exists(self) -> bool: ...
+
+    # ========================================================================
+    # View & Utility Methods
+    # ========================================================================
