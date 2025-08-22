@@ -332,7 +332,6 @@ def get_all_siphon() -> list[ProcessedContent]:
         cur.execute("""
                 SELECT data FROM processed_content 
                 ORDER BY updated_at DESC 
-                LIMIT 100
             """)
 
         rows = cur.fetchall()
