@@ -44,7 +44,9 @@ from pathlib import Path
 
 
 class SiphonCorpus(ABC):
-    """Abstract interface - all corpus types look the same to SiphonQuery."""
+    """
+    Abstract interface - all corpus types look the same to SiphonQuery.
+    """
 
     # Collection Management
     @abstractmethod
@@ -87,15 +89,107 @@ class SiphonCorpus(ABC):
     def is_empty(self) -> bool: ...
 
     # Query Entry Point
+    @abstractmethod
+    def query(self) -> "SiphonQuery": ...
+
+
+class InMemoryCorpus(SiphonCorpus):
+    """
+    In-memory corpus for fast operations on materialized data
+    """
+
+    def __init__(self, source: str, corpus: set[ProcessedContent] = None):
+        self.source = source
+        self.corpus = corpus if corpus is not None else {}
+
+    # Collection Management
+    @override
+    def add(self, content: ProcessedContent) -> None:
+        if content not in self.corpus:
+            self.corpus.add(content)
+
+    @override
+    def remove(self, content: ProcessedContent) -> None:
+        self.corpus.discard(content)
+
+    @override
+    def remove_by_uri(self, uri: str) -> bool:
+        to_remove = next((c for c in self.corpus if c.uri == uri), None)
+        if to_remove:
+            self.corpus.remove(to_remove)
+            return True
+        return False
+
+    # Iteration & Access
+    @override
+    def __iter__(self) -> Iterator[ProcessedContent]:
+        return iter(self.corpus)
+
+    @override
+    def __len__(self) -> int:
+        return len(self.corpus)
+
+    @override
+    def __contains__(self, content: ProcessedContent) -> bool:
+        return content in self.corpus
+
+    # Query Interface (returns new InMemoryCorpus with filtered data)
+    @override
+    def filter_by_source_type(self, source_type: SourceType) -> "InMemoryCorpus":
+        filtered = {c for c in self.corpus if c.source_type == source_type}
+        return InMemoryCorpus(
+            source=f"{self.source}|source_type={source_type}", corpus=filtered
+        )
+
+    @override
+    def filter_by_date_range(self, start_date, end_date) -> "InMemoryCorpus":
+        filtered = {
+            c
+            for c in self.corpus
+            if c.date_added and start_date <= c.date_added <= end_date
+        }
+        return InMemoryCorpus(
+            source=f"{self.source}|date_range={start_date}_{end_date}", corpus=filtered
+        )
+
+    @override
+    def filter_by_tags(self, tags: list[str]) -> "InMemoryCorpus":
+        filtered = {c for c in self.corpus if any(tag in c.tags for tag in tags)}
+        return InMemoryCorpus(
+            source=f"{self.source}|tags={','.join(tags)}", corpus=filtered
+        )
+
+    # In-memory specific methods
+    def text(self) -> str: ...
+
+    def to_dataframe(self): ...
+
+    # Metadata & Views
+    @override
+    def snapshot(self):
+        from Siphon.collections.query.snapshot import generate_snapshot
+
+        generate_snapshot(self.corpus)
+
+    @override
+    def get_source_type_counts(self) -> dict[SourceType, int]: ...
+
+    @override
+    def is_empty(self) -> bool: ...
+
+    @override
     def query(self) -> "SiphonQuery":
-        """Create a SiphonQuery instance for this corpus"""
-        from .siphon_query import SiphonQuery
+        from Siphon.collections.query.siphon_query import SiphonQuery
 
         return SiphonQuery(self)
 
 
 class DatabaseCorpus(SiphonCorpus):
-    """Database-backed corpus with lazy SQL query building"""
+    """
+    Database-backed corpus with lazy SQL query building.
+    Note: This is a read-only corpus for now; adding/removing content should be done via dedicated ingestion/removal functions.
+
+    """
 
     def __init__(self, db_connection=get_db_connection):
         """
@@ -116,13 +210,16 @@ class DatabaseCorpus(SiphonCorpus):
 
     # Collection Management
     @override
-    def add(self, content: ProcessedContent) -> None: ...
+    def add(self, content: ProcessedContent) -> None:
+        raise NotImplementedError()
 
     @override
-    def remove(self, content: ProcessedContent) -> None: ...
+    def remove(self, content: ProcessedContent) -> None:
+        raise NotImplementedError()
 
     @override
-    def remove_by_uri(self, uri: str) -> bool: ...
+    def remove_by_uri(self, uri: str) -> bool:
+        raise NotImplementedError()
 
     # Iteration & Access
     @override
@@ -140,24 +237,27 @@ class DatabaseCorpus(SiphonCorpus):
                     yield ProcessedContent.model_validate_from_cache(row["data"])
 
     @override
-    def __contains__(self, content: ProcessedContent) -> bool: ...
+    def __contains__(self, content: ProcessedContent) -> bool:
+        raise NotImplementedError()
 
     # Query Interface (returns new DatabaseCorpus with modified SQL)
     @override
-    def filter_by_source_type(self, source_type: SourceType) -> "DatabaseCorpus": ...
+    def filter_by_source_type(self, source_type: SourceType) -> "DatabaseCorpus":
+        raise NotImplementedError()
 
     @override
-    def filter_by_date_range(self, start_date, end_date) -> "DatabaseCorpus": ...
+    def filter_by_date_range(self, start_date, end_date) -> "DatabaseCorpus":
+        raise NotImplementedError()
 
     @override
-    def filter_by_tags(self, tags: list[str]) -> "DatabaseCorpus": ...
+    def filter_by_tags(self, tags: list[str]) -> "DatabaseCorpus":
+        raise NotImplementedError()
 
     # Database-specific methods
-    @override
-    def _build_sql_query(self) -> str: ...
+    def _get_all_processed_content(self) -> "list[ProcessedContent]":
+        from Siphon.database.postgres.PGRES_processed_content import get_all_siphon
 
-    @override
-    def _execute_query(self) -> Iterator[ProcessedContent]: ...
+        return get_all_siphon()
 
     # Metadata & Views
     @override
@@ -172,62 +272,26 @@ class DatabaseCorpus(SiphonCorpus):
     @override
     def is_empty(self) -> bool: ...
 
-
-class InMemoryCorpus(SiphonCorpus):
-    """In-memory corpus for fast operations on materialized data"""
-
-    def __init__(self, source: str, corpus: list[ProcessedContent] = None):
-        self.source = source
-        self.corpus = corpus if corpus is not None else []
-
-    # Collection Management
     @override
-    def add(self, content: ProcessedContent) -> None: ...
+    def query(self) -> "SiphonQuery":
+        """
+        Create a SiphonQuery instance for this corpus.
+        For now, this immediately goes to InMemoryCorpus.
+        As database grows and performance degrades, we can implement more queries within DatabaseCorpus and move logic to database layer, at which point this would return self.
 
-    @override
-    def remove(self, content: ProcessedContent) -> None: ...
+        """
+        from Siphon.collections.query.siphon_query import SiphonQuery
 
-    @override
-    def remove_by_uri(self, uri: str) -> bool: ...
+        processed_content_list = self._get_all_processed_content()
+        corpus = InMemoryCorpus(source="DatabaseCorpus", corpus=processed_content_list)
 
-    # Iteration & Access
-    @override
-    def __iter__(self) -> Iterator[ProcessedContent]: ...
-
-    @override
-    def __len__(self) -> int: ...
-
-    @override
-    def __contains__(self, content: ProcessedContent) -> bool: ...
-
-    # Query Interface (returns new InMemoryCorpus with filtered data)
-    @override
-    def filter_by_source_type(self, source_type: SourceType) -> "InMemoryCorpus": ...
-
-    @override
-    def filter_by_date_range(self, start_date, end_date) -> "InMemoryCorpus": ...
-
-    @override
-    def filter_by_tags(self, tags: list[str]) -> "InMemoryCorpus": ...
-
-    # In-memory specific methods
-    def text(self) -> str: ...
-
-    def to_dataframe(self): ...
-
-    # Metadata & Views
-    @override
-    def snapshot(self) -> str: ...
-
-    @override
-    def get_source_type_counts(self) -> dict[SourceType, int]: ...
-
-    @override
-    def is_empty(self) -> bool: ...
+        return SiphonQuery(corpus)
 
 
 class CorpusFactory:
-    """Factory for creating appropriate corpus implementations"""
+    """
+    Factory for creating appropriate corpus implementations
+    """
 
     # Database-backed creation
     @staticmethod

@@ -1,26 +1,36 @@
+### The Flow
+- You start with a corpus: Either from your database (DatabaseCorpus) or from some files you loaded (InMemoryCorpus)
+- You create a query: Call corpus.query() to get a SiphonQuery object that wraps your corpus
+- You chain operations: query.filter_by_source_type(YouTube).filter_by_content("AI").limit(10)
+
+### EVENTUAL IMPLEMENTATIONS --
+- databasecorpus to have more methods implemented; for now we go to InMemory immediately after querying
+- lazy evaluation of queries -- like in pandas, build up a query object and only execute when needed; for now we just do greedy evaluation
+
+
 """
-# Example 1: Database → Query → In-Memory
-all_content = CorpusFactory.from_library()
+# example 1: database → query → in-memory
+all_content = corpusfactory.from_library()
 research_query = all_content.query()\
-   .filter_by_source_type(SourceType.YOUTUBE)\
-   .filter_by_tags(["AI", "research"])\
+   .filter_by_source_type(sourcetype.youtube)\
+   .filter_by_tags(["ai", "research"])\
    .limit(50)
 research_corpus = research_query.to_corpus()
 
-# Example 2: Direct corpus operations
-youtube_corpus = CorpusFactory.from_library()\
-   .filter_by_source_type(SourceType.YOUTUBE)
+# example 2: direct corpus operations
+youtube_corpus = corpusfactory.from_library()\
+   .filter_by_source_type(sourcetype.youtube)
 
-# Example 3: Complex query chain
-strategic_content = SiphonQuery(CorpusFactory.from_library())\
+# example 3: complex query chain
+strategic_content = siphonquery(corpusfactory.from_library())\
    .filter_by_date_range(last_30_days)\
    .semantic_search("strategic planning")\
-   .order_by_date(ascending=False)\
+   .order_by_date(ascending=false)\
    .limit(20)\
    .to_sourdough(focus_areas=["strategy", "planning"])
 
-# Example 4: In-memory corpus from files
-local_corpus = CorpusFactory.from_directory("./docs")\
+# example 4: in-memory corpus from files
+local_corpus = corpusfactory.from_directory("./docs")\
    .query()\
    .filter_by_content("important")\
    .to_corpus()
@@ -31,42 +41,42 @@ local_corpus = CorpusFactory.from_directory("./docs")\
 
 
 
-# Collections Module Design Specification
+# collections module design specification
 
-## Overview
+## overview
 
-The `collections/` module provides comprehensive interfaces for managing, querying, and analyzing collections of `ProcessedContent` objects. This module bridges the gap between individual content processing (handled by core Siphon) and advanced content analysis workflows.
+the `collections/` module provides comprehensive interfaces for managing, querying, and analyzing collections of `processedcontent` objects. this module bridges the gap between individual content processing (handled by core siphon) and advanced content analysis workflows.
 
-## Directory Structure
+## directory structure
 
 ```
 collections/
-├── __init__.py           # Main exports and convenience imports
-├── README.md            # This specification
-├── corpus/              # Collection management and construction
-│   ├── processed_corpus.py      # In-memory collections with rich operations
-│   ├── processed_library.py     # Database-backed collection interface
-│   ├── sourdough.py             # Auto-curating strategic knowledge base
-│   └── specialized/             # Domain-specific corpus types
-│       ├── research_corpus.py   # Multi-document synthesis collections
-│       ├── temporal_corpus.py   # Time-aware collections
-│       └── domain_corpus.py     # Subject-matter specialized collections
-├── query/               # Query interfaces and search implementations
-│   ├── siphon_query.py          # Main query interface (corpus-agnostic)
-│   ├── builders/                # Query construction utilities
-│   │   ├── query_builder.py     # Fluent query construction
-│   │   ├── filter_builder.py    # Complex filtering logic
-│   │   └── aggregation_builder.py # Analytics and grouping
-│   ├── engines/                 # Different search implementations
-│   │   ├── fulltext_search.py   # PostgreSQL full-text search
-│   │   ├── semantic_search.py   # ChromaDB vector similarity
-│   │   ├── graph_search.py      # Neo4j relationship queries
-│   │   └── hybrid_search.py     # Combined search strategies
-│   ├── filters/                 # Reusable filtering components
-│   │   ├── metadata_filters.py  # Source type, date, size filters
-│   │   ├── content_filters.py   # Text-based filtering
-│   │   └── semantic_filters.py  # AI-powered content classification
-│   └── snapshot.py              # Library overview and statistics
+├── __init__.py           # main exports and convenience imports
+├── readme.md            # this specification
+├── corpus/              # collection management and construction
+│   ├── processed_corpus.py      # in-memory collections with rich operations
+│   ├── processed_library.py     # database-backed collection interface
+│   ├── sourdough.py             # auto-curating strategic knowledge base
+│   └── specialized/             # domain-specific corpus types
+│       ├── research_corpus.py   # multi-document synthesis collections
+│       ├── temporal_corpus.py   # time-aware collections
+│       └── domain_corpus.py     # subject-matter specialized collections
+├── query/               # query interfaces and search implementations
+│   ├── siphon_query.py          # main query interface (corpus-agnostic)
+│   ├── builders/                # query construction utilities
+│   │   ├── query_builder.py     # fluent query construction
+│   │   ├── filter_builder.py    # complex filtering logic
+│   │   └── aggregation_builder.py # analytics and grouping
+│   ├── engines/                 # different search implementations
+│   │   ├── fulltext_search.py   # postgresql full-text search
+│   │   ├── semantic_search.py   # chromadb vector similarity
+│   │   ├── graph_search.py      # neo4j relationship queries
+│   │   └── hybrid_search.py     # combined search strategies
+│   ├── filters/                 # reusable filtering components
+│   │   ├── metadata_filters.py  # source type, date, size filters
+│   │   ├── content_filters.py   # text-based filtering
+│   │   └── semantic_filters.py  # ai-powered content classification
+│   └── snapshot.py              # library overview and statistics
 └── analytics/           # Advanced analysis and insights
     ├── content_analytics.py     # Content analysis and metrics
     ├── relationship_discovery.py # Find connections between content

@@ -22,7 +22,7 @@ class SiphonQuery:
 
 from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.logs.logging_config import get_logger
-from Siphon.data.types.source_type import SourceType
+from Siphon.data.types.SourceType import SourceType
 from Siphon.collections.corpus.siphon_corpus import (
     SiphonCorpus,
     InMemoryCorpus,
@@ -32,7 +32,9 @@ logger = get_logger(__name__)
 
 
 class SiphonQuery:
-    """Monadic query interface for fluen| t corpus operations"""
+    """
+    Monadic query interface for fluent corpus operations
+    """
 
     def __init__(self, corpus: SiphonCorpus):
         self.corpus: SiphonCorpus = corpus
