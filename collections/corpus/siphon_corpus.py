@@ -140,9 +140,6 @@ class DatabaseCorpus(SiphonCorpus):
                     yield ProcessedContent.model_validate_from_cache(row["data"])
 
     @override
-    def __len__(self) -> int: ...
-
-    @override
     def __contains__(self, content: ProcessedContent) -> bool: ...
 
     # Query Interface (returns new DatabaseCorpus with modified SQL)
@@ -164,7 +161,10 @@ class DatabaseCorpus(SiphonCorpus):
 
     # Metadata & Views
     @override
-    def snapshot(self) -> str: ...
+    def snapshot(self):
+        from Siphon.collections.query.snapshot import generate_snapshot
+
+        generate_snapshot()
 
     @override
     def get_source_type_counts(self) -> dict[SourceType, int]: ...

@@ -104,3 +104,7 @@ class SiphonQuery:
     # ========================================================================
     # View & Utility Methods
     # ========================================================================
+
+    def snapshot(self) -> str:
+        """Get a snapshot summary of the current query state"""
+        return self.corpus.snapshot()

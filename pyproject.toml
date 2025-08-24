@@ -50,7 +50,7 @@ flatten = "Siphon.scripts.flatten_cli:main"
 youtube = "Siphon.scripts.youtube_cli:main"
 ocr = "Siphon.scripts.ocr_cli:main"
 research = "Siphon.scripts.research_cli:main"
-snapshot = "Siphon.query.snapshot:main"
+snapshot = "Siphon.collections.query.snapshot:main"
 obs = "Siphon.scripts.obsidian_cli:main"
 
 [tool.pytest.ini_options]

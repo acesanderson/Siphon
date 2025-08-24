@@ -297,30 +297,18 @@ def search_by_source_type(source_type):
         console.print(panel)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="PostgreSQL cache snapshot")
-    parser.add_argument("--source-type", help="Show items for specific source type")
-    parser.add_argument(
-        "--recent", type=int, default=24, help="Recent hours (default: 24)"
-    )
-
-    args = parser.parse_args()
-
-    if args.source_type:
-        search_by_source_type(args.source_type)
-        return
-
+def generate_snapshot(console: Console = console):
     # Default overview
     console.print(create_header())
     console.print()
     console.print(create_source_distribution())
     console.print()
-    console.print(create_recent_additions(args.recent))
+    console.print(create_recent_additions())
     console.print()
     console.print(create_latest_items())
     console.print()
     console.print(create_size_extremes())
 
 
-if __name__ == "__main__":
-    main()
+def main():
+    generate_snapshot()
