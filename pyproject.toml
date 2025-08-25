@@ -38,6 +38,8 @@ dependencies = [
     "pygithub>=2.6.1",
     "pytesseract>=0.3.13",
     "pyperclip>=1.9.0",
+    "torchvision>=0.22.1",
+    "torchaudio>=2.7.1",
 ]
 
 [project.scripts]

@@ -98,25 +98,157 @@ class InMemoryCorpus(SiphonCorpus):
     In-memory corpus for fast operations on materialized data
     """
 
-    def __init__(self, source: str, corpus: set[ProcessedContent] = None):
+    def __init__(self, source: str, corpus: list[ProcessedContent] = None):
         self.source = source
-        self.corpus = corpus if corpus is not None else {}
+        self.corpus = corpus if corpus is not None else []  # Fix: Use list, not dict
+        # Vector store stuff
+        self.description_collection = None
+        self.chunked_context_collection = None
+        self.vector_store_created = False
+
+    # Create vectors and graphs on the fly as needed
+    def _create_vector_store(self):
+        import chromadb
+        from chromadb.utils import embedding_functions
+        import torch
+
+        # Check GPU availability
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Using device: {device}")
+
+        client = chromadb.EphemeralClient()
+
+        # Check if corpus is empty
+        if not self.corpus:
+            print("Warning: Cannot create vector store - corpus is empty")
+            return
+
+        # Create GPU-enabled embedding function
+        # Option 1: Use sentence-transformers with GPU support
+        try:
+            embedding_function = (
+                embedding_functions.SentenceTransformerEmbeddingFunction(
+                    model_name="all-MiniLM-L6-v2",  # Fast, good quality model
+                    device=device,
+                )
+            )
+        except Exception as e:
+            embedding_function = embedding_functions.DefaultEmbeddingFunction()
+
+        # Alternative Option 2: Use Hugging Face transformers directly
+        # embedding_function = embedding_functions.HuggingFaceEmbeddingFunction(
+        #     api_key="your_hf_token",  # Only needed for gated models
+        #     model_name="sentence-transformers/all-MiniLM-L6-v2"
+        # )
+
+        # We want ephemeral collections for: uri:description, uri:chunked_context
+        description_collection = client.create_collection(
+            name="siphon_in_memory_descriptions", embedding_function=embedding_function
+        )
+
+        # Collect valid descriptions
+        valid_descriptions = []
+        valid_desc_ids = []
+        for content in self.corpus:
+            if (
+                content.description and content.description.strip()
+            ):  # Check for non-empty description
+                valid_descriptions.append(content.description)
+                valid_desc_ids.append(content.uri.uri)
+
+        # Add descriptions in batches to avoid size limits
+        if valid_descriptions:
+            batch_size = 500  # Smaller batches for GPU to avoid memory issues
+            print(
+                f"Adding {len(valid_descriptions)} descriptions in batches of {batch_size}"
+            )
+            for i in range(0, len(valid_descriptions), batch_size):
+                batch_docs = valid_descriptions[i : i + batch_size]
+                batch_ids = valid_desc_ids[i : i + batch_size]
+                print(
+                    f"Adding description batch {i // batch_size + 1}: {len(batch_docs)} items"
+                )
+                description_collection.add(
+                    documents=batch_docs,
+                    ids=batch_ids,
+                )
+        self.description_collection = description_collection
+
+        # Handle chunked context - use same embedding function for consistency
+        chunked_context_collection = client.create_collection(
+            name="siphon_in_memory_chunked_context",
+            embedding_function=embedding_function,
+        )
+
+        all_chunks = []
+        all_chunk_ids = []
+
+        for content in self.corpus:
+            if (
+                content.context and content.context.strip()
+            ):  # Check for non-empty context
+                # Chunk the context into smaller pieces for better search
+                chunks = [
+                    content.context[i : i + 500]
+                    for i in range(0, len(content.context), 500)
+                    if content.context[
+                        i : i + 500
+                    ].strip()  # Only include non-empty chunks
+                ]
+                chunk_ids = [f"{content.uri.uri}_chunk_{j}" for j in range(len(chunks))]
+
+                all_chunks.extend(chunks)
+                all_chunk_ids.extend(chunk_ids)
+
+        # Add chunks in batches to avoid ChromaDB batch size limits
+        if all_chunks:
+            batch_size = 500  # Smaller batches for GPU processing
+            print(
+                f"Adding {len(all_chunks)} chunks in batches of {batch_size} using {device}"
+            )
+            for i in range(0, len(all_chunks), batch_size):
+                batch_docs = all_chunks[i : i + batch_size]
+                batch_ids = all_chunk_ids[i : i + batch_size]
+                print(
+                    f"Adding chunk batch {i // batch_size + 1}/{(len(all_chunks) - 1) // batch_size + 1}: {len(batch_docs)} chunks"
+                )
+                chunked_context_collection.add(documents=batch_docs, ids=batch_ids)
+
+        self.chunked_context_collection = chunked_context_collection
+        self.vector_store_created = True
+        print("Vector store creation completed!")
+
+    def _query_vector_store(self, vector_collection, query: str, k: int):
+        if not self.vector_store_created:
+            self._create_vector_store()
+
+        if vector_collection is None:
+            return {"documents": [[]], "ids": [[]], "distances": [[]]}
+
+        results = vector_collection.query(query_texts=[query], n_results=k)
+        return results
 
     # Collection Management
     @override
     def add(self, content: ProcessedContent) -> None:
         if content not in self.corpus:
-            self.corpus.add(content)
+            self.corpus.append(content)
+            # Reset vector store so it gets recreated with new content
+            self.vector_store_created = False
 
     @override
     def remove(self, content: ProcessedContent) -> None:
-        self.corpus.discard(content)
+        self.corpus.remove(content)
+        # Reset vector store so it gets recreated without removed content
+        self.vector_store_created = False
 
     @override
     def remove_by_uri(self, uri: str) -> bool:
         to_remove = next((c for c in self.corpus if c.uri == uri), None)
         if to_remove:
             self.corpus.remove(to_remove)
+            # Reset vector store
+            self.vector_store_created = False
             return True
         return False
 
@@ -136,35 +268,38 @@ class InMemoryCorpus(SiphonCorpus):
     # Query Interface (returns new InMemoryCorpus with filtered data)
     @override
     def filter_by_source_type(self, source_type: SourceType) -> "InMemoryCorpus":
-        filtered = {c for c in self.corpus if c.source_type == source_type}
+        filtered = [
+            c for c in self.corpus if c.source_type == source_type
+        ]  # Fix: Use list comprehension
         return InMemoryCorpus(
             source=f"{self.source}|source_type={source_type}", corpus=filtered
         )
 
     @override
     def filter_by_date_range(self, start_date, end_date) -> "InMemoryCorpus":
-        filtered = {
+        filtered = [
             c
             for c in self.corpus
             if c.date_added and start_date <= c.date_added <= end_date
-        }
+        ]  # Fix: Use list comprehension
         return InMemoryCorpus(
             source=f"{self.source}|date_range={start_date}_{end_date}", corpus=filtered
         )
 
     @override
     def filter_by_tags(self, tags: list[str]) -> "InMemoryCorpus":
-        filtered = {c for c in self.corpus if any(tag in c.tags for tag in tags)}
+        filtered = [
+            c for c in self.corpus if any(tag in c.tags for tag in tags)
+        ]  # Fix: Use list comprehension
         return InMemoryCorpus(
             source=f"{self.source}|tags={','.join(tags)}", corpus=filtered
         )
 
-    # In-memory specific methods
+    # Rest of your methods remain the same...
     def text(self) -> str: ...
 
     def to_dataframe(self): ...
 
-    # Metadata & Views
     @override
     def snapshot(self):
         from Siphon.collections.query.snapshot import generate_snapshot
@@ -175,7 +310,8 @@ class InMemoryCorpus(SiphonCorpus):
     def get_source_type_counts(self) -> dict[SourceType, int]: ...
 
     @override
-    def is_empty(self) -> bool: ...
+    def is_empty(self) -> bool:
+        return len(self.corpus) == 0
 
     @override
     def query(self) -> "SiphonQuery":
