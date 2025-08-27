@@ -6,7 +6,6 @@ sourdough/
 *.pyc
 *.egg-info/
 *.db
-*.md
 *.pdf
 *.txt
 /__pycache__/

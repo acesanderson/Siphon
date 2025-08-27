@@ -115,34 +115,53 @@ def get_cached_content_direct(uri_key: str) -> Optional[ProcessedContent]:
 
 
 def cache_processed_content_direct(processed_content: ProcessedContent) -> str:
-    """
-    Direct PostgreSQL access - used by fallback system.
-    Cache a ProcessedContent object using factory-friendly serialization.
-    """
+    """Cache ProcessedContent with embeddings in separate vector columns"""
+    from sentence_transformers import SentenceTransformer
+
     ensure_table_exists()
+
+    # Generate embeddings
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    desc_embedding = None
+    summary_embedding = None
+
+    if processed_content.synthetic_data:
+        try:
+            if processed_content.synthetic_data.description:
+                desc_embedding = model.encode(
+                    processed_content.synthetic_data.description
+                ).tolist()
+        except:
+            pass
+        try:
+            if processed_content.synthetic_data.summary:
+                summary_embedding = model.encode(
+                    processed_content.synthetic_data.summary
+                ).tolist()
+        except:
+            pass
 
     uri_key = processed_content.uri.uri
     data_json = processed_content.model_dump_for_cache()
 
     with get_db_connection() as conn, conn.cursor() as cur:
-        # Use ON CONFLICT to handle cache updates
         cur.execute(
             """
-                INSERT INTO processed_content (uri_key, data, updated_at)
-                VALUES (%s, %s, NOW())
-                ON CONFLICT (uri_key) 
-                DO UPDATE SET 
-                    data = EXCLUDED.data,
-                    updated_at = NOW()
-                RETURNING uri_key;
-            """,
-            (uri_key, Json(data_json)),
+            INSERT INTO processed_content (uri_key, data, description_embedding, summary_embedding, updated_at)
+            VALUES (%s, %s, %s, %s, NOW())
+            ON CONFLICT (uri_key) 
+            DO UPDATE SET 
+                data = EXCLUDED.data,
+                description_embedding = EXCLUDED.description_embedding,
+                summary_embedding = EXCLUDED.summary_embedding,
+                updated_at = NOW()
+            RETURNING uri_key;
+        """,
+            (uri_key, Json(data_json), desc_embedding, summary_embedding),
         )
 
         result = cur.fetchone()
         conn.commit()
-
-        logger.info(f"Cached content to PostgreSQL with URI: {uri_key}")
         return result[0] if result else uri_key
 
 
@@ -332,7 +351,6 @@ def get_all_siphon() -> list[ProcessedContent]:
         cur.execute("""
                 SELECT data FROM processed_content 
                 ORDER BY updated_at DESC 
-                LIMIT 100
             """)
 
         rows = cur.fetchall()

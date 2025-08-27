@@ -11,6 +11,7 @@ from Siphon.data.types.SourceType import SourceType
 from Siphon.data.ProcessedContentDisplay import ProcessedContentDisplayMixin
 from pydantic import BaseModel, Field
 from typing import Optional, Any
+import time
 
 
 class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
@@ -31,6 +32,56 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
         default_factory=list,
         description="List of user-generated and auto-generated tags applied to the content for categorization",
     )
+
+    # Timestamps created on creation and update
+    created_at: int = Field(
+        default_factory=lambda: int(time.time()),
+        description="Unix epoch timestamp when content was created",
+    )
+    updated_at: int = Field(
+        default_factory=lambda: int(time.time()),
+        description="Unix epoch timestamp when content was last updated",
+    )
+
+    def touch(self) -> None:
+        """
+        Update the updated_at timestamp
+        """
+        self.updated_at = int(time.time())
+
+    @classmethod
+    def create_with_embeddings(
+        cls, content: "ProcessedContent"
+    ) -> tuple["ProcessedContent", dict]:
+        """
+        Class method that generates embeddings for database insertion.
+
+        Returns:
+            tuple: (ProcessedContent object, embedding_data dict)
+        """
+        from sentence_transformers import SentenceTransformer
+
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+        embeddings = {}
+
+        if content.synthetic_data:
+            try:
+                if content.synthetic_data.description:
+                    embeddings["description_embedding"] = model.encode(
+                        content.synthetic_data.description
+                    ).tolist()
+            except:
+                pass
+
+            try:
+                if content.synthetic_data.summary:
+                    embeddings["summary_embedding"] = model.encode(
+                        content.synthetic_data.summary
+                    ).tolist()
+            except:
+                pass
+
+        return content, embeddings
 
     @property
     def context(self) -> str:
