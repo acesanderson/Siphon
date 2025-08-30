@@ -30,4 +30,5 @@ TEXTMESSAGES
 CALENDAR
 PODCAST (maybe)
 RSS (the first "self-updating" source type)
+REDDIT (scrape an entire subreddit)
 """
