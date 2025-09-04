@@ -61,6 +61,8 @@ class SyntheticData(BaseModel):
         else:
             logger.info("Using local synthetic data generation")
             from SiphonServer.client.siphonclient import SiphonClient
+            from SiphonServer.server.api.requests import SyntheticDataRequest
 
             client = SiphonClient()
-            return client.generate_synthetic_data(context)
+            request = SyntheticDataRequest(context=context, model=model_str)
+            return client.generate_synthetic_data(request)
