@@ -10,7 +10,7 @@ from Siphon.data.Context import Context
 from Siphon.data.types.SourceType import SourceType
 from Siphon.data.ProcessedContentDisplay import ProcessedContentDisplayMixin
 from pydantic import BaseModel, Field
-from typing import Optional, Any
+from typing import Optional, Any, override
 import time
 
 
@@ -164,3 +164,15 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
             synthetic_data=synthetic_data,
             tags=data.get("tags", []),
         )
+
+    @override
+    def __str__(self) -> str:
+        # Return a pretty printed json representation for easy logging -- truncate strings > 100 chars
+        import json
+
+        json_dict = self.model_dump()
+        for key, value in json_dict.items():
+            if isinstance(value, str) and len(value) > 100:
+                json_dict[key] = value[:100] + "..."
+        indented = json.dumps(json_dict, indent=2)
+        return indented
