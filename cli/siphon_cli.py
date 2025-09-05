@@ -104,10 +104,10 @@ def main():
     parser = argparse.ArgumentParser(description="Siphon file to LLM context")
     parser.add_argument("source", type=str, help="Path to the file to convert")
     parser.add_argument(
-        "-L",
-        "--local",
+        "-C",
+        "--cloud",
         action="store_true",
-        help="Use local LLMs for conversion if applicable",
+        help="Use cloud LLMs for synthetic data if applicable",
     )
     parser.add_argument(
         "-r",
@@ -158,7 +158,7 @@ def main():
     query = CLIParams(
         source=args_dict["source"],
         cache_options=args_dict["cache_options"],
-        local=args_dict["local"],
+        cloud=args_dict["cloud"],
         tags=parse_tags(args_dict["tags"]),
     )
     # Get ProcessedContent, by various means.
