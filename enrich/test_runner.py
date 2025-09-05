@@ -2,9 +2,8 @@
 Early testing suggests cogito:32b and qwen2.5:32b are the best models for this use case.
 """
 
-
 from Siphon.enrich.enrich import enrich_content
-from Siphon.tests.fixtures.example_ProcessedContent import content
+from Siphon.tests.fixtures.example_ProcessedContent import dummy_content
 from time import time
 
 models = """
@@ -21,7 +20,7 @@ llama3.2:latest
 deepseek-r1:32b
 mistral:latest
 mistral-nemo:12b
-""".strip().split('\n')
+""".strip().split("\n")
 
 
 output = {}
@@ -33,7 +32,10 @@ for index, model in enumerate(models):
         end_time = time()
         duration = end_time - start_time
         print(f"Model {model} processed in {duration:.2f} seconds")
-        output[model] = {'llm_output': syntheticdata.model_dump_json(indent=2), 'duration': duration}
+        output[model] = {
+            "llm_output": syntheticdata.model_dump_json(indent=2),
+            "duration": duration,
+        }
     except:
         print(f"Error processing model {model}")
 
@@ -61,13 +63,13 @@ def analyze_output(output: dict, content, model: str = "gemini2.5") -> str:
 
     model_outputs = json.dumps(output, indent=2)
     content_str = content.model_dump_json(indent=2)
-    input_variables = {'model_outputs': model_outputs, 'content': content_str}
+    input_variables = {"model_outputs": model_outputs, "content": content_str}
     model_obj = Model(model)
     prompt = Prompt(prompt_str)
     chain = Chain(model=model_obj, prompt=prompt)
     response = chain.run(input_variables=input_variables)
     return str(response.content)
 
-analysis = analyze_output(output, content, model="o4-mini")
-print(analysis)
 
+analysis = analyze_output(output, dummy_content, model="o4-mini")
+print(analysis)

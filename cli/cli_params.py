@@ -13,8 +13,8 @@ class CLIParams(BaseModel):
         description="Special cache flags: 'u' (uncached, do not save), or 'r' (recache, save again). 'c' is default (cache the content).",
     )
 
-    local: bool = Field(
-        default=False, description="Use local LLM for conversion if applicable."
+    cloud: bool = Field(
+        default=False, description="Use cloud LLMs for synthetic data if applicable."
     )
 
     tags: list[str] = Field(
