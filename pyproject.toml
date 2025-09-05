@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "Siphon"
 version = "0.1.0"
 description = "An evolution of Leviathan - flexible media to LLM context converter with RAG capabilities"
-requires-python = ">=3.12,<3.13.4"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "pydantic",
     "fastapi",
@@ -22,7 +22,6 @@ dependencies = [
     "markitdown[all]",
     "pyaudio",
     "pydub",
-    "torch==2.7.1",
     "transformers",
     "pyannote.audio",
     "ollama",
@@ -38,9 +37,11 @@ dependencies = [
     "pygithub>=2.6.1",
     "pytesseract>=0.3.13",
     "pyperclip>=1.9.0",
-    "torchvision>=0.22.1",
-    "torchaudio>=2.7.1",
+    "torch",
+    "torchaudio",
+    "torchvision",
 ]
+
 
 [project.scripts]
 siphon = "Siphon.cli.siphon_cli:main"
