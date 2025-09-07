@@ -13,8 +13,6 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any, override
 import time
 
-count = 0
-
 
 class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
     # Primary identifiers
@@ -203,22 +201,36 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
             if cls_candidate.__name__.replace("Context", "") == sourcetype.value:
                 context_class = cls_candidate
                 break
-
         if not context_class:
-            # Fallback to base Context class
-            context_class = Context
+            raise ValueError(
+                f"Could not find Context class for sourcetype: {sourcetype.value}"
+            )
 
         # Reconstruct context with stored data
-        global count
-        count += 1
-        print(f"##      {count}")
-        print(data["context_data"])
         llm_context = context_class.model_validate(data["context_data"])
 
         # 3. Reconstruct SyntheticData
         synthetic_data = None
         if data.get("synthetic_data"):
-            synthetic_data = SyntheticData.model_validate(data["synthetic_data"])
+            from Siphon.synthetic_data.synthetic_data_classes import (
+                SyntheticDataClasses,
+            )
+
+            # Find the right SyntheticData subclass
+            synthetic_data_class = None
+            for cls_candidate in SyntheticDataClasses:
+                if (
+                    cls_candidate.__name__.replace("SyntheticData", "")
+                    == sourcetype.value
+                ):
+                    synthetic_data_class = cls_candidate
+                    break
+
+            if not synthetic_data_class:
+                # Fallback to base SyntheticData class
+                synthetic_data_class = SyntheticData
+
+            synthetic_data = synthetic_data_class.model_validate(data["synthetic_data"])
 
         return cls(
             uri=uri,
