@@ -14,6 +14,7 @@ from Siphon.data.ProcessedContent import ProcessedContent
 from Siphon.database.postgres.PGRES_connection import get_db_connection
 from Siphon.logs.logging_config import get_logger
 from rich.console import Console
+from pathlib import Path
 
 console = Console()
 logger = get_logger(__name__)
@@ -88,30 +89,45 @@ def get_cached_content_direct(uri_key: str) -> Optional[ProcessedContent]:
     """
     ensure_table_exists()
 
+    logger.debug(f"Checking PostgreSQL cache for {uri_key}")
+
     with get_db_connection() as conn, conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute(
-            """
-                SELECT data FROM processed_content 
-                WHERE uri_key = %s
-            """,
-            (uri_key,),
-        )
-
+        # Try primary URI lookup first
+        cur.execute("SELECT data FROM processed_content WHERE uri_key = %s", (uri_key,))
         row = cur.fetchone()
-        if not row:
-            logger.debug(f"PostgreSQL cache miss for URI: {uri_key}")
-            return None
 
-        try:
-            # Deserialize using factory-based reconstruction
-            processed_content = ProcessedContent.model_validate_from_cache(row["data"])
-            logger.debug(f"PostgreSQL cache hit for URI: {uri_key}")
-            return processed_content
-        except Exception as e:
-            logger.error(
-                f"Failed to deserialize PostgreSQL cached content for {uri_key}: {e}"
-            )
-            return None
+        if row:
+            try:
+                return ProcessedContent.model_validate_from_cache(row["data"])
+            except Exception as e:
+                logger.error(f"Failed to deserialize cached content for {uri_key}: {e}")
+                return None
+
+        # For file sources, try checksum lookup
+        if any(
+            scheme in uri_key
+            for scheme in ["text://", "doc://", "audio://", "image://", "video://"]
+        ):
+            logger.debug(f"Trying checksum lookup for file source: {uri_key}")
+            try:
+                # Get current checksum for this file
+                source = uri_key.split("://", 1)[1]
+                if Path(source).exists():
+                    checksum = URI.get_checksum(source)
+                    cur.execute(
+                        "SELECT data FROM processed_content WHERE data->'uri'->>'checksum' = %s LIMIT 1",
+                        (checksum,),
+                    )
+                    row = cur.fetchone()
+                    if row:
+                        logger.info(
+                            f"Found duplicate content via checksum for {uri_key}"
+                        )
+                        return ProcessedContent.model_validate_from_cache(row["data"])
+            except Exception:
+                pass
+
+        return None
 
 
 def cache_processed_content_direct(processed_content: ProcessedContent) -> str:
