@@ -41,7 +41,6 @@ class TextSyntheticData(SyntheticData):
         description = responses[1].message.content.strip()
         summary = responses[2].message.content.strip()
         return cls(
-            sourcetype=SourceType.TEXT,
             title=title,
             description=description,
             summary=summary,
