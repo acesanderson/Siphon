@@ -13,6 +13,8 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any, override
 import time
 
+count = 0
+
 
 class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
     # Primary identifiers
@@ -42,6 +44,60 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
         default_factory=lambda: int(time.time()),
         description="Unix epoch timestamp when content was last updated",
     )
+
+    @override
+    def model_post_init(self, __context: Any) -> None:
+        """
+        Validate that all component classes match the declared sourcetype.
+        """
+        expected_sourcetype = self.uri.sourcetype
+
+        # Check URI class matches sourcetype
+        expected_uri_class = f"{expected_sourcetype.value}URI"
+        actual_uri_class = self.uri.__class__.__name__
+        if expected_uri_class != actual_uri_class:
+            raise ValueError(
+                f"URI class mismatch for {expected_sourcetype.value}: "
+                f"expected {expected_uri_class}, got {actual_uri_class}"
+            )
+
+        # Check Context class matches sourcetype
+        expected_context_class = f"{expected_sourcetype.value}Context"
+        actual_context_class = self.llm_context.__class__.__name__
+        if expected_context_class != actual_context_class:
+            raise ValueError(
+                f"Context class mismatch for {expected_sourcetype.value}: "
+                f"expected {expected_context_class}, got {actual_context_class}"
+            )
+
+        # Only check sourcetype fields if they exist
+        if (
+            hasattr(self.llm_context, "sourcetype")
+            and self.llm_context.sourcetype != expected_sourcetype
+        ):
+            raise ValueError(
+                f"Context sourcetype field mismatch: expected {expected_sourcetype.value}, "
+                f"got {self.llm_context.sourcetype.value}"
+            )
+
+        # Check SyntheticData if present
+        if self.synthetic_data:
+            expected_synthetic_class = f"{expected_sourcetype.value}SyntheticData"
+            actual_synthetic_class = self.synthetic_data.__class__.__name__
+            if expected_synthetic_class != actual_synthetic_class:
+                raise ValueError(
+                    f"SyntheticData class mismatch for {expected_sourcetype.value}: "
+                    f"expected {expected_synthetic_class}, got {actual_synthetic_class}"
+                )
+
+            if (
+                hasattr(self.synthetic_data, "sourcetype")
+                and self.synthetic_data.sourcetype != expected_sourcetype
+            ):
+                raise ValueError(
+                    f"SyntheticData sourcetype field mismatch: expected {expected_sourcetype.value}, "
+                    f"got {self.synthetic_data.sourcetype.value}"
+                )
 
     def touch(self) -> None:
         """
@@ -131,7 +187,9 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
         """Reconstruct ProcessedContent using your existing factories."""
 
         # 1. Reconstruct URI using your existing from_source method
-        uri = URI.from_source(data["source"])
+        uri = URI.from_source(
+            data["source"], skip_checksum=True
+        )  # skip checksum since paths are host-specific
         if not uri:
             raise ValueError(f"Could not reconstruct URI from source: {data['source']}")
 
@@ -151,6 +209,10 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
             context_class = Context
 
         # Reconstruct context with stored data
+        global count
+        count += 1
+        print(f"##      {count}")
+        print(data["context_data"])
         llm_context = context_class.model_validate(data["context_data"])
 
         # 3. Reconstruct SyntheticData

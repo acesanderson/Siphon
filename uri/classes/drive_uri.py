@@ -30,10 +30,11 @@ class DriveURI(URI):
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "DriveURI | None":
+    def from_source(cls, source: str, skip_checksum: bool = False) -> "DriveURI | None":
         """
         Create an ArticleURI object from a source string.
         """
+        _ = skip_checksum  # currently unused
         ...
 
     @classmethod

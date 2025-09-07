@@ -34,14 +34,14 @@ class ArticleURI(URI):
         is_article = re.compile(r"^(?!.*(github|youtube|drive)).*$", re.IGNORECASE)
         if is_url_regex.match(source) and is_article.match(source):
             return True
-        return False
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "ArticleURI":  # type: ignore
+    def from_source(cls, source: str, skip_checksum: bool = False) -> "ArticleURI":  # type: ignore
         """
         Create an ArticleURI object from a source string.
         """
+        _ = skip_checksum  # currently unused
         if not cls.identify(source):
             raise ValueError(f"Source does not match ArticleURI format: {source}")
         return cls(

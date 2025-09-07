@@ -29,6 +29,9 @@ class ImageURI(URI):
         Check if the source string matches the image URI format.
         """
         try:
+            if "http" in source or "https" in source:
+                logger.info(f"This is a URL, not an ImageURI: {source}")
+                return False
             source_path = Path(source)
             extension = source_path.suffix.lower()
             if extension in Extensions["Image"]:
@@ -40,7 +43,7 @@ class ImageURI(URI):
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "ImageURI | None":
+    def from_source(cls, source: str, skip_checksum: bool = False) -> "ImageURI | None":
         """
         Create an ImageURI object from a source string.
         """
@@ -52,9 +55,11 @@ class ImageURI(URI):
         source_path = Path(source) if isinstance(source, str) else source_path
 
         # Calculate checksum
-        logger.info(f"Calculating checksum for: {source_path}")
-        checksum = cls.get_checksum(source_path)
-        logger.info(f"Checksum calculated: {checksum}")
+        checksum = None
+        if not skip_checksum:
+            logger.info(f"Calculating checksum for: {source_path}")
+            checksum = cls.get_checksum(source_path)
+            logger.info(f"Checksum calculated: {checksum}")
 
         # Always convert to absolute path for consistency
         absolute_source = str(Path(source).resolve())

@@ -21,7 +21,9 @@ class ObsidianURI(URI):
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "ObsidianURI | None":
+    def from_source(
+        cls, source: str, skip_checksum: bool = False
+    ) -> "ObsidianURI | None":
         """
         Create an ArticleURI object from a source string.
         """

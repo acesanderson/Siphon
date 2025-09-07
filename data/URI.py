@@ -33,7 +33,9 @@ class URI(BaseModel):
 
     @classmethod
     @lru_cache(maxsize=1000)
-    def from_source(cls, source: str | Path) -> Optional["URI"]:
+    def from_source(
+        cls, source: str | Path, skip_checksum: bool = False
+    ) -> Optional["URI"]:
         """
         Create a URI object from a source string.
         Tries each URI subclass until one can handle the source.
@@ -49,7 +51,7 @@ class URI(BaseModel):
         for uri_class in URIClasses:
             if uri_class.identify(source):  # Each subclass has its own identify method
                 logger.info(f"Using URI class: {uri_class.__name__}")
-                return uri_class.from_source(source)
+                return uri_class.from_source(source, skip_checksum=skip_checksum)
 
         # No class could handle this source
         logger.warning(f"Unsupported source format: {source}")

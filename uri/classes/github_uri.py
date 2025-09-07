@@ -30,11 +30,13 @@ class GitHubURI(URI):
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "GitHubURI | None":  # type: ignore
+    def from_source(
+        cls, source: str, skip_checksum: bool = False
+    ) -> "GitHubURI | None":  # type: ignore
         """
         Create an GitHubURI object from a source string.
         """
-        ...
+        _ = skip_checksum  # Unused for GitHub URIs
         parsed = urlparse(source)
         path_parts = parsed.path.strip("/").split("/")
 

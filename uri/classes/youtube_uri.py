@@ -27,10 +27,13 @@ class YouTubeURI(URI):
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "YouTubeURI | None":  # type: ignore
+    def from_source(
+        cls, source: str, skip_checksum: bool = False
+    ) -> "YouTubeURI | None":  # type: ignore
         """
         Create an YouTube object from a source string.
         """
+        _ = skip_checksum  # Unused parameter
         # Handle different YouTube URL formats:
         # https://www.youtube.com/watch?v=VIDEO_ID
         # https://youtu.be/VIDEO_ID

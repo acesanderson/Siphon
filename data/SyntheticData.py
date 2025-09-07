@@ -31,7 +31,6 @@ class SyntheticData(BaseModel):
     )
 
     @classmethod
-    @lru_cache(maxsize=1000)
     def from_context(
         cls,
         context: Context,

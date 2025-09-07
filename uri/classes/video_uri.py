@@ -28,6 +28,9 @@ class VideoURI(URI):
         Check if the source string matches the video URI format.
         """
         try:
+            if "http" in source or "https" in source:
+                logger.info(f"This is a URL, not a VideoURI: {source}")
+                return False
             source_path = Path(source)
             extension = source_path.suffix.lower()
             if extension in Extensions["Video"]:
@@ -39,7 +42,7 @@ class VideoURI(URI):
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "VideoURI | None":
+    def from_source(cls, source: str, skip_checksum: bool = False) -> "VideoURI | None":
         """
         Create a VideoURI object from a source string.
         """
@@ -51,15 +54,17 @@ class VideoURI(URI):
         source_path = Path(source) if isinstance(source, str) else source_path
 
         # Calculate checksum
-        logger.info(f"Calculating checksum for: {source_path}")
-        checksum = cls.get_checksum(source_path)
-        logger.info(f"Checksum calculated: {checksum}")
+        checksum = None
+        if not skip_checksum:
+            logger.info(f"Calculating checksum for: {source_path}")
+            checksum = cls.get_checksum(source_path)
+            logger.info(f"Checksum calculated: {checksum}")
 
         # Always convert to absolute path for consistency
         absolute_source = str(Path(source).resolve())
 
         return cls(
             source=absolute_source,
-            sourcetype=SourceType.VIDEO,
             uri=f"{URISchemes['Video']}://{Path(absolute_source).as_posix()}",
+            checksum=checksum,
         )

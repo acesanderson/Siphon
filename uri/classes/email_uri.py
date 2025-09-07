@@ -21,8 +21,9 @@ class EmailURI(URI):
 
     @override
     @classmethod
-    def from_source(cls, source: str) -> "EmailURI":
+    def from_source(cls, source: str, skip_checksum: bool = False) -> "EmailURI":
         """
         Create an ArticleURI object from a source string.
         """
+        _ = skip_checksum  # currently unused
         ...
