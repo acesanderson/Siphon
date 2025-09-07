@@ -47,6 +47,14 @@ class VideoURI(URI):
             logger.warning(f"Source does not match VideoURI format: {source}")
             return None
 
+        # Coerce to Path if a string is provided
+        source_path = Path(source) if isinstance(source, str) else source_path
+
+        # Calculate checksum
+        logger.info(f"Calculating checksum for: {source_path}")
+        checksum = cls.get_checksum(source_path)
+        logger.info(f"Checksum calculated: {checksum}")
+
         # Always convert to absolute path for consistency
         absolute_source = str(Path(source).resolve())
 

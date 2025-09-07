@@ -22,6 +22,12 @@ class URI(BaseModel):
     )
     uri: str = Field(..., description="The URI string representation of the source.")
 
+    # For files, we can store a checksum to verify integrity
+    checksum: str | None = Field(
+        default=None,
+        description="Checksum of the text file for integrity verification.",
+    )
+
     @classmethod
     def identify(cls, source: str) -> bool: ...  # type: ignore
 
@@ -48,6 +54,28 @@ class URI(BaseModel):
         # No class could handle this source
         logger.warning(f"Unsupported source format: {source}")
         return None
+
+    @classmethod
+    def get_checksum(cls, file_path: str | Path) -> str:
+        """
+        Calculate the checksum of a file using the specified algorithm.
+        """
+        # Coerce to Path if a string is provided
+        file_path = Path(file_path) if isinstance(file_path, str) else file_path
+
+        # Ensure the file exists and is not empty
+        assert file_path.is_file(), f"File does not exist: {file_path}"
+        assert file_path.stat().st_size > 0, f"File is empty: {file_path}"
+
+        # Calculate checksum
+        import hashlib
+
+        h = hashlib.new("sha256")
+        with file_path.open("rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):  # read in chunks
+                h.update(chunk)
+        assert h.hexdigest(), "Checksum calculation failed."
+        return h.hexdigest()
 
     def __repr__(self) -> str:
         """Clean, informative representation showing type and processed URI"""

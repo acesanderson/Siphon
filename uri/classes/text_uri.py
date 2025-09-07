@@ -14,6 +14,7 @@ class TextURI(URI):
     """
     Represents an article URI with metadata.
     Inherits from Metadata to include additional metadata fields.
+    Includes a hash as an additional cache key. (since we may have multiple files with the same name across different directories of hosts.)
     """
 
     sourcetype: SourceType = Field(
@@ -42,16 +43,26 @@ class TextURI(URI):
     def from_source(cls, source: str) -> "TextURI | None":
         """
         Create a TextURI object from a source string.
-        No file access required.
         """
         if not cls.identify(source):
             logger.warning(f"Source does not match TextURI format: {source}")
             return None
 
+        # Coerce to Path if a string is provided
+        source_path = Path(source) if isinstance(source, str) else source_path
+
+        # Calculate checksum
+        logger.info(f"Calculating checksum for: {source_path}")
+        checksum = cls.get_checksum(source_path)
+        logger.info(f"Checksum calculated: {checksum}")
+
         # Always convert to absolute path for consistency
         absolute_source = str(Path(source).resolve())
+
+        logger.info(f"Creating File URI object for: {absolute_source}")
 
         return cls(
             source=absolute_source,
             uri=f"{URISchemes['Text']}://{Path(absolute_source).as_posix()}",
+            checksum=checksum,
         )
