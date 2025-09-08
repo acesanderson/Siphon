@@ -2,6 +2,7 @@ import importlib
 from Siphon.data.SyntheticData import SyntheticData
 from Siphon.data.types.SourceType import SourceType
 from Siphon.logs.logging_config import get_logger
+from typing import Union
 
 logger = get_logger(__name__)
 
@@ -42,3 +43,6 @@ def load_synthetic_data_class(source_type: SourceType) -> type[SyntheticData]:
 
 # Build the list of valid URI subclasses
 SyntheticDataClasses = [load_synthetic_data_class(st) for st in SourceType]
+
+# A union type for all SyntheticData classes
+SyntheticDataUnion = Union[tuple(SyntheticDataClasses)]

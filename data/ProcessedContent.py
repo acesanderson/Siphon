@@ -6,7 +6,8 @@ Our CLI also has a nice display method (.pretty_print()), which we add as a mixi
 
 from Siphon.data.URI import URI
 from Siphon.data.SyntheticData import SyntheticData
-from Siphon.data.Context import Context
+from Siphon.context.context_classes import ContextUnion
+from Siphon.synthetic_data.synthetic_data_classes import SyntheticDataUnion
 from Siphon.data.types.SourceType import SourceType
 from Siphon.data.ProcessedContentDisplay import ProcessedContentDisplayMixin
 from pydantic import BaseModel, Field
@@ -19,12 +20,12 @@ class ProcessedContent(BaseModel, ProcessedContentDisplayMixin):
     uri: URI = Field(..., description="Original URI of the content, used for retrieval")
 
     # AI context for LLM consumption
-    llm_context: Context = Field(
+    llm_context: ContextUnion = Field(
         ..., description="Processed content + metadata ready for LLM consumption"
     )
 
     # Synthetic data (title, description, summary, topics, entities) -- added post init
-    synthetic_data: Optional[SyntheticData] = Field(
+    synthetic_data: SyntheticDataUnion = Field(
         ..., description="AI-generated enrichments applied to the content"
     )
 
