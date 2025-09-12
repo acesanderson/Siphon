@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = "==3.12.*"
 
 [[package]]
@@ -533,6 +533,27 @@ wheels = [
 ]
 
 [[package]]
+name = "database-clients"
+version = "0.1.0"
+source = { editable = "../database-clients" }
+dependencies = [
+    { name = "motor" },
+    { name = "psycopg2-binary" },
+    { name = "pymongo" },
+    { name = "pytest" },
+    { name = "requests" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "motor", specifier = ">=3.7.1" },
+    { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "pymongo", specifier = ">=4.14.1" },
+    { name = "pytest", specifier = ">=8.4.2" },
+    { name = "requests", specifier = ">=2.32.5" },
+]
+
+[[package]]
 name = "defusedxml"
 version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
@@ -557,6 +578,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/fc/f8/98eea607f65de6527f8a2e8885fc8015d3e6f5775df186e443e0964a11c3/distro-1.9.0.tar.gz", hash = "sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed", size = 60722, upload-time = "2023-12-24T09:54:32.31Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/12/b3/231ffd4ab1fc9d679809f356cebee130ac7daa00d6d6f3206dd4fd137e9e/distro-1.9.0-py3-none-any.whl", hash = "sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2", size = 20277, upload-time = "2023-12-24T09:54:30.421Z" },
+]
+
+[[package]]
+name = "dnspython"
+version = "2.8.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/8b/57666417c0f90f08bcafa776861060426765fdb422eb10212086fb811d26/dnspython-2.8.0.tar.gz", hash = "sha256:181d3c6996452cb1189c4046c61599b84a5a86e099562ffde77d26984ff26d0f", size = 368251, upload-time = "2025-09-07T18:58:00.022Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/5a/18ad964b0086c6e62e2e7500f7edc89e3faa45033c71c1893d34eed2b2de/dnspython-2.8.0-py3-none-any.whl", hash = "sha256:01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af", size = 331094, upload-time = "2025-09-07T18:57:58.071Z" },
 ]
 
 [[package]]
@@ -1333,6 +1363,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/68/8f/534ae319c6e05d714f437e7206f78c17e66daca88164dff70286b0e8ea0c/mmh3-5.2.0-cp312-cp312-win32.whl", hash = "sha256:2421b9d665a0b1ad724ec7332fb5a98d075f50bc51a6ff854f3a1882bd650d49", size = 40805, upload-time = "2025-07-29T07:42:28.032Z" },
     { url = "https://files.pythonhosted.org/packages/b8/f6/f6abdcfefcedab3c964868048cfe472764ed358c2bf6819a70dd4ed4ed3a/mmh3-5.2.0-cp312-cp312-win_amd64.whl", hash = "sha256:72d80005b7634a3a2220f81fbeb94775ebd12794623bb2e1451701ea732b4aa3", size = 41597, upload-time = "2025-07-29T07:42:28.894Z" },
     { url = "https://files.pythonhosted.org/packages/15/fd/f7420e8cbce45c259c770cac5718badf907b302d3a99ec587ba5ce030237/mmh3-5.2.0-cp312-cp312-win_arm64.whl", hash = "sha256:3d6bfd9662a20c054bc216f861fa330c2dac7c81e7fb8307b5e32ab5b9b4d2e0", size = 39350, upload-time = "2025-07-29T07:42:29.794Z" },
+]
+
+[[package]]
+name = "motor"
+version = "3.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pymongo" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/93/ae/96b88362d6a84cb372f7977750ac2a8aed7b2053eed260615df08d5c84f4/motor-3.7.1.tar.gz", hash = "sha256:27b4d46625c87928f331a6ca9d7c51c2f518ba0e270939d395bc1ddc89d64526", size = 280997, upload-time = "2025-05-14T18:56:33.653Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/01/9a/35e053d4f442addf751ed20e0e922476508ee580786546d699b0567c4c67/motor-3.7.1-py3-none-any.whl", hash = "sha256:8a63b9049e38eeeb56b4fdd57c3312a6d1f25d01db717fe7d82222393c410298", size = 74996, upload-time = "2025-05-14T18:56:31.665Z" },
 ]
 
 [[package]]
@@ -2273,6 +2315,27 @@ crypto = [
 ]
 
 [[package]]
+name = "pymongo"
+version = "4.15.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dnspython" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/37/a5/e466796ebc3ca04414ace520947bb5af3cef923fc75896fc54051405b68d/pymongo-4.15.0.tar.gz", hash = "sha256:430a6dc088355209e5755f77d85ddea2f1da0bb6123185952a573e7cf25a250a", size = 2469214, upload-time = "2025-09-10T16:46:53.533Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/47/07/982f2a066c637d488474c60a18de69b9a067598789d093a84dd0ef2f229b/pymongo-4.15.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:614fc7625019b78b19f2e47fc78c2d66f8d266b57aaedcb8044d909b9a48b49c", size = 919602, upload-time = "2025-09-10T16:45:21.127Z" },
+    { url = "https://files.pythonhosted.org/packages/59/37/4470afa034dd12ec134a358fb863cd8e16f395b2838d7642679299ff63cf/pymongo-4.15.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:bd4a7360dd37e983712fe032eea71e6d59cdfb86e4e171a38425bd0570fef0af", size = 919297, upload-time = "2025-09-10T16:45:22.711Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/b8/0cc92fa56f357b3c58293f291fca378b70287ec31e9e01649e43ea0f3e8d/pymongo-4.15.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5169b10686b43bc1ac437ce8ba3447cccb91181c9d229813d94321b833229230", size = 1697937, upload-time = "2025-09-10T16:45:24.582Z" },
+    { url = "https://files.pythonhosted.org/packages/b2/48/156f4fd9078dabc7320aa6bb9ed8c2b890096a3a3acdbf86cbf4c92ab75c/pymongo-4.15.0-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:e084bb5a28a1a4887096806ed1d09faedece86098e5bb34ea425326e04393a1d", size = 1762171, upload-time = "2025-09-10T16:45:26.197Z" },
+    { url = "https://files.pythonhosted.org/packages/5f/50/87c7e9901d1183689790abaa58cb6e64da3f9b892bea23453e86aab0ba5e/pymongo-4.15.0-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:f646f1d5235ccdb9f58b7bc6d12ec15bbd4275ec993b3623e065d85b21d60ab5", size = 1731216, upload-time = "2025-09-10T16:45:28.273Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/7c/3b4c0ef65509129a9426a66447a47816845628e5fd0e067a8c30fdf1ce97/pymongo-4.15.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b2f13893f0d4e9b5c0e9f63f4538479a904d3d97f0907ea1b6f83bf1bc9b1f84", size = 1701192, upload-time = "2025-09-10T16:45:30.405Z" },
+    { url = "https://files.pythonhosted.org/packages/b3/6b/2d0cfc2e2d099a650a750b0130fc9644af9a5bac4c26a785581cc79be702/pymongo-4.15.0-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4d77e199cb2eb52e1d2682fdbf6523ab899b6b2211e4486a3dbc1b7efd8c6133", size = 1660319, upload-time = "2025-09-10T16:45:32.547Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/cf/25343aef57bf37abdf199672e0fd086ee5f18addb5b3c9af515a69e1d672/pymongo-4.15.0-cp312-cp312-win32.whl", hash = "sha256:958aa856a7b53084623a9e01e5f64969cab387461ca99b79a6137283cf413a2a", size = 890499, upload-time = "2025-09-10T16:45:34.455Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/8d/3426711f9f30702bd0a63394b09f71695c4fa69028dfeaa7aeb5c3579d41/pymongo-4.15.0-cp312-cp312-win_amd64.whl", hash = "sha256:753d74b1d21c912d39654a44ef9d8f09ffda92587e5555ab861459c0beebd9df", size = 909950, upload-time = "2025-09-10T16:45:36.532Z" },
+    { url = "https://files.pythonhosted.org/packages/2d/0c/ac344fa94d303af61bbad53fcf43a430b9ccac21c65106cfe9ae1ca2986b/pymongo-4.15.0-cp312-cp312-win_arm64.whl", hash = "sha256:00774f378b354f3e50446f9b48d7c3a6361695d7b4adc156cc6970d6c6bed557", size = 895554, upload-time = "2025-09-10T16:45:38.388Z" },
+]
+
+[[package]]
 name = "pynacl"
 version = "1.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2754,6 +2817,7 @@ source = { editable = "." }
 dependencies = [
     { name = "anthropic" },
     { name = "chromadb" },
+    { name = "database-clients" },
     { name = "fastapi" },
     { name = "google-genai" },
     { name = "instructor" },
@@ -2790,6 +2854,7 @@ dependencies = [
 requires-dist = [
     { name = "anthropic", specifier = ">=0.57.1" },
     { name = "chromadb" },
+    { name = "database-clients", editable = "../database-clients" },
     { name = "fastapi" },
     { name = "google-genai" },
     { name = "instructor", specifier = ">=1.9.2" },

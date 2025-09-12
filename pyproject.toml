@@ -40,6 +40,7 @@ dependencies = [
     "torch",
     "torchaudio",
     "torchvision",
+    "database-clients",
 ]
 
 
@@ -129,3 +130,6 @@ ignore = [
 known-first-party = ["your_package_name"]  # Replace with your package name
 force-sort-within-sections = true
 split-on-trailing-comma = true
+
+[tool.uv.sources]
+database-clients = { path = "../database-clients", editable = true }

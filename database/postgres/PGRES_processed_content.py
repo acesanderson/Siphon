@@ -9,15 +9,16 @@ Now includes fallback cache system for when PostgreSQL is unavailable.
 
 from typing import Optional, Any
 from psycopg2.extras import RealDictCursor, Json
-
 from Siphon.data.ProcessedContent import ProcessedContent
-from Siphon.database.postgres.PGRES_connection import get_db_connection
+from dbclients import get_postgres_client
 from Siphon.logs.logging_config import get_logger
 from rich.console import Console
 from pathlib import Path
 
 console = Console()
 logger = get_logger(__name__)
+
+get_db_connection = get_postgres_client(client_type="context_db", dbname="siphon")
 
 
 def create_table():
