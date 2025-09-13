@@ -28,11 +28,18 @@ class Context(BaseModel):
         """
         from Siphon.context.context_classes import ContextClasses
 
+        logger.info(f"Looking for context class for sourcetype: {uri.sourcetype.value}")
+
         # Calculate this from the class name minus "Context"
         for context_class in ContextClasses:
+            logger.info(
+                f"Checking class: {context_class.__name__} against {uri.sourcetype.value}"
+            )
             if context_class.__name__.replace("Context", "") == uri.sourcetype.value:
                 logger.info(f"Using URI class: {context_class.__name__}")
                 return context_class.from_uri(uri)
+
+        raise ValueError(f"No Context class found for source type {uri.sourcetype}.")
 
     def __hash__(self) -> int:
         """Make Context hashable for caching purposes"""

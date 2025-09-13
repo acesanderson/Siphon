@@ -67,18 +67,19 @@ class SyntheticData(BaseModel):
             SyntheticDataClasses,
         )
 
-        stem = context.__class__.__name__.replace("Context", "").lower()
-
+        source_type = context.sourcetype
         for synthetic_data_class in SyntheticDataClasses:
-            if (
-                synthetic_data_class.__name__.replace("SyntheticData", "").lower()
-                == stem
-            ):
-                logger.info(f"Using URI class: {synthetic_data_class.__name__}")
+            # Match class name to source type value
+            expected_class_name = f"{source_type.value}SyntheticData"
+            if synthetic_data_class.__name__ == expected_class_name:
+                logger.info(
+                    f"Using SyntheticData class: {synthetic_data_class.__name__}"
+                )
                 return synthetic_data_class.from_context(
                     context=context, model_str=model_str
                 )
-        raise ValueError(f"No SyntheticData class found for context type {stem}.")
+
+        raise ValueError(f"No SyntheticData class found for source type {source_type}.")
 
     @classmethod
     def _from_context_remote(cls, context, cloud, model_str) -> "SyntheticDataUnion":
