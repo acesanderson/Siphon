@@ -138,6 +138,7 @@ def main():
         help="Comma-delimited list of tags. Useful for organizing content.",
     )
     parser.add_argument(
+        "-p",
         "--pretty",
         action="store_true",
         help="Pretty print the output.",
@@ -181,6 +182,15 @@ def main():
     if query:
         processed_content = siphon(query)
         output = f"# {processed_content.title}: {processed_content.id}\n\n{processed_content.summary}"
+        if args.pretty:
+            output = processed_content.summary
+            from rich.markdown import Markdown
+            from rich.console import Console
+
+            console = Console()
+            markdown = Markdown(output)
+            console.print(markdown)
+            sys.exit()
         if args.return_type:
             match args.return_type:
                 case "c":
@@ -198,9 +208,6 @@ def main():
                 case _:
                     logger.error("Invalid return type specified.")
                     sys.exit(1)
-        if args.pretty:
-            processed_content.pretty_print()
-            sys.exit()
         if args.raw:
             print(output)
             sys.exit()
