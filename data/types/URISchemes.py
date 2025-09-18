@@ -14,4 +14,5 @@ URISchemes = {
     "Obsidian": "obsidian",
     "Article": "article",
     "Drive": "drive",
+    "Ephemeral": "ephemeral",
 }

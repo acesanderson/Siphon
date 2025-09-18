@@ -38,20 +38,43 @@ def siphon(cli_params: CLIParams | Path | str) -> ProcessedContent:
         source = cli_params
         cache_options = "c"  # Default, cache it.
         tags = []
+        addressable = True
+        ephemeral = False
     elif isinstance(cli_params, CLIParams):
         source = cli_params.source
         cache_options = cli_params.cache_options
         tags = cli_params.tags
         cloud = cli_params.cloud
+        addressable = cli_params.is_addressable
+        ephemeral = cli_params.is_ephemeral
     else:
         raise TypeError(
             f"Expected a string or CLIParams object, got: {cli_params.__class__.__name__}"
         )
 
-    # 1. Parse source into structured URI
-    uri = URI.from_source(source)
-    if not uri:
-        raise ValueError(f"Invalid source: {source}. Must be a valid file path or URL.")
+    # Begin our pipeline: Context/URI sequence depends on addressable v. ephemeral content
+    if addressable:  # Essence precedes existence
+        logger.info(f"Processing addressable source: {source}")
+        # Parse source into structured URI
+        uri = URI.from_source(source)
+        if not uri:
+            raise ValueError(
+                f"Invalid source: {source}. Must be a valid file path or URL."
+            )
+        # Generate LLM context from the URI (retrieving text content)
+        logger.info("Generating context from URI...")
+        context = Context.from_uri(uri)
+    elif ephemeral:  # Existence precedes essence
+        logger.info(f"Processing ephemeral content.")
+        assert isinstance(cli_params, CLIParams), (
+            "CLIParams required for ephemeral content"
+        )
+        # First, get our content
+        content = cli_params.content
+        content_type = cli_params.content_type
+        context = Context.from_content(content, content_type)
+        # Second, create an URI to represent this content
+        uri = URI.from_content(content, content_type)
 
     if cache_options == "c":
         logger.info(f"Checking cache for URI: {uri.uri}")
@@ -64,10 +87,6 @@ def siphon(cli_params: CLIParams | Path | str) -> ProcessedContent:
                 logger.info("Cache MISS - no content found")
         except Exception as e:
             logger.warning(f"Cache lookup failed: {e}")
-
-    # 3. Generate LLM context from the URI (retrieving text content)
-    logger.info("Generating context from URI...")
-    context = Context.from_uri(uri)
 
     # 4. Generate SyntheticData (post-processing)
     logger.info(f"Generating synthetic data from context...")

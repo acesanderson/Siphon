@@ -71,3 +71,17 @@ class CLIParams(BaseModel):
                 "Must provide either source or both content and content_type."
             )
         return v
+
+    @property
+    def is_ephemeral(self) -> bool:
+        """
+        Determine if the parameters represent ephemeral content.
+        """
+        return self.content is not None and self.content_type is not None
+
+    @property
+    def is_addressable(self) -> bool:
+        """
+        Determine if the parameters represent addressable content.
+        """
+        return self.source is not None
