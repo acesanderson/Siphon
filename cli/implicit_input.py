@@ -93,7 +93,6 @@ class ImplicitInput(BaseModel):
         (3) detect if clipboard has an image: if so, capture that and return it.
         (4) if none of the above, return None.
         """
-        import sys
 
         stdin = cls._from_stdin()
         if stdin:

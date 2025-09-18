@@ -102,7 +102,9 @@ def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Siphon file to LLM context")
-    parser.add_argument("source", type=str, help="Path to the file to convert")
+    parser.add_argument(
+        "source", type=str, nargs="?", help="Path to the file to convert"
+    )
     parser.add_argument(
         "-C",
         "--cloud",
@@ -171,6 +173,19 @@ def main():
         if not processed_content:
             logger.error("No last processed content found in cache.")
             sys.exit(1)
+
+        if args.pretty:
+            output = f"# {processed_content.title}: {processed_content.id}\n\n{processed_content.summary}"
+            from rich.markdown import Markdown
+            from rich.console import Console
+
+            console = Console()
+            markdown = Markdown(output)
+            console.print(markdown)
+            sys.exit()
+        else:
+            print(processed_content.summary)
+            sys.exit()
 
     ## If we want to grab an image from the clipboard and process it:
     if args.image:
