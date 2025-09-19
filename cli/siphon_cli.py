@@ -102,7 +102,9 @@ def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Siphon file to LLM context")
-    parser.add_argument("source", type=str, help="Path to the file to convert")
+    parser.add_argument(
+        "source", type=str, nargs="?", help="Path to the file to convert"
+    )
     parser.add_argument(
         "-C",
         "--cloud",
@@ -138,6 +140,7 @@ def main():
         help="Comma-delimited list of tags. Useful for organizing content.",
     )
     parser.add_argument(
+        "-p",
         "--pretty",
         action="store_true",
         help="Pretty print the output.",
@@ -171,6 +174,19 @@ def main():
             logger.error("No last processed content found in cache.")
             sys.exit(1)
 
+        if args.pretty:
+            output = f"# {processed_content.title}: {processed_content.id}\n\n{processed_content.summary}"
+            from rich.markdown import Markdown
+            from rich.console import Console
+
+            console = Console()
+            markdown = Markdown(output)
+            console.print(markdown)
+            sys.exit()
+        else:
+            print(processed_content.summary)
+            sys.exit()
+
     ## If we want to grab an image from the clipboard and process it:
     if args.image:
         raise NotImplementedError(
@@ -181,6 +197,15 @@ def main():
     if query:
         processed_content = siphon(query)
         output = f"# {processed_content.title}: {processed_content.id}\n\n{processed_content.summary}"
+        if args.pretty:
+            output = processed_content.summary
+            from rich.markdown import Markdown
+            from rich.console import Console
+
+            console = Console()
+            markdown = Markdown(output)
+            console.print(markdown)
+            sys.exit()
         if args.return_type:
             match args.return_type:
                 case "c":
@@ -198,9 +223,6 @@ def main():
                 case _:
                     logger.error("Invalid return type specified.")
                     sys.exit(1)
-        if args.pretty:
-            processed_content.pretty_print()
-            sys.exit()
         if args.raw:
             print(output)
             sys.exit()
