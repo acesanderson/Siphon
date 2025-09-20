@@ -164,6 +164,11 @@ def main():
         cloud=args_dict["cloud"],
         tags=parse_tags(args_dict["tags"]),
     )
+    # Detect if no input; just print help and exit.
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     # Get ProcessedContent, by various means.
     ## If we just want the last siphon:
     if args.last:
