@@ -205,6 +205,10 @@ def main():
     args = parser.parse_args()
 
     url = args.url.strip()
+    # Detect if no input; if so, print help and exit
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
 
     if "playlist?list=" in url:
         handle_playlist(url)

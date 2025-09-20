@@ -36,6 +36,12 @@ def main():
     args = parser.parse_args()
     target = args.target
 
+    # Detect no input, if no args provided, show help
+    # If no args provided, show help and exit
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     try:
         if target.startswith("https://github.com/"):
             # Process GitHub repository
