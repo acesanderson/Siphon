@@ -2,7 +2,7 @@
 PostgreSQL cache snapshot utility with Rich formatting
 """
 
-from Siphon.database.postgres.PGRES_connection import get_db_connection
+from dbclients import get_postgres_client
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
 from rich.console import Console
@@ -12,6 +12,7 @@ from rich.text import Text
 from rich import box
 
 
+get_db_connection = get_postgres_client(client_type="context_db", dbname="siphon")
 console = Console()
 
 # Source type styling
