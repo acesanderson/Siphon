@@ -1,0 +1,70 @@
+from siphon.data.uri import URI
+from siphon.data.types.source_type import SourceType
+from siphon.data.types.extensions import Extensions
+from siphon.data.types.uri_schemes import URISchemes
+from siphon.logs.logging_config import get_logger
+from pydantic import Field
+from typing import override
+from pathlib import Path
+
+logger = get_logger(__name__)
+
+
+class VideoURI(URI):
+    """
+    Represents an article URI with metadata.
+    Inherits from Metadata to include additional metadata fields.
+    """
+
+    sourcetype: SourceType = Field(
+        default=SourceType.VIDEO,
+        description="The type of source this URI represents.",
+    )
+
+    @override
+    @classmethod
+    def identify(cls, source: str) -> bool:
+        """
+        Check if the source string matches the video URI format.
+        """
+        try:
+            if "http" in source or "https" in source:
+                logger.info(f"This is a URL, not a VideoURI: {source}")
+                return False
+            source_path = Path(source)
+            extension = source_path.suffix.lower()
+            if extension in Extensions["Video"]:
+                logger.info(f"Identified as VideoURI: {source}")
+                return True
+            return False
+        except Exception:
+            return False
+
+    @override
+    @classmethod
+    def from_source(cls, source: str, skip_checksum: bool = False) -> "VideoURI | None":
+        """
+        Create a VideoURI object from a source string.
+        """
+        if not cls.identify(source):
+            logger.warning(f"Source does not match VideoURI format: {source}")
+            return None
+
+        # Coerce to Path if a string is provided
+        source_path = Path(source) if isinstance(source, str) else source_path
+
+        # Calculate checksum
+        checksum = None
+        if not skip_checksum:
+            logger.info(f"Calculating checksum for: {source_path}")
+            checksum = cls.get_checksum(source_path)
+            logger.info(f"Checksum calculated: {checksum}")
+
+        # Always convert to absolute path for consistency
+        absolute_source = str(Path(source).resolve())
+
+        return cls(
+            source=absolute_source,
+            uri=f"{URISchemes['Video']}://{Path(absolute_source).as_posix()}",
+            checksum=checksum,
+        )
