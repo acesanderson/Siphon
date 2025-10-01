@@ -1,5 +1,5 @@
 from siphon.data.context import Context
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.data.uri import URI
 from pathlib import Path
 from typing import override, Optional, Literal
@@ -64,7 +64,7 @@ class TextContext(Context):
         if not path.is_file():
             raise FileNotFoundError(f"The file {path} does not exist.")
 
-        from siphon.data.types.extensions import Extensions
+        from siphon.data.type_definitions.extensions import Extensions
 
         if path.suffix not in Extensions[sourcetype_value]:
             raise ValueError(f"Unsupported file type: {path.suffix}.")

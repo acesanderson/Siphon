@@ -1,4 +1,4 @@
-from siphon.data.types.extensions import Extensions
+from siphon.data.type_definitions.extensions import Extensions
 from pathlib import Path
 
 

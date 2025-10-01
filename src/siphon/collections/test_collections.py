@@ -1,7 +1,7 @@
 # test_siphon_query_progression.py
 import pytest
 from siphon.collections.corpus.siphon_corpus import CorpusFactory
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 
 
 # =============================================================================

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.data.context import Context
 from siphon.logs.logging_config import get_logger
 from typing import TYPE_CHECKING

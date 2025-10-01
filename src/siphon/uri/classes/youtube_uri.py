@@ -1,6 +1,6 @@
 from siphon.data.uri import URI
-from siphon.data.types.source_type import SourceType
-from siphon.data.types.uri_schemes import URISchemes
+from siphon.data.type_definitions.source_type import SourceType
+from siphon.data.type_definitions.uri_schemes import URISchemes
 from pydantic import Field
 from urllib.parse import urlparse, parse_qs
 import re

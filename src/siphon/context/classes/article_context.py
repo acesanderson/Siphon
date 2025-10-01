@@ -1,5 +1,5 @@
 from siphon.data.context import Context
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.data.uri import URI
 from typing import override, Optional
 import re

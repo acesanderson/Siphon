@@ -10,7 +10,7 @@ from siphon.data.processed_content import ProcessedContent
 from siphon.data.uri import URI
 from siphon.data.context import Context
 from siphon.data.synthetic_data import SyntheticData
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 
 
 # Simple YouTube context with metadata

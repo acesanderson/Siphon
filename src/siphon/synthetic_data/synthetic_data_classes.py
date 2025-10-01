@@ -1,6 +1,6 @@
 import importlib
 from siphon.data.synthetic_data import SyntheticData
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.logs.logging_config import get_logger
 from typing import Union
 

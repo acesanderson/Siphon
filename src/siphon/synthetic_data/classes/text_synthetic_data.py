@@ -3,7 +3,7 @@ Inherit from this one if you don't need custom logic.
 """
 
 from siphon.data.context import Context
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.data.synthetic_data import SyntheticData
 from typing import override
 

@@ -8,7 +8,7 @@ For each sourcetype, we have a dict with the following:
 - `summary_prompt`: Path to the summary prompt file.
 """
 
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from pathlib import Path
 
 synthetic_data_prompts_dir = Path(__file__).parent / "synthetic_data"

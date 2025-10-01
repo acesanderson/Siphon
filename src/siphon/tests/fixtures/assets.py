@@ -7,7 +7,7 @@ source_types = [SourceType.ARTICLE, SourceType.YOUTUBE, SourceType.FILE, SourceT
 """
 
 from pathlib import Path
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 
 dir_path = Path(__file__).parent
 assets_path = dir_path.parent.parent / "assets"

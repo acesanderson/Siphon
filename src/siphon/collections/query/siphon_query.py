@@ -22,7 +22,7 @@ NOTE: for now, SiphonQuery has all the query logic, and performs on an InMemoryC
 
 from siphon.data.processed_content import ProcessedContent
 from siphon.logs.logging_config import get_logger
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.collections.corpus.siphon_corpus import (
     SiphonCorpus,
     InMemoryCorpus,

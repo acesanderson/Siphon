@@ -8,7 +8,7 @@ from siphon.data.uri import URI
 from siphon.data.synthetic_data import SyntheticData
 from siphon.context.context_classes import ContextUnion
 from siphon.synthetic_data.synthetic_data_classes import SyntheticDataUnion
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.data.processed_content_display import ProcessedContentDisplayMixin
 from pydantic import BaseModel, Field
 from typing import Optional, Any, override

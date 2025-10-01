@@ -1,6 +1,6 @@
 import importlib
 from siphon.data.context import Context
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from typing import Union
 
 

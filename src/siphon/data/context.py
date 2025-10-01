@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from functools import lru_cache
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.data.uri import URI
 from siphon.logs.logging_config import get_logger
 

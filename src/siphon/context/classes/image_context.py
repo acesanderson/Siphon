@@ -1,5 +1,5 @@
 from siphon.context.classes.text_context import TextContext
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.data.uri import URI
 from typing import override, Literal
 

@@ -6,7 +6,7 @@ Two essential artifacts are created here:
 """
 
 from functools import lru_cache
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.logs.logging_config import get_logger
 from pydantic import BaseModel, Field
 from typing import Optional

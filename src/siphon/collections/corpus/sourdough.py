@@ -14,7 +14,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 from siphon.data.processed_content import ProcessedContent
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from .processed_corpus import ProcessedCorpus
 
 

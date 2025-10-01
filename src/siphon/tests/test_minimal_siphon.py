@@ -3,7 +3,7 @@ Siphon pipeline through iterative development;
 First just did URIs, then context generation, now synthetic data + completed ProcessedContent.
 """
 
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.data.processed_content import ProcessedContent
 from siphon.cli.cli_params import CLIParams
 from siphon.main.siphon import siphon

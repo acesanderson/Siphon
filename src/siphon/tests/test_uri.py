@@ -1,6 +1,6 @@
 import pytest
 from siphon.tests.fixtures.assets import sample_assets
-from siphon.data.types.uriSchemes import URISchemes
+from siphon.data.type_definitions.uriSchemes import URISchemes
 from siphon.data.uri import URI
 
 sourcetypes = sample_assets["sourcetypes"]

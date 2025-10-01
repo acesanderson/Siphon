@@ -34,7 +34,7 @@ We then have a `CorpusFactory` that provides methods to create the appropriate c
 """
 
 from siphon.data.processed_content import ProcessedContent
-from siphon.data.types.source_type import SourceType
+from siphon.data.type_definitions.source_type import SourceType
 from siphon.database.postgres.PGRES_connection import get_db_connection
 from psycopg2.extras import RealDictCursor
 from typing import override
