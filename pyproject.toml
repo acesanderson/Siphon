@@ -31,6 +31,7 @@ dependencies = [
     "requests",
     "rerankers",
     "rich",
+    "siphonserver",
     "sentence-transformers",
     "tiktoken>=0.9.0",
     "tinydb>=4.8.2",
@@ -124,6 +125,7 @@ split-on-trailing-comma = true
 
 # ── uv sources (local/editable deps) ───────────────────────────────────────────
 [tool.uv.sources]
+siphonserver = { path = "../siphonserver-project", editable = true }
 database-clients = { path = "../database-clients", editable = true }
 
 # ── entry points ───────────────────────────────────────────────────────────────
